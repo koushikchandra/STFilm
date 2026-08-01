@@ -1,0 +1,6 @@
+  
+MODEL:
+  model_name: st_net 
+
+DATA:
+  dataset_name: STDataset

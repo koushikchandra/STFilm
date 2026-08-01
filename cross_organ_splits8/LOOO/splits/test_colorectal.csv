@@ -1,0 +1,9 @@
+sample_id,patches_path,expr_path
+TENX149,COAD/patches/TENX149.h5,COAD/adata/TENX149.h5ad
+TENX148,COAD/patches/TENX148.h5,COAD/adata/TENX148.h5ad
+TENX147,COAD/patches/TENX147.h5,COAD/adata/TENX147.h5ad
+TENX111,COAD/patches/TENX111.h5,COAD/adata/TENX111.h5ad
+ZEN49,READ/patches/ZEN49.h5,READ/adata/ZEN49.h5ad
+ZEN48,READ/patches/ZEN48.h5,READ/adata/ZEN48.h5ad
+ZEN40,READ/patches/ZEN40.h5,READ/adata/ZEN40.h5ad
+ZEN36,READ/patches/ZEN36.h5,READ/adata/ZEN36.h5ad

@@ -1,0 +1,36 @@
+
+# Checkpoint of pre-trained ResNet18
+weights/*
+
+# Bash script for running experiment
+slurm.sh
+run.sh
+
+# Wandb
+wandb
+run_sweep_*.py
+sweep_cv.yaml
+
+# Logging files
+logs
+slurm*
+results
+
+# Others
+test.ipynb
+.vscode
+__pycache__
+
+input/*
+!input/ST/
+input/ST/*/*
+!input/ST/*/ids.csv
+output/*
+
+data_processing.ipynb
+src/preprocess/*.ipynb
+src/DRP
+
+*test.R
+*test.ipynb
+pp*

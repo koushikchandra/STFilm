@@ -1,0 +1,6 @@
+
+MODEL:
+  model_name: EGN 
+
+DATA:
+  dataset_name: EGNDataset

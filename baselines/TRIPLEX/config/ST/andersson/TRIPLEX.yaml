@@ -1,0 +1,21 @@
+  
+MODEL:
+  model_name: TRIPLEX 
+  emb_dim: 512
+  depth1: 1
+  depth2: 3
+  depth3: 3
+  num_heads1: 4
+  num_heads2: 16
+  num_heads3: 16
+  mlp_ratio1: 4
+  mlp_ratio2: 4
+  mlp_ratio3: 1
+  dropout1: 0.2
+  dropout2: 0.1
+  dropout3: 0.3
+  kernel_size: 3
+  pos_layer: 'APEG' # 'MLP' or 'None' or "spatialformer"
+
+DATA:
+  dataset_name: TriDataset

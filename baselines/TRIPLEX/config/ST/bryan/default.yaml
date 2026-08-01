@@ -1,0 +1,42 @@
+
+
+GENERAL:
+  seed: 2021
+  log_path: ./logs
+  save_predictions: True
+  
+TRAINING:
+  num_k: 8
+  learning_rate: 1.0e-4
+  num_epochs: 1000
+  monitor: PearsonCorrCoef
+  mode: max
+  save_best_only: True
+  early_stopping:
+    patience: 20
+  lr_scheduler:
+    patience: 10
+    factor: 0.1
+  save_best_only: True
+
+DATA:
+  data_dir: input/ST/bryan
+  output_dir: output/pred/ST/bryan
+  gene_type: 'mean'
+  num_genes: 1000
+  num_outputs: 250
+  cpm: True
+  smooth: True
+  model_name: 'cigar'
+  
+  train_dataloader:
+        batch_size: 128
+        num_workers: 4
+        pin_memory: False
+        shuffle: True
+
+  test_dataloader:
+      batch_size: 1
+      num_workers: 4
+      pin_memory: False
+      shuffle: False

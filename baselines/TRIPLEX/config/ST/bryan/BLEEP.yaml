@@ -1,0 +1,15 @@
+
+TRAINING:
+  mode: min
+    
+MODEL:
+  model_name: BLEEP
+  temperature: 1.0
+  image_embedding: 512
+  spot_embedding: 250
+  projection_dim: 512
+  trainable: True
+  dropout: 0.1
+
+DATA:
+  dataset_name: BleepDataset

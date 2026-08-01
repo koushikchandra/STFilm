@@ -1,0 +1,16 @@
+# Large data / model artifacts (not for GitHub)
+dataset/
+embed_dataroot/
+weights_root/
+
+# Logs
+*.log
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.ipynb_checkpoints/
+
+# Editor/OS
+.DS_Store

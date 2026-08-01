@@ -1,0 +1,590 @@
+# ICLR Genomics-Related Accepted Papers
+
+
+## ICLR 2025 (95 matched papers)
+
+- **When GNNs meet symmetry in ILPs: an orbit-based feature augmentation approach** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=wVTJRnZ11Z
+- **GANDALF: Generative AttentioN based Data Augmentation and predictive modeLing Framework for personalized cancer treatment** (ICLR 2025 Poster) [high]
+  - Matched: genom; mutation; sequencing
+  - https://openreview.net/forum?id=WwmtcGr4lP
+- **Clique Number Estimation via Differentiable Functions of Adjacency Matrix Permutations** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=DFSb67ksVr
+- **URLOST: Unsupervised Representation Learning without Stationarity or Topology** (ICLR 2025 Poster) [high]
+  - Matched: gene expression
+  - https://openreview.net/forum?id=MBBRHDuiwM
+- **Charting the Design Space of Neural Graph Representations for Subgraph Matching** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=5pd78GmXC6
+- **Hyperbolic Genome Embeddings** (ICLR 2025 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=NkGDNM8LB0
+- **Diffusion Generative Modeling for Spatially Resolved Gene Expression Inference from Histology Images** (ICLR 2025 Poster) [high]
+  - Matched: RNA-seq; gene expression; genom; sequencing; transcriptom
+  - https://openreview.net/forum?id=FtjLUHyZAO
+- **Plastic Learning with Deep Fourier Features** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=NIkfix2eDQ
+- **Learning Efficient Positional Encodings with Graph Neural Networks** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=AWg2tkbydO
+- **Identifiability for Gaussian Processes with Holomorphic Kernels** (ICLR 2025 Poster) [high]
+  - Matched: transcriptom
+  - https://openreview.net/forum?id=FUaDMRVrbS
+- **Modeling Complex System Dynamics with Flow Matching Across Time and Conditions** (ICLR 2025 Spotlight) [high]
+  - Matched: gene regulat; genom; single-cell
+  - https://openreview.net/forum?id=hwnObmOTrV
+- **PEARL: Towards Permutation-Resilient LLMs** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=txoJvjfI9w
+- **Specialized Foundation Models Struggle to Beat Supervised Baselines** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=JYTQ6ELUVO
+- **Learning to Discover Regulatory Elements for Gene Expression Prediction** (ICLR 2025 Oral) [high]
+  - Matched: DNA; epigenom; gene expression; genom
+  - https://openreview.net/forum?id=Mfnh1Sqdwf
+- **Improving Graph Neural Networks by Learning Continuous Edge Directions** (ICLR 2025 Poster) [high]
+  - Matched: gene regulat
+  - https://openreview.net/forum?id=iAmR7FfMmq
+- **A Meta-Learning Approach to Bayesian Causal Discovery** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=eeJz7eDWKO
+- **Capturing the Temporal Dependence of Training Data Influence** (ICLR 2025 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=uHLgDEgiS5
+- **Decision Tree Induction Through LLMs via Semantically-Aware Evolution** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=UyhRtB4hjN
+- **Holographic Node Representations: Pre-training Task-Agnostic Node Embeddings** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=tGYFikNONB
+- **Bayesian Optimization of Antibodies Informed by a Generative Model of Evolving Sequences** (ICLR 2025 Spotlight) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=E48QvQppIN
+- **MAESTRO: Masked Encoding Set Transformer with Self-Distillation** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=FEZOLWexPb
+- **Fast unsupervised ground metric learning with tree-Wasserstein distance** (ICLR 2025 Poster) [high]
+  - Matched: RNA-seq; genom; sequencing; single-cell
+  - https://openreview.net/forum?id=FBhKUXK7od
+- **Evaluating Semantic Variation in Text-to-Image Synthesis: A Causal Perspective** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=NWb128pSCb
+- **Interpretable Causal Representation Learning for Biological Data in the Pathway Space** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=3Fgylj4uqL
+- **Separation Power of Equivariant Neural Networks** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=RAyRXQjsFl
+- **The OMG dataset: An Open MetaGenomic corpus for mixed-modality genomic language modeling** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=jlzNb1iWs3
+- **Cached Multi-Lora Composition for Multi-Concept Image Generation** (ICLR 2025 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=4iFSBgxvIO
+- **Equivariant Denoisers Cannot Copy Graphs: Align Your Graph Diffusion Models** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=onIro14tHv
+- **The KoLMogorov Test: Compression by Code Generation** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=C45YqeBDUM
+- **Bio-xLSTM: Generative modeling, representation and in-context learning of biological and chemical sequences** (ICLR 2025 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=IjbXZdugdj
+- **Rethinking Invariance in In-context Learning** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=q1UyoY3MgJ
+- **Generating  Graphs  via Spectral Diffusion** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=AAXBfJNHDt
+- **gRNAde: Geometric Deep Learning for 3D RNA inverse design** (ICLR 2025 Spotlight) [high]
+  - Matched: RNA-seq; mutation
+  - https://openreview.net/forum?id=lvw3UgeVxS
+- **A Simple yet Effective $\Delta\Delta G$ Predictor is An Unsupervised Antibody Optimizer and Explainer** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=IxmWIkcKs5
+- **Steering Protein Family Design through Profile Bayesian Flow** (ICLR 2025 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=PSiijdQjNU
+- **Tree-Wasserstein Distance for High Dimensional Data with a Latent Feature Hierarchy** (ICLR 2025 Poster) [high]
+  - Matched: RNA-seq; sequencing; single-cell
+  - https://openreview.net/forum?id=nYjAzwor9R
+- **GeSubNet: Gene Interaction Inference for Disease Subtype Network Generation** (ICLR 2025 Oral) [high]
+  - Matched: gene expression
+  - https://openreview.net/forum?id=ja4rpheN2n
+- **Discrete Copula Diffusion** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=FXw0okNcOb
+- **Balanced Ranking with Relative Centrality: A multi-core periphery perspective** (ICLR 2025 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=21rSeWJHPF
+- **ReNovo: Retrieval-Based \emph{De Novo} Mass Spectrometry Peptide Sequencing** (ICLR 2025 Poster) [high]
+  - Matched: proteom; sequencing
+  - https://openreview.net/forum?id=uQnvYP7yX9
+- **Fine-Tuning Discrete Diffusion Models via Reward Optimization with Applications to DNA and Protein Design** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=G328D1xt4W
+- **Variational Search Distributions** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=1vrpdV9U3i
+- **STAR: Synthesis of Tailored Architectures** (ICLR 2025 Oral) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=HsHxSN23rM
+- **Nonlinear Sequence Embedding by Monotone Variational Inequality** (ICLR 2025 Spotlight) [high]
+  - Matched: RNA-seq; genom
+  - https://openreview.net/forum?id=U834XHJuqk
+- **Protein Language Model Fitness is a Matter of Preference** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=UvPdpa4LuV
+- **FACTS: A Factored State-Space Framework for World Modelling** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=dmCGjPFVhF
+- **Unlocking Guidance for Discrete State-Space Diffusion and Flow Models** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=XsgHl54yO7
+- **Multi-Modal and Multi-Attribute Generation of Single Cells with CFGen** (ICLR 2025 Poster) [high]
+  - Matched: RNA-seq; gene expression; genom; single-cell
+  - https://openreview.net/forum?id=3MnMGLctKb
+- **Bridging the Gap between Database Search and \emph{De Novo} Peptide Sequencing with SearchNovo** (ICLR 2025 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=SjMtxqdQ73
+- **Meta Flow Matching: Integrating Vector Fields on the Wasserstein Manifold** (ICLR 2025 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=9SYczU3Qgm
+- **Alchemy: Amplifying Theorem-Proving Capability Through Symbolic Mutation** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=7NL74jUiMg
+- **Agent Skill Acquisition for Large Language Models via CycleQD** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=Kvdh12wGC0
+- **COPER: Correlation-based Permutations for Multi-View Clustering** (ICLR 2025 Spotlight) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=5ZEbpBYGwH
+- **Analysis of Linear Mode Connectivity via Permutation-Based Weight Matching: With Insights into Other Permutation Search Methods** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=lYRkGZZi9D
+- **Counterfactual Generative Modeling with Variational Causal Inference** (ICLR 2025 Poster) [high]
+  - Matched: gene expression
+  - https://openreview.net/forum?id=oeDcgVC7Xh
+- **Efficient Evolutionary Search Over Chemical Space with Large Language Models** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=awWiNvQwf3
+- **Difference-of-submodular Bregman Divergence** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=vr1QdCNJmN
+- **SymmetricDiffusers: Learning Discrete Diffusion on Finite Symmetric Groups** (ICLR 2025 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=EO8xpnW7aX
+- **Linear Mode Connectivity in Differentiable Tree Ensembles** (ICLR 2025 Spotlight) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=UqYNPyotxL
+- **CLIBD: Bridging Vision and Genomics for Biodiversity Monitoring at Scale** (ICLR 2025 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=d5HUnyByAI
+- **Duoduo CLIP: Efficient 3D Understanding with Multi-View Images** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=iGbuc9ekKK
+- **Boltzmann Semantic Score: A Semantic Metric for Evaluating Large Vision Models Using Large Language Models** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=9yJKTosUex
+- **Scalable Universal T-Cell Receptor Embeddings from Adaptive Immune Repertoires** (ICLR 2025 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=wyF5vNIsO7
+- **Learning Molecular Representation in a Cell** (ICLR 2025 Poster) [high]
+  - Matched: gene expression
+  - https://openreview.net/forum?id=BbZy8nI1si
+- **R2Det: Exploring Relaxed Rotation Equivariance in 2D Object Detection** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=EUeNr3e8AV
+- **MeToken: Uniform Micro-environment Token Boosts Post-Translational Modification Prediction** (ICLR 2025 Poster) [high]
+  - Matched: proteom
+  - https://openreview.net/forum?id=noUF58SMra
+- **Boltzmann-Aligned Inverse Folding Model as a Predictor of Mutational Effects on Protein-Protein Interactions** (ICLR 2025 Spotlight) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=lzdFImKK8w
+- **Diffusion Models are Evolutionary Algorithms** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=xVefsBbG2O
+- **HELM: Hierarchical Encoding for mRNA Language Modeling** (ICLR 2025 Poster) [high]
+  - Matched: RNA-seq
+  - https://openreview.net/forum?id=MMHqnUOnl0
+- **Learning stochastic dynamics from snapshots through regularized unbalanced optimal transport** (ICLR 2025 Oral) [high]
+  - Matched: RNA-seq; gene regulat; single-cell
+  - https://openreview.net/forum?id=gQlxd3Mtru
+- **Weakly Supervised Video Scene Graph Generation via Natural Language Supervision** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=GQgPj1H4pO
+- **Recovering Manifold Structure Using Ollivier Ricci Curvature** (ICLR 2025 Spotlight) [high]
+  - Matched: RNA-seq; sequencing; single-cell
+  - https://openreview.net/forum?id=aX7X9z3vQS
+- **CURIE: Evaluating LLMs on Multitask Scientific Long-Context Understanding and Reasoning** (ICLR 2025 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=jw2fC6REUB
+- **PICASO: Permutation-Invariant Context Composition with State Space Models** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=88TC1AWV27
+- **Simple Guidance Mechanisms for Discrete Diffusion Models** (ICLR 2025 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=i5MrJ6g5G1
+- **Transformers are Universal In-context Learners** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=6S4WQD1LZR
+- **Deep Linear Probe Generators for Weight Space Learning** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=XoYdD3m0mv
+- **Estimation of single-cell and tissue perturbation effect in spatial transcriptomics via Spatial Causal Disentanglement** (ICLR 2025 Poster) [high]
+  - Matched: gene regulat; single-cell; transcriptom
+  - https://openreview.net/forum?id=Tqdsruwyac
+- **REVISITING MULTI-PERMUTATION EQUIVARIANCE THROUGH THE LENS OF IRREDUCIBLE REPRESENTATIONS** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=4v4nmYWzBa
+- **Differential Transformer** (ICLR 2025 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=OvoCm1gGhN
+- **On Designing General and Expressive Quantum Graph Neural Networks with Applications to MILP Instance Representation** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=IQi8JOqLuv
+- **Merging LoRAs like Playing LEGO: Pushing the Modularity of LoRA to Extremes Through Rank-Wise Clustering** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=j6fsbpAllN
+- **REEF: Representation Encoding Fingerprints for Large Language Models** (ICLR 2025 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=SnDmPkOJ0T
+- **PPT: Patch Order Do Matters In Time Series Pretext Task** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=7zwIEbSTDy
+- **Deep Signature: Characterization of Large-Scale Molecular Dynamics** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=xayT1nn8Mg
+- **Revisiting Convolution Architecture in the Realm of DNA Foundation Models** (ICLR 2025 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=B07dLVWLyD
+- **Not-So-Optimal Transport Flows for 3D Point Cloud Generation** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=62Ff8LDAJZ
+- **Deep Incomplete Multi-view Learning via Cyclic Permutation of VAEs** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=s4MwstmB8o
+- **Regulatory DNA Sequence Design with Reinforcement Learning** (ICLR 2025 Poster) [high]
+  - Matched: DNA; gene expression
+  - https://openreview.net/forum?id=F4IMiNhim1
+- **Beyond Sequence: Impact of Geometric Context for RNA Property Prediction** (ICLR 2025 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=9htTvHkUhh
+- **Do Deep Neural Network Solutions Form a Star Domain?** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=QjO0fUlVYK
+- **BLEND: Behavior-guided Neural Population Dynamics Modeling via Privileged Knowledge Distillation** (ICLR 2025 Poster) [high]
+  - Matched: transcriptom
+  - https://openreview.net/forum?id=jE5ZbtMtcU
+- **FreeCG: Free the Design Space of Clebsch-Gordan Transform for Machine Learning Force Fields** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=sfi2j1Ot6j
+- **Neuron Platonic Intrinsic Representation From Dynamics Using Contrastive Learning** (ICLR 2025 Poster) [high]
+  - Matched: transcriptom
+  - https://openreview.net/forum?id=vFanHFE4Qv
+- **Distilling Structural Representations into Protein Sequence Models** (ICLR 2025 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=KXrgDM3mVD
+
+## ICLR 2026 (99 matched papers)
+
+- **On the Lipschitz Continuity of Set Aggregation Functions and Neural Networks for Sets** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=sPRK6XefjY
+- **Do We Really Need Permutations? Impact of Model Width on Linear Mode Connectivity** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=ll8GLAic7q
+- **HeurekaBench: A Benchmarking Framework for AI Co-scientist** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=Y7xCdFuFw7
+- **Exchangeability of GNN Representations  with Applications to Graph Retrieval** (ICLR 2026 Oral) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=HQcCd0laFq
+- **PETRI: Learning Unified Cell Embeddings from Unpaired Modalities via Early-Fusion Joint Reconstruction** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; transcriptom
+  - https://openreview.net/forum?id=Vu8YXDooG5
+- **Structure-Aware Graph Hypernetworks for Neural Program Synthesis** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=x7zOzUwtR7
+- **Natural Language PDDL (NL-PDDL) for Open-world Goal-oriented Commonsense Regression Planning in Embodied AI** (ICLR 2026 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=kWCNhRdcDI
+- **HEIST: A Graph Foundation Model for Spatial Transcriptomics and Proteomics Data** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; proteom; single-cell; transcriptom
+  - https://openreview.net/forum?id=lK82jpa8jr
+- **Obscure but Effective: Classical Chinese Jailbreak Prompt Optimization via Bio-Inspired Search** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=O7fxz7D6vf
+- **A Genetic Algorithm for Navigating Synthesizable Molecular Spaces** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=OvMtGGaFUT
+- **DeepWeightFlow: Re-Basined Flow Matching for Generating Neural Network Weights** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=fOwsr1VTi8
+- **Residual Feature Integration is Sufficient to Prevent Negative Transfer** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=b1ITgc4J4M
+- **Rapid Training of Hamiltonian Graph Networks Using Random Features** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=2T4KxtDquV
+- **A Joint Diffusion Model with Pre-Trained Priors for RNA Sequence-Structure Co-Design** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq
+  - https://openreview.net/forum?id=cpc63YrVWN
+- **Count Bridges enable Modeling and Deconvolving Transcriptomic Data** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq; gene expression; sequencing; single-cell; transcriptom
+  - https://openreview.net/forum?id=4nOZBufbLC
+- **A Unification of Discrete, Gaussian, and Simplicial Diffusion** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=1taAXRcm21
+- **Iterative Distillation for Reward-Guided Fine-Tuning of Diffusion Models in Biomolecular Design** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=NFffW9tBmC
+- **VCWorld: A Biological World Model for Virtual Cell Simulation** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; single-cell
+  - https://openreview.net/forum?id=hhq89Hs7T3
+- **A Graph Meta-Network for Learning on Kolmogorov–Arnold Networks** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=ONpyYavBqR
+- **Conditional Independent Component Analysis for Estimating Causal Structure with Latent Variables** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=TAOpnCPnjg
+- **SC-Arena: A Natural Language Benchmark for Single-Cell Reasoning with Knowledge-Augmented Evaluation** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=5RcoUe1tA1
+- **Any-Subgroup Equivariant Networks via Symmetry Breaking** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=jz3d7nvtGz
+- **Carré du champ flow matching: better quality-generalisation tradeoff in generative models** (ICLR 2026 Poster) [high]
+  - Matched: genom; single-cell
+  - https://openreview.net/forum?id=psmrKQ5lJe
+- **AssetFormer: Modular 3D Assets Generation with Autoregressive Transformer** (ICLR 2026 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=ODB82HDp0V
+- **Silent Leaks: Implicit Knowledge Extraction Attack on RAG Systems** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=zfVICPB5Sv
+- **Delay Flow Matching** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=6lH1XblLpo
+- **DeepSADR: Deep Transfer Learning with Subsequence Interaction and Adaptive Readout for Cancer Drug Response Prediction** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=jrFJWpDZvq
+- **Multi-Action Self-Improvement For Neural Combinatorial Optimization** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=6KrETIaOYD
+- **A New Paradigm for Genome-wide DNA Methylation Prediction Without Methylation Input** (ICLR 2026 Poster) [high]
+  - Matched: DNA; gene expression; genom; sequencing
+  - https://openreview.net/forum?id=8wQ7Oc08vo
+- **SERQ: Saliency-Aware Low-Rank Error Reconstruction for LLM Quantization** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=nFjj8NEBqv
+- **Histopathology-Genomics Multi-modal Structural Representation Learning for Data-Efficient Precision Oncology** (ICLR 2026 Poster) [high]
+  - Matched: genom; mutation
+  - https://openreview.net/forum?id=24QX6XpvSL
+- **CryoNet.Refine: A One-step Diffusion Model for Rapid Refinement of Structural Models with Cryo-EM Density Map Restraints** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=NwzY2yhlme
+- **ReFusion: A Diffusion Large Language Model with Parallel Autoregressive Decoding** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=LBtWaUc7FE
+- **Distilling Causal Signals for One-Shot Directed Evolution of Antibodies** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=M7PDJTrqcS
+- **FlexRibbon: Joint Sequence and Structure Pretraining for Protein Modeling** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=B8BXHrshMi
+- **Clustering by Denoising: Latent plug-and-play diffusion for single-cell embeddings** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq; genom; scRNA; sequencing; single-cell
+  - https://openreview.net/forum?id=zxlbh55PhC
+- **Randomized Antipodal Search Done Right for Data Pareto Improvement of LLM Unlearning** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=Xn6EnJZghu
+- **AdaSpec: Adaptive Spectrum for Enhanced Node Distinguishability** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=eHhUYoZwWs
+- **To Augment or Not to Augment? Diagnosing Distributional Symmetry Breaking** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=ZTb4YmHD9n
+- **Fast Estimation of Wasserstein Distances via Regression on Sliced Wasserstein Distances** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq; scRNA
+  - https://openreview.net/forum?id=oa7L4vcJ77
+- **Controllable diffusion-based generation for multi-channel biological data** (ICLR 2026 Poster) [high]
+  - Matched: proteom; single-cell; transcriptom
+  - https://openreview.net/forum?id=t7wIerUT2E
+- **A universal compression theory for lottery ticket hypothesis and neural scaling laws** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=vxkzW4ljeX
+- **Transducing Language Models** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=qOyF214xmg
+- **Expert Heads: Robust Evidence Identification for Large Language Models** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=rdKL5Uxyim
+- **Structured Flow Autoencoders: Learning Structured Probabilistic Representations with Flow Matching** (ICLR 2026 Oral) [high]
+  - Matched: RNA-seq
+  - https://openreview.net/forum?id=KYdfvF2SZN
+- **Discrete Diffusion Trajectory Alignment via Stepwise Decomposition** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=h9b5h69v3p
+- **Sparling: End-to-End Spatial Concept Learning via Extremely Sparse Activations** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=yfBs0GQxx9
+- **PatchDNA: A Flexible and Biologically-Informed Alternative to Tokenization for DNA** (ICLR 2026 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=AFZeojzjoG
+- **Learning Pseudorandom Numbers with Transformers: Permuted Congruential Generators, Curricula, and Interpretability** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=m5KplPzCzM
+- **SAVE: A Generalizable Framework for Multi-Condition Single-Cell Generation with Gene Block Attention** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; single-cell
+  - https://openreview.net/forum?id=l7QEoK4uDP
+- **Fusing Pixels and Genes: Spatially-Aware Learning in Computational Pathology** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; transcriptom
+  - https://openreview.net/forum?id=uVXO6gzVzj
+- **Learning Distributions over Permutations and Rankings with Factorized Representations** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=aE1VU6Ui4M
+- **Towards All-Atom Foundation Models for Biomolecular Binding Affinity Prediction** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=o0Qfsq1fK8
+- **CDBridge: A Cross-omics Post-training Bridge Strategy for Context-aware Biological Modeling** (ICLR 2026 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=Hk4Fb6kaYF
+- **A Resolution-Agnostic Geometric Transformer for Chromosome Modeling Using Inertial Frame** (ICLR 2026 Poster) [high]
+  - Matched: DNA; genom; single-cell
+  - https://openreview.net/forum?id=OwLl8Xi6JG
+- **Bridging Input Feature Spaces Towards Graph Foundation Models** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=Dt4XAIKYbf
+- **Fast Proteome-Scale Protein Interaction Retrieval via Residue-Level Factorization** (ICLR 2026 Poster) [high]
+  - Matched: proteom
+  - https://openreview.net/forum?id=Dp1RM3gPg8
+- **Characterization and Learning of Causal Graphs with Latent Confounders and Post-treatment Selection from Interventional Data** (ICLR 2026 Poster) [high]
+  - Matched: gene expression
+  - https://openreview.net/forum?id=qclNnbjxNJ
+- **Diffusion Alignment as Variational Expectation-Maximization** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=aBeIFDshvZ
+- **From Sorting Algorithms to Scalable Kernels: Bayesian Optimization in High-Dimensional Permutation Spaces** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=7QtKdabBP9
+- **Divide and Abstract: Autoformalization via Decomposition and Abstraction Learning** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=NjgaeXNit3
+- **CellDuality: Unlocking Biological Reasoning in LLMs with Self-Supervised RLVR** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=I4meJN28Ol
+- **CoT-Evo: Evolutionary Distillation of Chain-of-Thought for Scientific Reasoning** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=OMf3w00d95
+- **Identity-Free Deferral For Unseen Experts** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=4YG9ufFg58
+- **Multi-Marginal Flow Matching with Adversarially Learnt Interpolants** (ICLR 2026 Poster) [high]
+  - Matched: single-cell; transcriptom
+  - https://openreview.net/forum?id=AJls43yje7
+- **BioBO: Biology-informed Bayesian Optimization for Perturbation Design** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=CF3kJrAwmV
+- **LLM DNA: Tracing Model Evolution via Functional Representations** (ICLR 2026 Oral) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=UIxHaAqFqQ
+- **HistoPrism: Unlocking Functional Pathway Analysis from Pan-Cancer Histology via Gene Expression Prediction** (ICLR 2026 Poster) [high]
+  - Matched: gene expression; sequencing; transcriptom
+  - https://openreview.net/forum?id=6dTHxb9JuA
+- **Learning Explicit Single-Cell Dynamics Using ODE Representations** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=DzSNH5APPl
+- **CircuitNet 3.0: A Multi-Modal Dataset with Task-Oriented Augmentation for AI-Driven Circuit Design** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=lEDb4gQ4dB
+- **CPiRi: Channel Permutation-Invariant Relational Interaction for Multivariate Time Series Forecasting** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=tgnXCCjKE3
+- **Flow-Disentangled Feature Importance** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=Fx8AtzGlTS
+- **FS-KAN: Permutation Equivariant Kolmogorov-Arnold Networks via Function Sharing** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=l4m4HK6gJN
+- **CellAgent: LLM-Driven Multi-Agent Framework  for Natural Language-Based Single-Cell Analysis** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq; genom; scRNA; sequencing; single-cell; transcriptom
+  - https://openreview.net/forum?id=BsA2GNkJhz
+- **FlexHiNM-GP: Flexible Hierarchical Pruning via Region Allocation and Channel Permutation** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=YaZraqRsbB
+- **$\pi^3$: Permutation-Equivariant Visual Geometry Learning** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=DTQIjngDta
+- **Tokenization to Transfer: Do Genomic Foundation Models Learn Good Representations?** (ICLR 2026 Poster) [high]
+  - Matched: genom; mutation
+  - https://openreview.net/forum?id=4UY1NHG5Ge
+- **Proper Velocity Neural Networks** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=UDIYU1X3vC
+- **Temporal Geometry of Deep Networks: Hyperbolic Representations of Training Dynamics for Intrinsic Explainability** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=Xq64xkQCak
+- **AntigenLM: Structure-Aware DNA Language Modeling for Influenza** (ICLR 2026 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=Y0zPlHDO5p
+- **GeneBreaker: Jailbreak Attacks against DNA Language Models with Pathogenicity Guidance** (ICLR 2026 Poster) [high]
+  - Matched: DNA; genom
+  - https://openreview.net/forum?id=C5OIolrNJd
+- **Property-Driven Protein Inverse Folding with Multi-Objective Preference Alignment** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=m826DekCpp
+- **Dynamic Chunking for End-to-End Hierarchical Sequence Modeling** (ICLR 2026 Poster) [low]
+  - Matched: DNA
+  - https://openreview.net/forum?id=ZbfLR9NbNF
+- **Information Estimation with Discrete Diffusion** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=m18MXVdrV9
+- **Doloris: Dual Conditional Diffusion Implicit Bridges with Sparsity Masking Strategy for Unpaired Single-Cell Perturbation Estimation** (ICLR 2026 Poster) [high]
+  - Matched: sequencing; single-cell
+  - https://openreview.net/forum?id=rvpDHfoTd2
+- **Structural Prognostic Event Modeling for Multimodal Cancer Survival Analysis** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=WqCRSn2WAY
+- **WFR-FM: Simulation-Free Dynamic Unbalanced Optimal Transport** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=1nqu7bK1mm
+- **scDFM: Distributional Flow Matching Model for Robust Single-Cell Perturbation Prediction** (ICLR 2026 Poster) [high]
+  - Matched: single-cell
+  - https://openreview.net/forum?id=QSGanMEcUV
+- **Adversarial Encoding Perturbation and Synthesis for Set Representation Auxiliary Learning** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=13r06yROEZ
+- **Extending Sequence Length is Not All You Need: Effective Integration of Multimodal Signals for Gene Expression Prediction** (ICLR 2026 Oral) [high]
+  - Matched: DNA; chromatin; epigenom; gene expression; genom
+  - https://openreview.net/forum?id=wwPSfcf5Pj
+- **Learning Hierarchical and Geometry-Aware Graph Representations for Text-to-CAD** (ICLR 2026 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=oKMomThD6n
+- **Unleashing Scientific Reasoning for Bio-experimental Protocol Generation via Structured Component-based Reward Mechanism** (ICLR 2026 Poster) [high]
+  - Matched: sequencing
+  - https://openreview.net/forum?id=5BRMteyNOp
+- **RankFlow: Property-aware Transport for Protein Optimization** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=uS5rA4fDJp
+- **Content-Aware Mamba for Learned Image Compression** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=WwDNiisZQm
+- **Visual Jigsaw Post-Training Improves MLLMs** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=tBf2SUzfZw
+- **NC-Bench and NCfold: A Benchmark and Closed-Loop Framework for RNA Non-Canonical Base-Pair Prediction** (ICLR 2026 Poster) [high]
+  - Matched: RNA-seq
+  - https://openreview.net/forum?id=G9UhQEZHjY
+- **Triangle Multiplication is All You Need for Biomolecular Structure Representations** (ICLR 2026 Poster) [high]
+  - Matched: proteom
+  - https://openreview.net/forum?id=CrXcfMLR9q
+- **Permutation-Consistent Variational Encoding for Incomplete Multi-View Multi-Label Classification** (ICLR 2026 Poster) [low]
+  - Matched: mutation
+  - https://openreview.net/forum?id=y4LyiOIOUn
+- **Intrinsic Lorentz Neural Network** (ICLR 2026 Poster) [high]
+  - Matched: genom
+  - https://openreview.net/forum?id=NNnkLi1ALt
