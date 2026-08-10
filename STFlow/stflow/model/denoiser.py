@@ -122,9 +122,18 @@ class Denoiser(nn.Module):
                 n_neighbors=config.n_neighbors,
                 act=config.activation,
                 cross_attn=(self.film_mode == "hybrid"),
+                use_moe=(self.film_mode == "moe"),
+                n_experts=getattr(config, "n_experts", 4),
+                moe_top_k=getattr(config, "moe_top_k", 0),
+                use_prototypes_in_router=getattr(config, "use_prototypes_in_router", False),
             )
         )
         self.loss_func = nn.MSELoss()
+
+        # MoE aux-loss weights (only used when film_mode == "moe"); aux stashed by inference().
+        self.lambda_bal = getattr(config, "lambda_bal", 1e-2)
+        self.lambda_smooth = getattr(config, "lambda_smooth", 1e-3)
+        self._moe_aux = None
 
         self.fourier_proj = TimestepEmbedder(config.hidden_dim)
         self.image_transform = nn.Linear(config.feature_dim, config.hidden_dim)
@@ -145,15 +154,50 @@ class Denoiser(nn.Module):
         self.meta_embed = (MetadataEmbedder(meta_categories, config.hidden_dim)
                            if meta_categories else None)
 
-        # V3/V4 continuous histology descriptor projection (used by desc and hybrid).
+        # V3/V4 continuous GLOBAL histology descriptor projection (masked slide mean).
+        # Used by desc, hybrid, and local (local = global term + per-spot local term).
         self.desc_proj = (nn.Linear(config.feature_dim, config.hidden_dim)
-                          if self.film_mode in ("desc", "hybrid") else None)
+                          if self.film_mode in ("desc", "hybrid", "local", "localg") else None)
 
-        # V4 hybrid: learned-query attention pool -> K prototype tokens for cross-attention.
+        # V5 "local": hierarchical local+global FiLM. Adds a PER-SPOT descriptor = mean of
+        # each spot's spatial-kNN neighbor embeddings (invariant scalars, distance-selected ->
+        # SE(2)-invariant). Isolates "does per-spot conditioning help" vs the global-only desc.
+        self.local_proj = (nn.Linear(config.feature_dim, config.hidden_dim)
+                           if self.film_mode in ("local", "localg") else None)
+        self.n_neighbors_local = getattr(config, "n_neighbors", 8)
+
+        # "localg": gated fusion of the global (desc) and per-spot (local) descriptors. A per-spot,
+        # per-channel gate learns how much of the local term to add on top of the global one, so it
+        # strictly generalizes "local" (init so gate ~= 1 => localg == local at start).
+        if self.film_mode == "localg":
+            self.gate_proj = nn.Linear(2 * config.hidden_dim, config.hidden_dim)
+            nn.init.zeros_(self.gate_proj.weight)
+            nn.init.constant_(self.gate_proj.bias, 3.0)     # sigmoid(3) ~= 0.95 -> starts as local
+
+        # Learned-query attention pool -> K prototype tokens.
+        #   hybrid: prototypes feed the per-cell cross-attention path.
+        #   moe:    prototypes (mean-pooled) feed the router, only if use_prototypes_in_router.
+        build_pool = (self.film_mode == "hybrid") or (
+            self.film_mode == "moe" and getattr(config, "use_prototypes_in_router", False))
         self.attn_pool = (AttentionPool(config.feature_dim, config.hidden_dim,
                                         n_proto=getattr(config, "n_proto", 8),
                                         n_heads=config.n_heads)
-                          if self.film_mode == "hybrid" else None)
+                          if build_pool else None)
+
+    def _local_descriptor(self, raw_img, coords, pad_mask, k):
+        # raw_img [B,n,F], coords [B,n,2], pad_mask [B,n] True=pad -> per-spot mean of kNN
+        # neighbor embeddings [B,n,F]. Distance-selected + mean-pooled => SE(2)-invariant.
+        B, n, Fd = raw_img.shape
+        big = torch.finfo(coords.dtype).max
+        dist = torch.cdist(coords, coords)                              # [B,n,n]
+        dist = dist.masked_fill(pad_mask[:, None, :], big)             # cannot pick padding
+        eye = torch.eye(n, device=dist.device, dtype=torch.bool)
+        dist = dist.masked_fill(eye[None], big)                        # exclude self
+        kk = min(k, n)
+        idx = dist.topk(kk, dim=-1, largest=False).indices            # [B,n,kk]
+        src = raw_img.unsqueeze(1).expand(B, n, n, Fd)                 # view, no copy
+        nb = torch.gather(src, 2, idx.unsqueeze(-1).expand(B, n, kk, Fd))
+        return nb.mean(dim=2)                                          # [B,n,F]
 
     def inference(self, noisy_exp, img_features, coords, t_steps, meta=None, predict=False):
         # noisy_exp: [B, n_cells, n_genes]
@@ -174,26 +218,42 @@ class Denoiser(nn.Module):
             cond = features                          # per-layer FiLM conditioner
             if self.meta_embed is not None and meta is not None:
                 cond = cond + self.meta_embed(meta)[:, None]   # broadcast [B,hid]->[B,n_cells,hid]
+            desc_term = None
             if self.desc_proj is not None:
                 valid = (raw_img.sum(-1) != 0).float()         # [B,n_cells] 1=real, 0=pad
                 denom = valid.sum(1, keepdim=True).clamp(min=1)
                 desc = (raw_img * valid[..., None]).sum(1) / denom   # masked mean -> [B,feature_dim]
-                cond = cond + self.desc_proj(desc)[:, None]    # broadcast slide descriptor
+                desc_term = self.desc_proj(desc)[:, None]      # [B,1,hidden] broadcast slide descriptor
+                cond = cond + desc_term
+            if self.local_proj is not None:                    # local: per-spot neighborhood descriptor
+                pad_mask_l = raw_img.sum(-1) == 0              # [B, n_cells] True = padding
+                local = self._local_descriptor(raw_img, coords, pad_mask_l, self.n_neighbors_local)
+                local_term = self.local_proj(local)            # PER-SPOT [B,n_cells,hidden]
+                if self.film_mode == "localg":                 # gated fusion: learn how much local to add
+                    gate = torch.sigmoid(self.gate_proj(
+                        torch.cat([desc_term.expand_as(local_term), local_term], dim=-1)))
+                    cond = cond + gate * local_term
+                else:
+                    cond = cond + local_term
             if self.attn_pool is not None:                     # hybrid: prototype tokens for cross-attn
                 pad_mask = raw_img.sum(-1) == 0                 # [B, n_cells] True = padding
                 cond_tokens = self.attn_pool(raw_img, pad_mask)  # [B, K, hidden]
 
-        prediction = self.backbone(
+        prediction, aux = self.backbone(
             gene_exp=noisy_exp,
             features=features,
             coords=coords,
             cond=cond,
             cond_tokens=cond_tokens,
         )
+        self._moe_aux = aux  # (load_balance, smoothness) or None; consumed by forward()
         return prediction
 
     def forward(self, exp, img_features, coords, labels, t_steps, meta=None):
         prediction = self.inference(exp, img_features, coords, t_steps, meta=meta)
         pad_mask = img_features.sum(-1) == 0
         loss = self.loss_func(prediction[~pad_mask], labels[~pad_mask])
+        if self._moe_aux is not None:  # MoE regularizers, only active for film=moe
+            bal, smooth = self._moe_aux
+            loss = loss + self.lambda_bal * bal + self.lambda_smooth * smooth
         return prediction, loss

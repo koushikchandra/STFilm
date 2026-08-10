@@ -14,14 +14,29 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 MODELS = [
     ("Ridge probe",         False, "results_probe_uni8",   lambda r: [f"{r}_ridge"]),
     ("RandomForest probe",  False, "results_probe_uni8",   lambda r: [f"{r}_rf"]),
-    ("HisToGene",           False, "results_spatial_uni8", lambda r: [f"{r}_histogene_seed1"]),
-    ("Hist2ST",             False, "results_spatial_uni8", lambda r: [f"{r}_hist2st_seed1"]),
+    ("ST-Net",              False, "results_spatial_uni8", lambda r: [f"{r}_stnet_seed{s}" for s in (1,2,3)]),
+    ("HisToGene",           False, "results_spatial_uni8", lambda r: [f"{r}_histogene_seed{s}" for s in (1,2,3)]),
+    ("Hist2ST",             False, "results_spatial_uni8", lambda r: [f"{r}_hist2st_seed{s}" for s in (1,2,3)]),
+    ("BLEEP",               False, "results_spatial_uni8", lambda r: [f"{r}_bleep_seed{s}" for s in (1,2,3)]),
+    ("TRIPLEX",             False, "results_spatial_uni8", lambda r: [f"{r}_triplex_seed{s}" for s in (1,2,3)]),
     ("STFlow (ICML'25)",    False, "results_final_uni8", lambda r: [f"{r}_none_seed{s}" for s in (1,2,3)]),
     ("STFiLM (ours)",       True,  "results_final_uni8", lambda r: [f"{r}_desc_seed{s}" for s in (1,2,3)]),
+    ("STFiLM-local (ours)", True,  "results_local_uni8", lambda r: [f"{r}_local_seed{s}" for s in (1,2,3)]),
+    ("STFlow+MoE (ours)",   True,  "results_moe_uni8",   lambda r: [f"{r}_moe_seed{s}" for s in (1,2,3)]),
 ]
 
 LOOO_FOLDS  = ["kidney","liver","lung","pancreas","prostate","skin","breast","colorectal"]
 POOLED_FOLDS= ["0","1","2","3","4"]
+
+# accepted-model publication year (venue in comments); probes/ours have no external year
+YEAR = {
+    "ST-Net": "2020",            # Nat. Biomed. Eng.
+    "HisToGene": "2021",         # bioRxiv
+    "Hist2ST": "2022",           # Brief. Bioinform.
+    "BLEEP": "2023",             # NeurIPS
+    "TRIPLEX": "2024",           # CVPR
+    "STFlow (ICML'25)": "2025",  # ICML
+}
 
 def fold_means(path):
     out={}
@@ -47,7 +62,7 @@ for regime, folds in [("LOOO",LOOO_FOLDS),("POOLED",POOLED_FOLDS)]:
     rows=[]
     for label, ours, root, builder in MODELS:
         permean, ov, std, nseed = collect(root, builder(regime))
-        row={"model":label, "ours":"*" if ours else ""}
+        row={"model":label, "year":YEAR.get(label,""), "ours":"*" if ours else ""}
         for fo in folds: row[fo]=round(permean.get(fo,float("nan")),4)
         row["OVERALL"]=round(ov,4)
         row["overall_std"]=round(std,4) if not np.isnan(std) else ""

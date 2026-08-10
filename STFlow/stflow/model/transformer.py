@@ -50,6 +50,59 @@ class CrossAttention(nn.Module):
         return self.proj_drop(self.proj(out))
 
 
+class MoEMlp(nn.Module):
+    """Morphology-routed mixture-of-experts on the invariant scalar token stream (film=moe).
+
+    Replaces the single MLP of the block: a router assigns each cell a distribution over E
+    small expert MLPs, and the output is the (optionally top-k sparse) weighted combination.
+    Equivariance-safe: it reads/writes only the invariant scalar stream and routes on scalar
+    features (never coords / gene_exp). Returns the routing probs (for the spatial-smoothness
+    loss) and a Switch-style load-balance aux loss.
+    """
+    def __init__(self, d_model, n_experts=4, mlp_ratio=4.0, top_k=0,
+                 activation="gelu", proj_drop=0.):
+        super(MoEMlp, self).__init__()
+        self.n_experts = n_experts
+        self.top_k = top_k
+        hidden = int(d_model * mlp_ratio)
+        if activation == "swiglu":
+            self.experts = nn.ModuleList([
+                SwiGLUPacked(in_features=d_model, hidden_features=hidden,
+                             drop=proj_drop, norm_layer=nn.LayerNorm)
+                for _ in range(n_experts)
+            ])
+        else:
+            self.experts = nn.ModuleList([
+                Mlp(in_features=d_model, hidden_features=hidden,
+                    act_layer=get_activation(activation), drop=proj_drop, norm_layer=nn.LayerNorm)
+                for _ in range(n_experts)
+            ])
+        self.router = nn.Linear(d_model, n_experts)
+
+    def forward(self, h, router_ctx=None):
+        # h: [N, d_model] scalar tokens; router_ctx: optional [N, d_model] extra routing signal
+        r = h if router_ctx is None else h + router_ctx
+        logits = self.router(r)                                   # [N, E]
+        if self.top_k and self.top_k < self.n_experts:
+            topv, topi = logits.topk(self.top_k, dim=-1)
+            masked = torch.full_like(logits, float("-inf"))
+            masked.scatter_(-1, topi, topv)
+            logits = masked
+        probs = logits.softmax(dim=-1)                            # [N, E], 0 on non-top-k
+
+        out = 0
+        for e, expert in enumerate(self.experts):
+            out = out + probs[:, e:e + 1] * expert(h)
+
+        # Switch-Transformer load balance: E * sum_e frac_e * prob_e (frac = hard dispatch)
+        hard = torch.zeros_like(probs)
+        hard.scatter_(-1, probs.argmax(dim=-1, keepdim=True), 1.0)
+        frac = hard.mean(dim=0)                                   # [E], detached (no grad path)
+        prob = probs.mean(dim=0)                                  # [E]
+        aux_balance = self.n_experts * (frac.detach() * prob).sum()
+        return out, probs, aux_balance
+
+
 class GeneUpdate(nn.Module):
     def __init__(
             self,
@@ -177,6 +230,10 @@ class TransformerBlock(nn.Module):
             gene_exp_non_negative=True,
             mlp_ratio=4.0,
             cross_attn=False,
+            use_moe=False,
+            n_experts=4,
+            moe_top_k=0,
+            use_prototypes_in_router=False,
         ):
         super(TransformerBlock, self).__init__()
 
@@ -220,12 +277,23 @@ class TransformerBlock(nn.Module):
                 nn.Linear(d_model, d_model, bias=True),
             )
 
+        # MoE (opt-in, film=moe): morphology-routed experts replace the single MLP on the
+        # invariant scalar stream. gate_mlp (adaLN-Zero) still multiplies the output, so the
+        # path is identity at init and none/context/meta/desc/hybrid are byte-identical.
+        self.use_moe = use_moe
+        if use_moe:
+            self.moe = MoEMlp(d_model, n_experts=n_experts, mlp_ratio=mlp_ratio,
+                              top_k=moe_top_k, activation=activation, proj_drop=proj_drop)
+            # optional router context from slide prototype tokens (mean-pooled), kept invariant
+            self.router_ctx_proj = (nn.Linear(d_model, d_model)
+                                    if use_prototypes_in_router else None)
+
     def forward(self, gene_exp, token_embs, coords, neighbor_indices, c=None, cond_tokens=None):
         if c is None:
             # fall back to the original (un-modulated) block
             token_embs = token_embs + self.attn(gene_exp, token_embs, coords, neighbor_indices)
             token_embs = token_embs + self.mlp(token_embs)
-            return self.gene_updater(token_embs), token_embs
+            return self.gene_updater(token_embs), token_embs, None
 
         gate_msa, shift_mlp, scale_mlp, gate_mlp = self.adaLN(c).chunk(4, dim=-1)
 
@@ -240,10 +308,22 @@ class TransformerBlock(nn.Module):
 
         # MLP path: full FiLM on the scalar token stream
         h = modulate(self.norm_mlp(token_embs), shift_mlp, scale_mlp)
-        token_embs = token_embs + gate_mlp * self.mlp(h)
+        aux = None
+        if self.use_moe:
+            router_ctx = None
+            if self.router_ctx_proj is not None and cond_tokens is not None:
+                router_ctx = self.router_ctx_proj(cond_tokens.mean(dim=1))  # [N, d_model]
+            mlp_out, probs, aux_balance = self.moe(h, router_ctx)
+            token_embs = token_embs + gate_mlp * mlp_out
+            # spatial-smoothness of routing over the kNN graph (invariant scalar penalty)
+            p_nb = probs[neighbor_indices]                          # [N, n_neighbors, E]
+            smooth = ((probs.unsqueeze(1) - p_nb) ** 2).sum(dim=-1).mean()
+            aux = (aux_balance, smooth)
+        else:
+            token_embs = token_embs + gate_mlp * self.mlp(h)
 
         gene_exp = self.gene_updater(token_embs)
-        return gene_exp, token_embs
+        return gene_exp, token_embs, aux
 
 
 class SpatialTransformer(nn.Module):
@@ -252,6 +332,7 @@ class SpatialTransformer(nn.Module):
 
         self.n_neighbors = config.n_neighbors
         self.cross_attn = getattr(config, "cross_attn", False)
+        self.use_moe = getattr(config, "use_moe", False)
 
         self.blks = nn.ModuleList([
             TransformerBlock(config.d_model, config.d_edge_model,
@@ -259,6 +340,10 @@ class SpatialTransformer(nn.Module):
                               activation=config.act, attn_drop=config.attn_dropout,
                               proj_drop=config.dropout,
                               cross_attn=self.cross_attn,
+                              use_moe=self.use_moe,
+                              n_experts=getattr(config, "n_experts", 4),
+                              moe_top_k=getattr(config, "moe_top_k", 0),
+                              use_prototypes_in_router=getattr(config, "use_prototypes_in_router", False),
                             ) \
                 for i in range(config.n_layers)
         ])
@@ -312,11 +397,17 @@ class SpatialTransformer(nn.Module):
 
         # forward pass
         all_gene_exp = []
+        bal_total, smooth_total, any_aux = 0.0, 0.0, False
         for blk in self.blks:
-            gene_exp, features = blk(gene_exp, features, coords, nearest_indices, cond, cond_tokens)
+            gene_exp, features, aux = blk(gene_exp, features, coords, nearest_indices, cond, cond_tokens)
+            if aux is not None:
+                any_aux = True
+                bal_total = bal_total + aux[0]
+                smooth_total = smooth_total + aux[1]
             all_gene_exp.append(gene_exp)
         gene_exp = torch.stack(all_gene_exp, dim=0).mean(dim=0)  # [B, N_cells, N_genes]
-        
+
         # average the gene expression among the neighbors
         gene_exp, _ = to_dense_batch(gene_exp, batch=batch_idx, fill_value=0, max_num_nodes=N_cells)  # [B, N_cells, N_genes]
-        return gene_exp
+        aux_out = (bal_total, smooth_total) if any_aux else None  # MoE load-balance + smoothness
+        return gene_exp, aux_out

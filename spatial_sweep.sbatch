@@ -12,7 +12,7 @@
 #SBATCH --array=0-1
 
 set -u
-cd /lustre/hdd/LAS/weile-lab/howlader/transcriptomic_histopathology
+cd /lustre/hdd/LAS/weile-lab/howlader/STFilm
 export PATH=/lustre/hdd/LAS/weile-lab/howlader/miniconda3/bin:$PATH
 
 echo "[spatial] node=$(hostname) job=$SLURM_JOB_ID shard=$SLURM_ARRAY_TASK_ID gpu=$CUDA_VISIBLE_DEVICES"

@@ -1,0 +1,3 @@
+organ,slide,tissue,tech,spot_num,gene_num,involve_cancer,coord,count,image
+breast,GSE210616_GSM6433601,breast,Visium,1593,36601,True,Visium/coord/GSE210616_GSM6433601_coord.csv,Visium/gene_exp/GSE210616_GSM6433601_count.csv,Visium/image/GSE210616_GSM6433601.png
+breast,GSE213688_GSM6592051,breast,Visium,1564,36601,True,Visium/coord/GSE213688_GSM6592051_coord.csv,Visium/gene_exp/GSE213688_GSM6592051_count.csv,Visium/image/GSE213688_GSM6592051.png

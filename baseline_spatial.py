@@ -1,7 +1,7 @@
-"""Feature-matched spatial baselines: HisToGene-style and Hist2ST-style on UNI features.
+"""Feature-matched spatial baselines on UNI features (BLEEP, Hist2ST, HisToGene, ST-Net, TRIPLEX).
 
-Apple-to-apple with V0/V3: identical UNI embeddings, cross_organ_splits8 LOOO+POOLED,
-per-fold gene panel, log1p normalization, and the same pearson_mean metric
+Apple-to-apple with V0/V3: identical UNI embeddings, cross_organ_splits8 (or stimage_splits)
+LOOO+POOLED, per-fold gene panel, log1p normalization, and the same pearson_mean metric
 (stflow.app.flow.test.metric_func). We swap each method's raw-image front-end for the shared
 UNI features and keep its spatial-modeling core:
 
@@ -9,15 +9,24 @@ UNI features and keep its spatial-modeling core:
               (Pang et al. 2021), then an MLP gene head.
   hist2st   : transformer blocks (global) + GraphSAGE GCN blocks over a kNN(coords) graph
               (local) + jumping-knowledge LSTM fusion (Zeng et al. 2022), then a gene head.
+  stnet     : independent per-spot MLP regression, no spatial context (He et al. 2020); the
+              original DenseNet-121 patch front-end is replaced by the shared UNI feature.
+  triplex   : three-resolution fusion (Chung et al. 2024) — spot / neighbor (kNN-mean) /
+              global (slide-mean) UNI streams fused by a small transformer, then a gene head.
+  bleep     : bi-modal contrastive image/expression embedding (Xie et al. 2023); at inference
+              each test spot retrieves its k nearest training spots in the joint image space
+              and averages their expression (non-parametric retrieval, not regression).
 
-All models train with MSE on log1p expression and use the same test-peek early stopping
-(patience 20) as train_cross_organ.py so the comparison to V0/V3 is fair.
+All regression models train with MSE on log1p expression and use the same test-peek early
+stopping (patience 20) as train_cross_organ.py so the comparison to V0/V3 is fair; bleep uses
+the same early-stopping loop on its retrieval pearson_mean.
 
 Usage:
   PYTHONPATH=STFlow python baseline_spatial.py --model histogene --regime LOOO --seed 1 \
       --splits_root cross_organ_splits8 --save_root results_spatial_uni8 --device 0
 """
 import os
+import glob
 import json
 import argparse
 from operator import itemgetter
@@ -166,12 +175,80 @@ class Hist2STNet(nn.Module):
         return self.head(g)
 
 
+class STNetNet(nn.Module):
+    """ST-Net (He et al. 2020): independent per-spot regression with NO spatial context. The
+    original front-end is a DenseNet-121 fine-tuned per patch; we swap it for the shared UNI
+    feature and keep the per-spot MLP regression head."""
+    def __init__(self, fdim, dim, n_genes, dropout):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(fdim, dim), nn.BatchNorm1d(dim), nn.GELU(), nn.Dropout(dropout),
+            nn.Linear(dim, dim), nn.BatchNorm1d(dim), nn.GELU(), nn.Dropout(dropout),
+            nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy=None, adj=None):  # per-spot, no coords / graph
+        return self.net(feat)
+
+
+class TriplexNet(nn.Module):
+    """TRIPLEX (Chung et al. 2024): fuse spot / neighbor / global resolutions. We build the
+    three streams from shared UNI features — spot = per-spot feature, neighbor = kNN(coords)
+    mean via the adjacency, global = slide-mean token — project each to a token, and let a
+    small transformer attend over the 3 resolution tokens per spot; the spot token is read out."""
+    def __init__(self, fdim, dim, heads, depth, n_genes, dropout):
+        super().__init__()
+        self.spot = nn.Linear(fdim, dim)
+        self.neigh = nn.Linear(fdim, dim)
+        self.glob = nn.Linear(fdim, dim)
+        self.res_embed = nn.Parameter(torch.zeros(3, dim))  # per-resolution embedding
+        self.blocks = nn.ModuleList([TBlock(dim, heads, 2 * dim, dropout) for _ in range(depth)])
+        self.head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy, adj):
+        mask = adj / adj.sum(1, keepdim=True).clamp(min=1)
+        neigh_feat = mask.mm(feat)                                   # [N, fdim] local context
+        glob_feat = feat.mean(0, keepdim=True).expand_as(feat)      # [N, fdim] global context
+        s = self.spot(feat) + self.res_embed[0]
+        nb = self.neigh(neigh_feat) + self.res_embed[1]
+        gl = self.glob(glob_feat) + self.res_embed[2]
+        x = torch.stack([s, nb, gl], dim=1)                         # [N, 3, dim] (batch=N, seq=3)
+        for b in self.blocks:
+            x = b(x)
+        return self.head(x[:, 0])                                   # spot-token readout
+
+
+class BleepEncoder(nn.Module):
+    """BLEEP (Xie et al. 2023) bi-modal contrastive encoder: an image head over UNI features and
+    an expression head over log1p counts, aligned by InfoNCE in a shared L2-normalized space."""
+    def __init__(self, fdim, n_genes, dim, dropout):
+        super().__init__()
+        self.img = nn.Sequential(nn.Linear(fdim, dim), nn.GELU(), nn.Dropout(dropout),
+                                 nn.Linear(dim, dim))
+        self.expr = nn.Sequential(nn.Linear(n_genes, dim), nn.GELU(), nn.Dropout(dropout),
+                                  nn.Linear(dim, dim))
+        self.logit_scale = nn.Parameter(torch.tensor(float(np.log(1 / 0.07))))
+
+    def embed_img(self, feat):
+        return F.normalize(self.img(feat), dim=-1)
+
+    def forward(self, feat, expr):
+        zi = F.normalize(self.img(feat), dim=-1)
+        ze = F.normalize(self.expr(expr), dim=-1)
+        return zi, ze
+
+
 def build_model(args, n_genes):
     if args.model == "histogene":
         return HistoGeneNet(args.feature_dim, args.dim, args.depth, args.heads,
                             n_genes, args.n_pos, args.dropout)
-    return Hist2STNet(args.feature_dim, args.dim, args.depth2, args.depth3, args.heads,
-                      n_genes, args.n_pos, args.dropout)
+    if args.model == "hist2st":
+        return Hist2STNet(args.feature_dim, args.dim, args.depth2, args.depth3, args.heads,
+                          n_genes, args.n_pos, args.dropout)
+    if args.model == "stnet":
+        return STNetNet(args.feature_dim, args.dim, n_genes, args.dropout)
+    if args.model == "triplex":
+        return TriplexNet(args.feature_dim, args.dim, args.heads, args.depth, n_genes, args.dropout)
+    raise ValueError(f"unknown model {args.model}")
 
 
 # ----------------------------- train / eval -----------------------------
@@ -217,16 +294,73 @@ def train_fold(args, train_slides, test_slides, gene_list, device):
     return best_res
 
 
+# ----------------------------- BLEEP (contrastive + retrieval) -----------------------------
+def _bleep_pool(slides, device):
+    """Concatenate all slides' features + log1p labels into one retrieval pool."""
+    feat = torch.cat([s["feat"] for s in slides], 0)
+    expr = torch.cat([s["labels"] for s in slides], 0)
+    return feat, expr
+
+
+@torch.no_grad()
+def bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, k):
+    model.eval()
+    zi_ref = model.embed_img(ref_feat.to(device))          # [M, dim]
+    ref_expr = ref_expr.to(device)                          # [M, G] log1p true expression
+    preds, gts = [], []
+    for s in test_slides:
+        zi_q = model.embed_img(s["feat"].to(device))       # [N, dim]
+        sim = zi_q @ zi_ref.t()                            # [N, M] cosine (both L2-normed)
+        idx = sim.topk(min(k, zi_ref.shape[0]), dim=1).indices
+        pred = ref_expr[idx].mean(1)                       # avg neighbour expression (imputation)
+        preds.append(pred.cpu().numpy()); gts.append(s["labels"].numpy())
+    res = metric_func(np.concatenate(preds, 0), np.concatenate(gts, 0), gene_list)
+    res["n_test"] = sum(len(g) for g in gts)
+    return res
+
+
+def bleep_train_fold(args, train_slides, test_slides, gene_list, device):
+    model = BleepEncoder(args.feature_dim, len(gene_list), args.dim, args.dropout).to(device)
+    opt = torch.optim.Adam(model.parameters(), lr=args.lr)
+    all_feat, all_expr = _bleep_pool(train_slides, device)          # [M, .]
+    M = all_feat.shape[0]
+    # fixed retrieval reference pool (subsample for memory/speed), faithful to BLEEP's reference set
+    g = torch.Generator().manual_seed(args.seed)
+    ref_sel = torch.randperm(M, generator=g)[:min(args.max_ref, M)]
+    ref_feat, ref_expr = all_feat[ref_sel], all_expr[ref_sel]
+    best_pearson, best_res, early = -1, None, 0
+    for epoch in range(1, args.epochs + 1):
+        model.train()
+        perm = torch.randperm(M, generator=g)
+        for i in range(0, M, args.bleep_batch):
+            b = perm[i:i + args.bleep_batch]
+            feat = all_feat[b].to(device); expr = all_expr[b].to(device)
+            zi, ze = model(feat, expr)
+            scale = model.logit_scale.exp().clamp(max=100)
+            logits = scale * zi @ ze.t()                             # [B, B]
+            tgt = torch.arange(logits.shape[0], device=device)
+            loss = 0.5 * (F.cross_entropy(logits, tgt) + F.cross_entropy(logits.t(), tgt))
+            opt.zero_grad(); loss.backward(); opt.step()
+        res = bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, args.k_retrieval)
+        if res["pearson_mean"] > best_pearson:
+            best_pearson, best_res, early = res["pearson_mean"], res, 0
+        else:
+            early += 1
+            if early >= 20:
+                break
+    return best_res
+
+
 def run(args):
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     set_random_seed(args.seed)
     args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024}[args.feature_encoder]
     regime_dir = os.path.join(args.splits_root, args.regime)
     split_dir = os.path.join(regime_dir, "splits")
-    if args.regime == "POOLED":
-        fold_names = [str(i) for i in range(5)]
-    else:
-        fold_names = ["kidney", "liver", "lung", "pancreas", "prostate", "skin", "breast", "colorectal"]
+    # derive fold names from the split CSVs so this works for both HEST and STImage organ sets
+    trains = glob.glob(os.path.join(split_dir, "train_*.csv"))
+    fold_names = [os.path.basename(t)[len("train_"):-len(".csv")] for t in trains]
+    fold_names.sort(key=lambda x: (int(x) if x.isdigit() else 1 << 30, x))
 
     save_dir = os.path.join(args.save_root, f"{args.regime}_{args.model}_seed{args.seed}")
     os.makedirs(save_dir, exist_ok=True)
@@ -243,7 +377,10 @@ def run(args):
         gene_list = json.load(open(os.path.join(regime_dir, f"genes_{fold}.json")))["genes"]
         train_slides = load_slides(train_df, args, gene_list, nm, args.n_pos, args.k)
         test_slides = load_slides(test_df, args, gene_list, nm, args.n_pos, args.k)
-        res = train_fold(args, train_slides, test_slides, gene_list, device)
+        if args.model == "bleep":
+            res = bleep_train_fold(args, train_slides, test_slides, gene_list, device)
+        else:
+            res = train_fold(args, train_slides, test_slides, gene_list, device)
         res["fold"] = fold
         json.dump(res, open(out, "w"), sort_keys=True, indent=4)
         all_res.append(res)
@@ -259,7 +396,8 @@ def run(args):
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
-    p.add_argument("--model", required=True, choices=["histogene", "hist2st"])
+    p.add_argument("--model", required=True,
+                   choices=["histogene", "hist2st", "stnet", "triplex", "bleep"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
@@ -280,5 +418,9 @@ if __name__ == "__main__":
     p.add_argument("--n_pos", type=int, default=128)
     p.add_argument("--k", type=int, default=8)
     p.add_argument("--max_spots", type=int, default=4000)
+    # bleep-specific
+    p.add_argument("--bleep_batch", type=int, default=512)   # InfoNCE contrastive batch
+    p.add_argument("--k_retrieval", type=int, default=50)    # neighbours averaged at inference
+    p.add_argument("--max_ref", type=int, default=30000)     # retrieval reference-pool cap
     args = p.parse_args()
     run(args)

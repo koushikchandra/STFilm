@@ -1,9 +1,10 @@
 #!/bin/bash
-# Feature-matched spatial baselines (HisToGene-style, Hist2ST-style) on UNI 8-organ splits.
-# Mirrors run_uni_final.sh: shard configs across GPUs, GPU-ready guard, per-fold resume.
+# Feature-matched spatial baselines (HisToGene, Hist2ST, ST-Net, TRIPLEX, BLEEP) on UNI 8-organ
+# splits. Mirrors run_uni_final.sh: shard configs across GPUs, GPU-ready guard, per-fold resume
+# (already-complete tags SKIP, so re-submitting only runs the newly added models).
 # Usage: run_spatial.sh <device> <shard_idx> <n_shards>   (SEEDS env overrides seed list)
 set -u
-cd /lustre/hdd/LAS/weile-lab/howlader/transcriptomic_histopathology
+cd /lustre/hdd/LAS/weile-lab/howlader/STFilm
 
 DEV="$1"; SHARD="$2"; NSHARDS="$3"
 ROOT=results_spatial_uni8
@@ -11,7 +12,7 @@ SPLITS=cross_organ_splits8
 SEEDS="${SEEDS:-1 2 3}"
 
 i=0
-for MODEL in histogene hist2st; do
+for MODEL in histogene hist2st stnet triplex bleep; do
   for REGIME in LOOO POOLED; do
     NEED=8; [ "$REGIME" = "POOLED" ] && NEED=5
     for SEED in $SEEDS; do

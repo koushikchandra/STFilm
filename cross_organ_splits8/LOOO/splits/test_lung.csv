@@ -1,3 +1,0 @@
-sample_id,patches_path,expr_path
-TENX141,LUNG/patches/TENX141.h5,LUNG/adata/TENX141.h5ad
-TENX118,LUNG/patches/TENX118.h5,LUNG/adata/TENX118.h5ad

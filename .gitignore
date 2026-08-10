@@ -14,3 +14,37 @@ __pycache__/
 
 # Editor/OS
 .DS_Store
+
+# Overleaf git-bridge mirror + credential (never commit)
+.overleaf/
+
+# HuggingFace token (never commit)
+.hf/
+
+# ===== code-only repo: exclude data / results / weights / large binaries =====
+results_*/
+embed_dataroot/
+embed_dataroot_stimage/
+dataset/
+dataset_stimage/
+weights_root/
+cross_organ_splits*/
+baselines/
+home/
+scratchpad/
+*.log
+STFlow.pdf
+paper/build/
+*.h5
+*.h5ad
+*.npy
+*.npz
+*.svs
+*.mtx
+*.ndpi
+*.pth
+*.bin
+
+stimage/raw/
+stimage/__pycache__/
+__pycache__/

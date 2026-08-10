@@ -31,11 +31,15 @@ def metric_func(preds_all: np.ndarray, y_test: np.ndarray, genes: list):
     if n_nan_genes > 0:
         print(f"Warning: {n_nan_genes} genes have NaN Pearson correlation")
 
-    return {'l2_errors': list(errors), 
+    # A gene that is constant across a held-out organ's spots (zero variance) has an undefined
+    # Pearson correlation (NaN); it is unscoreable, so we exclude it from the mean/std rather
+    # than let it poison the aggregate. With no NaN genes nanmean/nanstd == mean/std, so this
+    # leaves all previously-computed (e.g. HEST) results unchanged.
+    return {'l2_errors': list(errors),
             'r2_scores': list(r2_scores),
             'pearson_corrs': pearson_genes,
-            'pearson_mean': float(np.mean(pearson_corrs)),
-            'pearson_std': float(np.std(pearson_corrs)),
+            'pearson_mean': float(np.nanmean(pearson_corrs)),
+            'pearson_std': float(np.nanstd(pearson_corrs)),
             'l2_error_q1': float(np.percentile(errors, 25)),
             'l2_error_q2': float(np.median(errors)),
             'l2_error_q3': float(np.percentile(errors, 75)),

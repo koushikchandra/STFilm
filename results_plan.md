@@ -1,0 +1,119 @@
+# Results Plan — table design for the STFiLM paper
+
+Derived from reading the *results/experiments* sections of three accepted baselines whose PDFs
+live under `baselines/`: **BLEEP** (NeurIPS 2023), **TRIPLEX** (CVPR 2024), **STFlow** (ICML 2025).
+Part A inventories what tables each paper actually shows. Part B distills the recurring *table
+types*. Part C is the concrete list of tables we can prepare for our paper, mapped to the data /
+scripts we already have.
+
+---
+
+## Part A — What each paper showed
+
+### BLEEP (NeurIPS 2023) — retrieval model, single liver dataset
+- **T1 Main results.** Avg Pearson of predicted expression over **three gene subsets**: 8 marker
+  genes (MG), top-50 highly-expressed (HEG), top-50 highly-variable (HVG); rows = methods
+  (HisToGene, ST-Net, BLEEP). *Takeaway: report correlation broken out by gene subset, not one number.*
+- **T2 Qualitative per-gene.** For one replicate, the **top-5 genes by correlation** per method,
+  as (gene name, r). Shows *which* genes are recoverable.
+- **T3 Method ablation.** Smoothed vs original CLIP objective × retrieval **K** × aggregation
+  method, scored on MG/HVG/HEG.
+
+### TRIPLEX (CVPR 2024) — multi-resolution fusion, 3 ST datasets + 10x Visium
+- **T1 Cross-validation per dataset.** `PCC(M)` = mean PCC over all genes, `PCC(H)` = mean PCC
+  over highly-predictive genes; mean±std across CV folds; one block per dataset.
+- **T2 Generalization (independent test set).** Same models, held-out cohort, four metrics:
+  `PCC(M), PCC(H), MSE, MAE`. *Separates in-distribution CV from cross-cohort transfer.*
+- **T3 Module ablation** (TEM / NEM / GEM — the spot/neighbor/global encoders).
+- **T4 Positional-encoding ablation** (their APEG vs none vs PEG).
+- **T5 Fusion-method + fusion-loss ablation.**
+- **T6 Computational cost** (per-dataset MAE alongside cost).
+- **T7** Per-dataset **MAE** cross-validation (the MAE companion to T1).
+- **T8/T9 Reproducibility** — same numbers recomputed under different CV split / normalization /
+  metric conventions, to explain gaps vs prior papers. *(A fairness/protocol table.)*
+- **T10–T12** Extra per-dataset ablations. **T13** Hyperparameters tuned. **T6 (params)** model size.
+
+### STFlow (ICML 2025) — flow matching, HEST + STImage, our base model
+- **T1 Main benchmark.** **Two benchmarks (HEST, STImage)**, one row per organ/cohort + an
+  **Average** row; columns grouped **spot-based vs slide-based** encoders (Ciga/UNI/Gigapath) and
+  methods (STNet, BLEEP, HisToGene, TRIPLEX, STFlow). **Best bold, best-baseline underlined**,
+  `OOM` flagged. *This is the canonical layout we should mirror.*
+- **T2 Biomarker prediction.** A handful of named clinical markers (GATA3, ERBB2, UBE2C, VWF),
+  Pearson per method. *Ties the metric to biology.*
+- **T3 Architecture comparison** across foundation models (E(2)-invariant encoders × Ciga/UNI/Gigapath).
+- **T4 Ablation:** w/o flow-matching (FM), w/o frame-averaging (FA).
+- **T5 Refinement-steps study:** S = 1,2,5,10,16 per dataset (sensitivity to the core hyperparam).
+- **T6 #Parameters.** **T7/T8 Dataset statistics** (HEST / STImage: organ, technology, #patients,
+  #samples, avg spots). **T10 Prior distribution** (Gaussian/Zero/ZINB). **T13 Hyperparameter study.**
+
+---
+
+## Part B — Recurring table *types* (the menu)
+
+1. **Main benchmark** — per-cohort columns/rows + Average, methods compared, best bold. (all 3)
+2. **Gene-subset breakdown** — all-genes vs HVG vs HEG vs marker-gene panels. (BLEEP T1)
+3. **Biomarker / named-gene** prediction. (STFlow T2, BLEEP T2)
+4. **Generalization / transfer** — train-here-test-there, distinct from in-dist CV. (TRIPLEX T2)
+5. **Component ablation** of our own contribution. (STFlow T4, TRIPLEX T3–5)
+6. **Hyperparameter sensitivity** — steps / K / etc. (STFlow T5, BLEEP T3)
+7. **Encoder / foundation-model** comparison. (STFlow T3, T12)
+8. **Compute cost / #params.** (STFlow T6, TRIPLEX T6)
+9. **Dataset statistics.** (STFlow T7/T8)
+10. **Protocol/reproducibility** — same data, different eval conventions. (TRIPLEX T8/T9)
+11. **Qualitative per-gene** top-correlated list. (BLEEP T2)
+
+---
+
+## Part C — Tables to prepare for OUR paper
+
+Our contribution is **FiLM/adaLN metadata conditioning for cross-organ generalization** on top of
+STFlow, evaluated with leakage-safe **LOOO** (leave-one-organ-out transfer) and **POOLED**
+(leave-patient-out) on **two benchmarks** (HEST cross-organ, STImage-1K4M), all feature-matched on
+UNI, 3 seeds, 50-gene panels, `pearson_mean`. Status legend: ✅ have data · 🔄 running · ⬜ to build.
+
+### Tier 1 — core (must have)
+
+- **T1. Main cross-organ benchmark — HEST.** Rows = ST-Net, HisToGene, Hist2ST, BLEEP, TRIPLEX,
+  STFlow, **STFiLM / STFiLM-local (ours)** (+ Ridge/RF probes as a floor). Columns = 8 organs +
+  **Overall±std**, one panel for **LOOO** and one for **POOLED**. Best bold, add the **year**
+  column. ✅ `comparison_LOOO.md`, `comparison_POOLED.md` (generated by `aggregate_comparison.py`).
+- **T2. Main cross-organ benchmark — STImage-1K4M** (the second-benchmark replication), same layout,
+  8 STImage organs. 🔄 `comparison_stimage_{LOOO,POOLED}.md` via `stimage/aggregate_stimage.py`
+  (LOOO jobs finishing now). Mirrors **STFlow T1's two-benchmark design**.
+- **T3. Ablation of the conditioner (our T4-analogue).** STFlow(none) → +meta → +desc → +hybrid →
+  +local → +moe, Overall LOOO & POOLED. Isolates *which* FiLM variant helps and shows MoE regresses.
+  ✅ data across `results_*_uni8`; ⬜ needs a small aggregation script (extend `aggregate_comparison.py`).
+- **T4. Statistical significance.** Paired per-fold/per-seed test of **STFiLM vs STFlow(none)** (and
+  vs best baseline), p-values + mean Δ. ✅ `paired_significance.py` exists — ⬜ tabulate its output.
+
+### Tier 2 — strengthen the story
+
+- **T5. Biomarker / named-gene prediction** (STFlow T2 / BLEEP T2 style). Clinically-relevant markers
+  per organ, ours vs baselines. ✅ `biomarker_eval.py` exists — ⬜ format as a table.
+- **T6. Gene-subset breakdown** (BLEEP T1 style). `pearson_mean` over **all-50 vs HVG vs HEG** — and
+  crucially split **scoreable vs silent** genes, which directly quantifies our **metric-floor** point
+  (kidney/liver/prostate). ⬜ new script; ties to `RESULTS.md` floor analysis and `make_figure.py`.
+- **T7. Dataset statistics** (STFlow T7/T8). Two small tables: HEST cross-organ groups and STImage
+  selection — organ, platform, #slides, avg spots, #genes. ⬜ derive from `manifest.csv` / splits.
+
+### Tier 3 — rigor / rebuttal-proofing
+
+- **T8. Compute & size** (STFlow T6 / TRIPLEX T6). #params and train/infer cost: STFiLM adds only the
+  MetadataEmbedder + adaLN heads over STFlow — show the overhead is tiny. ⬜ count params per config.
+- **T9. Seed-ensemble** (variance-reduction). Single-seed vs 3-seed ensemble Overall.
+  ✅ `ensemble_seeds.py` — ⬜ tabulate.
+- **T10. Equivariance / design check.** Since FiLM must not touch the geometric stream, an ablation
+  that modulates the wrong path (breaks SE(2)) vs the guarded path — analogous to STFlow's FA
+  ablation (T4). ⬜ optional, defensive.
+
+### Explicitly *skip* (not aligned with our contribution)
+- TRIPLEX-style normalization/CV-convention reproducibility tables (T8/T9) — we fix one protocol.
+- BLEEP retrieval-K ablation — method-specific to a retrieval model, not ours.
+- Prior-distribution table (STFlow T10) — inherited from STFlow unchanged; cite, don't re-run.
+
+---
+
+### Immediate build order
+1. Finish **T2** (STImage) — auto once jobs land. 2. Script **T3** (conditioner ablation) and
+**T4** (significance) — data already on disk. 3. Then Tier-2 (**T5 biomarker**, **T6 gene-subset**,
+**T7 stats**). Tier-3 as space/reviewers demand.

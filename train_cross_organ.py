@@ -45,6 +45,19 @@ ORGAN_VOCAB = {"kidney": 1, "liver": 2, "lung": 3, "pancreas": 4,
                "prostate": 5, "skin": 6, "breast": 7, "colorectal": 8}
 N_ORGANS = len(ORGAN_VOCAB)
 
+# Opt-in second benchmark: STImage-1K4M, where the cohort dir IS the organ (identity map).
+STIMAGE_ORGANS = ["breast", "kidney", "liver", "pancreas", "skin", "prostate", "brain", "heart"]
+
+
+def configure_organ_set(name):
+    """Swap the organ dictionaries for a benchmark family. Default 'hest' keeps the HEST
+    cohort->organ grouping; 'stimage' uses organ==cohort with brain/heart added."""
+    global COHORT_TO_GROUP, ORGAN_VOCAB, N_ORGANS
+    if name == "stimage":
+        COHORT_TO_GROUP = {o: o for o in STIMAGE_ORGANS}
+        ORGAN_VOCAB = {o: i + 1 for i, o in enumerate(STIMAGE_ORGANS)}
+        N_ORGANS = len(ORGAN_VOCAB)
+
 
 def build_samples(df, args):
     samples = []
@@ -112,8 +125,11 @@ def cross_batcher():
 
 
 @torch.no_grad()
-def evaluate(args, diffusier, model, test_samples, gene_list, use_meta, force_null_organ):
-    """Per-sample inference; returns metric_func dict over all held-out cells."""
+def evaluate(args, diffusier, model, test_samples, gene_list, use_meta, force_null_organ,
+             return_preds=False):
+    """Per-sample inference; returns metric_func dict over all held-out cells.
+    If return_preds, also returns (all_pred, all_gt) for seed-ensembling (aligned across
+    seeds because test_samples/gene_list are deterministic per fold)."""
     model.eval()
     all_pred, all_gt = [], []
     for s in test_samples:
@@ -143,6 +159,8 @@ def evaluate(args, diffusier, model, test_samples, gene_list, use_meta, force_nu
     all_gt = np.concatenate(all_gt, axis=0)
     res = metric_func(all_pred, all_gt, gene_list)
     res["n_test"] = len(all_gt)
+    if return_preds:
+        return res, all_pred, all_gt
     return res
 
 
@@ -169,12 +187,30 @@ def train_fold(args, train_samples, test_samples, gene_list, force_null_test):
         zi_logits=args.zinb_zi_logits,
         normalize=args.prior_sampler != "gaussian",
     )
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+    if getattr(args, "optimizer", "adam") == "adamw":
+        optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr,
+                                      weight_decay=getattr(args, "weight_decay", 0.0))
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
+
+    def _cosine_lr(ep):  # opt-in: linear warmup then cosine decay to 5% of base
+        import math
+        w = getattr(args, "warmup", 0)
+        if ep <= w:
+            return args.lr * ep / max(1, w)
+        p = min(1.0, (ep - w) / max(1, args.epochs - w))
+        return args.lr * (0.05 + 0.475 * (1 + math.cos(math.pi * p)))
 
     best_pearson, best_res = -1, None
+    best_preds = None
+    dump = getattr(args, "dump_preds", False)
+    patience = getattr(args, "patience", 20)
     early_stop = 0
     epoch_iter = tqdm(range(1, args.epochs + 1), ncols=100)
     for epoch in epoch_iter:
+        if getattr(args, "lr_schedule", "none") == "cosine":
+            for g in optimizer.param_groups:
+                g["lr"] = _cosine_lr(epoch)
         model.train()
         avg_loss = 0
         for img_features, coords, gene_exp, organs in train_loader:
@@ -193,6 +229,15 @@ def train_fold(args, train_samples, test_samples, gene_list, force_null_test):
             noisy_exp, t_steps = diffusier.corrupt_exp(gene_exp)
             pred_exp, loss = model(exp=noisy_exp, img_features=img_features, coords=coords,
                                    labels=gene_exp, t_steps=t_steps, meta=meta)
+            if getattr(args, "corr_weight", 0.0) > 0:   # opt-in: align training with the PCC metric
+                pad = img_features.sum(-1) == 0         # [B,N] padding mask
+                p = pred_exp[~pad]; g = gene_exp[~pad]  # [M,G]
+                pd = p - p.mean(0, keepdim=True); gd = g - g.mean(0, keepdim=True)
+                den = pd.norm(dim=0) * gd.norm(dim=0) + 1e-6
+                r = (pd * gd).sum(0) / den
+                m = gd.norm(dim=0) > 1e-6
+                if m.any():
+                    loss = loss + args.corr_weight * (1 - r[m].mean())
             optimizer.zero_grad()
             model.zero_grad()
             loss.backward()
@@ -203,17 +248,24 @@ def train_fold(args, train_samples, test_samples, gene_list, force_null_test):
         epoch_iter.set_description(f"epoch {epoch} loss {avg_loss:.3f}")
 
         if epoch % args.eval_step == 0 or epoch == args.epochs:
-            res = evaluate(args, diffusier, model, test_samples, gene_list,
-                           use_meta=use_meta, force_null_organ=force_null_test)
+            ev = evaluate(args, diffusier, model, test_samples, gene_list,
+                          use_meta=use_meta, force_null_organ=force_null_test,
+                          return_preds=dump)
+            res = ev[0] if dump else ev
             if res["pearson_mean"] > best_pearson:
                 best_pearson = res["pearson_mean"]
                 best_res = res
+                if dump:
+                    best_preds = (ev[1], ev[2])   # (all_pred, all_gt) at the best epoch
                 early_stop = 0
             else:
                 early_stop += 1
-                if early_stop >= 20:
+                if early_stop >= patience:
                     print("Early stopping")
                     break
+    if dump and best_preds is not None:
+        best_res = dict(best_res)
+        best_res["_preds"] = best_preds   # picked up by run() to write the npz
     return best_res
 
 
@@ -246,6 +298,10 @@ def run(args):
 
         res = train_fold(args, train_samples, test_samples, gene_list, force_null_test)
         res["fold"] = fold
+        preds = res.pop("_preds", None)   # numpy; not JSON-serializable
+        if preds is not None:
+            np.savez_compressed(os.path.join(args.save_dir, f"fold_{fold}_preds.npz"),
+                                pred=preds[0], gt=preds[1], genes=np.array(gene_list, dtype=object))
         all_fold_results.append(res)
 
         with open(os.path.join(args.save_dir, f"fold_{fold}_results.json"), "w") as f:
@@ -263,8 +319,15 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--regime", type=str, required=True, choices=["POOLED", "LOOO"])
-    p.add_argument("--film", type=str, required=True, choices=["none", "context", "meta", "desc", "hybrid"])
-    p.add_argument("--n_proto", type=int, default=8, help="hybrid: # prototype tokens for cross-attention")
+    p.add_argument("--film", type=str, required=True, choices=["none", "context", "meta", "desc", "hybrid", "moe", "local", "localg"])
+    p.add_argument("--n_proto", type=int, default=8, help="hybrid/moe: # prototype tokens")
+    # MoE (film=moe): morphology-routed experts on the scalar MLP path.
+    p.add_argument("--n_experts", type=int, default=4, help="moe: # morphology experts")
+    p.add_argument("--moe_top_k", type=int, default=0, help="moe: 0=dense soft routing, >0=sparse top-k")
+    p.add_argument("--use_prototypes_in_router", action="store_true",
+                   help="moe: feed mean-pooled slide prototypes into the router")
+    p.add_argument("--lambda_bal", type=float, default=1e-2, help="moe: load-balance loss weight")
+    p.add_argument("--lambda_smooth", type=float, default=1e-3, help="moe: routing spatial-smoothness weight")
     p.add_argument("--splits_root", type=str, default="cross_organ_splits")
     p.add_argument("--source_dataroot", type=str, default="dataset")
     p.add_argument("--embed_dataroot", type=str, default="embed_dataroot")
@@ -273,12 +336,24 @@ if __name__ == "__main__":
     p.add_argument("--exp_code", type=str, default=None)
     p.add_argument("--normalize_method", type=str, default="log1p")
     p.add_argument("--meta_dropout", type=float, default=0.1)
+    p.add_argument("--dump_preds", action="store_true",
+                   help="save best-epoch (pred,gt) per fold as fold_<f>_preds.npz for seed-ensembling")
+    p.add_argument("--organ_set", type=str, default="hest", choices=["hest", "stimage"],
+                   help="benchmark family: 'hest' (default) or 'stimage' (organ==cohort, +brain/heart)")
 
     p.add_argument("--device", type=int, default=0)
     p.add_argument("--sample_times", type=int, default=10)
     p.add_argument("--batch_size", type=int, default=2)
     p.add_argument("--lr", type=float, default=5e-4)
     p.add_argument("--epochs", type=int, default=100)
+    p.add_argument("--lr_schedule", type=str, default="none", choices=["none", "cosine"],
+                   help="opt-in cosine LR (warmup->cosine); default none preserves prior results")
+    p.add_argument("--warmup", type=int, default=10)
+    p.add_argument("--patience", type=int, default=20)
+    p.add_argument("--optimizer", type=str, default="adam", choices=["adam", "adamw"])
+    p.add_argument("--weight_decay", type=float, default=0.0)
+    p.add_argument("--corr_weight", type=float, default=0.0,
+                   help="opt-in weight on (1 - per-gene Pearson) loss; default 0 preserves prior results")
     p.add_argument("--clip_norm", type=float, default=1.)
     p.add_argument("--eval_step", type=int, default=1)
     p.add_argument("--patch_distribution", type=str, default="uniform")
@@ -301,6 +376,7 @@ if __name__ == "__main__":
     p.add_argument("--activation", type=str, default="swiglu")
     args = p.parse_args()
 
+    configure_organ_set(args.organ_set)
     set_random_seed(args.seed)
     if args.exp_code is None:
         args.exp_code = f"{args.regime}_{args.film}_seed{args.seed}"
