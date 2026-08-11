@@ -14,6 +14,22 @@ descriptor (i.e. `local` = `local + desc`), applied via equivariance-preserving 
 It is the top method on HEST cross-organ, improves **every** one of 11 clinical biomarkers over the
 unconditioned backbone, and adds only ~0.26M parameters.
 
+### Best overall: `local` + capacity bump (`bigcap`)
+
+Scaling the backbone (n_layers 4→6, hidden 128→256; 1.68M→8.1M params) on top of `local` is the
+**best configuration we have** — the only lever that moved the ceiling (recipe tweaks, gated fusion,
+and a larger GigaPath encoder all failed; see `IMPROVEMENT_PLAN.md`):
+
+| Regime | `local` | `local`+bigcap | Δ |
+|---|---|---|---|
+| LOOO   | 0.4624 | **0.4724** | +0.0100 |
+| POOLED | 0.7950 | **0.7982** | +0.0032 |
+
+The improvement holds across all 3 seeds and beats every baseline in mean; the gain over the STFlow
+backbone is statistically supported (`final_significance.py`). Reproduce with `bash run_bigcap.sh`
+(or `sbatch bigcap.sbatch`) — it is exactly the `local` command below plus
+`--n_layers 6 --hidden_dim 256 --pairwise_hidden_dim 256`.
+
 ---
 
 ## What `local` does
