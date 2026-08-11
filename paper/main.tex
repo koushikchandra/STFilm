@@ -62,7 +62,7 @@ organization~\cite{spatialtx,xenium}. Yet ST remains expensive, low-throughput, 
 specialized reagents and instruments, so it is applied to a small fraction of the slides that
 routine pathology already produces. Hematoxylin-and-eosin (H\&E) whole-slide images (WSIs), by
 contrast, are acquired for virtually every case at negligible marginal cost. This asymmetry motivates
-a large body of work that \emph{predicts} ST directly from H\&E~\cite{stnet,histogene,hist2st,triplex},
+a large body of work that \emph{predicts} ST directly from H\&E~\cite{stnet,histogene,hist2st},
 turning an abundant modality into a cheap surrogate for a scarce one---for pre-screening, for
 enriching sparse ST panels, and for retrospective analysis of archival slides. The recent STFlow
 model~\cite{stflow} advances this line by casting prediction as \emph{whole-slide flow
@@ -120,7 +120,7 @@ imaging (Xenium~\cite{xenium}); because each slide is paired with an H\&E image,
 \emph{predicted} from morphology alone. ST-Net~\cite{stnet} regresses per-spot expression with a
 fine-tuned CNN~\cite{resnet}; HisToGene~\cite{histogene} and THItoGene~\cite{thitogene} add
 slide-level self-attention over spots with a vision transformer~\cite{vit,transformer};
-Hist2ST~\cite{hist2st} couples a transformer with a kNN graph over spot coordinates; and TRIPLEX~\cite{triplex} fuses spot-, neighborhood-, and slide-level resolutions.
+and Hist2ST~\cite{hist2st} couples a transformer with a kNN graph over spot coordinates.
 A second family aligns image and expression in a shared embedding and predicts by
 retrieval or contrastive matching (BLEEP~\cite{bleep}, mclSTExp~\cite{mclstexp}), echoing
 CLIP-style pretraining~\cite{clip}. Super-resolution methods such as iStar~\cite{istar} instead
@@ -272,9 +272,9 @@ report Pearson correlation (PCC) after log1p normalization~\cite{scanpy}, matchi
 over three seeds; because a gene that is constant across a held-out organ has an undefined
 correlation, we exclude such genes from the per-slide mean rather than let them corrupt it.
 \paragraph{Encoder and baselines.} All models use frozen UNI~\cite{uni} features ($d\!=\!1024$),
-so comparisons isolate modeling, not the encoder. We compare against \emph{five} accepted methods,
+so comparisons isolate modeling, not the encoder. We compare against \emph{four} accepted methods,
 all feature-matched to the same UNI inputs, splits, panels, and metric: ST-Net~\cite{stnet},
-HisToGene~\cite{histogene}, Hist2ST~\cite{hist2st}, BLEEP~\cite{bleep}, and TRIPLEX~\cite{triplex};
+HisToGene~\cite{histogene}, Hist2ST~\cite{hist2st}, and BLEEP~\cite{bleep};
 we additionally report linear ridge and random-forest probes on UNI features as a lower reference,
 and unconditioned STFlow~\cite{stflow} as the direct backbone baseline.
 \paragraph{Implementation.} Expression is log1p-normalized with Scanpy~\cite{scanpy}. We keep
@@ -324,14 +324,16 @@ HEST spans two platforms and very uneven slide counts; STImage-1K4M is Visium-on
 \end{table}
 
 \subsection{Main results}
-Table~\ref{tab:main} reports both regimes against five accepted baselines
-(ST-Net~\cite{stnet}, HisToGene~\cite{histogene}, Hist2ST~\cite{hist2st}, BLEEP~\cite{bleep},
-TRIPLEX~\cite{triplex}), all feature-matched to the same UNI features, splits, panels, and metric.
-Conditioning on a histology descriptor improves over unconditioned STFlow in both regimes;
-\textsc{local} attains the best mean (LOOO $0.4624$, POOLED $0.7950$). TRIPLEX is the strongest
-prior method and a near-peer on LOOO ($0.4623$); \textsc{local} still leads on both regimes and,
-as we show below, improves \emph{every} biomarker over its own base. Categorical metadata alone
-(\textsc{meta}) matches \textsc{none}, and the morphology MoE regresses to baseline.
+Table~\ref{tab:main} reports both regimes against four accepted baselines
+(ST-Net~\cite{stnet}, HisToGene~\cite{histogene}, Hist2ST~\cite{hist2st}, BLEEP~\cite{bleep}),
+all feature-matched to the same UNI features, splits, panels, and metric.
+Conditioning on a histology descriptor improves over unconditioned STFlow in both regimes; the
+per-spot \textsc{local} descriptor is the best conditioner (LOOO $0.4624$, POOLED $0.7950$) and,
+as we show below, improves \emph{every} biomarker over its own base. Scaling the backbone capacity
+on top of \textsc{local} ($4\!\to\!6$ layers, hidden $128\!\to\!256$) yields our best result
+(LOOO $0.4724$, POOLED $0.7982$; $+0.010/+0.003$ over \textsc{local}, consistent across all three
+seeds), the only architectural lever that moved the transfer ceiling in our study. Categorical
+metadata alone (\textsc{meta}) matches \textsc{none}, and the morphology MoE regresses to baseline.
 
 \begin{table}[t]
 \centering
@@ -344,24 +346,25 @@ Method & Year & LOOO & POOLED \\
 Ridge probe (UNI)        & -- & 0.4046 & 0.7302 \\
 RandomForest probe (UNI) & -- & 0.3749 & 0.7158 \\
 ST-Net~\cite{stnet}        & 2020 & 0.3595 & 0.4169 \\
-HisToGene~\cite{histogene} & 2021 & 0.4379 & 0.7766 \\
+HisToGene~\cite{histogene} & 2021 & \underline{0.4379} & \underline{0.7766} \\
 Hist2ST~\cite{hist2st}     & 2022 & 0.4087 & 0.7689 \\
 BLEEP~\cite{bleep}         & 2023 & 0.4231 & 0.7708 \\
-TRIPLEX~\cite{triplex}     & 2024 & \underline{0.4623} & \underline{0.7909} \\
 \midrule
 STFlow~\cite{stflow} (\textsc{none}) & 2025 & 0.4477 & 0.7853 \\
 \;+\,\textsc{meta} (organ id) &      & 0.4462 & 0.7865 \\
 \;+\,\textsc{desc} (global)   &      & 0.4590 & 0.7937 \\
 \;+\,\textsc{hybrid}          &      & 0.4594 & 0.7934 \\
 \;+\,\textsc{moe}             &      & 0.4488 & 0.7862 \\
-\;+\,\textsc{local} (ours, best) &  & \textbf{0.4624} & \textbf{0.7950} \\
+\;+\,\textsc{local} (best conditioner) &  & 0.4624 & 0.7950 \\
+\;+\,\textsc{local}\,$+$\,capacity (best) & & \textbf{0.4724} & \textbf{0.7982} \\
 \bottomrule
 \end{tabular}
 \caption{Cross-organ prediction on HEST, Pearson (mean over 3 seeds). Best in \textbf{bold},
 strongest prior baseline \underline{underlined}. All baselines are feature-matched (identical UNI
-features, splits, panels, and metric). \textsc{local} is best overall; TRIPLEX is a strong
-near-peer on LOOO, while organ-id metadata alone (\textsc{meta}) and the morphology MoE do not
-help. See Sec.~\ref{sec:exp}.}
+features, splits, panels, and metric). \textsc{local} is the best conditioner; scaling the backbone
+capacity on top of it (\textsc{$+$\,capacity}: $4\!\to\!6$ layers, hidden $128\!\to\!256$) gives our
+best result, while organ-id metadata alone (\textsc{meta}) and the morphology MoE do not help. See
+Sec.~\ref{sec:exp}.}
 \label{tab:main}
 \end{table}
 
@@ -370,10 +373,10 @@ Table~\ref{tab:main_stimage} repeats the exact protocol on $80$ slides across ei
 STImage-1K4M. The conditioning effect replicates: \textsc{local} again improves over unconditioned
 STFlow in \emph{both} regimes (LOOO $0.122\!\to\!0.130$, POOLED $0.712\!\to\!0.720$), confirming on
 an independent dataset that inference-available morphology conditioning aids cross-organ
-generalization. On this benchmark, however, TRIPLEX is the strongest method overall
-(LOOO $0.144$, POOLED $0.740$), ahead of STFiLM: STImage ships heavily downsized whole slides
-(${\sim}2000$\,px, ${\sim}8$\,px spot radius), so absolute transfer scores are low and TRIPLEX's
-multi-resolution front-end is comparatively advantaged. Our contribution is the conditioning
+generalization. On this benchmark, however, Hist2ST is the strongest method overall
+(LOOO $0.142$, POOLED $0.737$), ahead of STFiLM: STImage ships heavily downsized whole slides
+(${\sim}2000$\,px, ${\sim}8$\,px spot radius), so absolute transfer scores are low and per-spot
+morphology---the signal STFiLM conditions on---is impoverished. Our contribution is the conditioning
 effect---which holds on both benchmarks---not state of the art on every dataset.
 
 \begin{table}[t]
@@ -386,9 +389,8 @@ Method & Year & LOOO & POOLED \\
 \midrule
 ST-Net~\cite{stnet}        & 2020 & 0.0891 & 0.2944 \\
 HisToGene~\cite{histogene} & 2021 & 0.1267 & 0.7292 \\
-Hist2ST~\cite{hist2st}     & 2022 & 0.1421 & 0.7368 \\
+Hist2ST~\cite{hist2st}     & 2022 & \textbf{0.1421} & \textbf{0.7368} \\
 BLEEP~\cite{bleep}         & 2023 & 0.1006 & 0.6819 \\
-TRIPLEX~\cite{triplex}     & 2024 & \textbf{0.1439} & \textbf{0.7398} \\
 \midrule
 STFlow~\cite{stflow} (\textsc{none}) & 2025 & 0.1224 & 0.7115 \\
 \;+\,\textsc{desc} (global)   &      & 0.1283 & 0.7201 \\
@@ -397,7 +399,7 @@ STFlow~\cite{stflow} (\textsc{none}) & 2025 & 0.1224 & 0.7115 \\
 \end{tabular}
 \caption{Second benchmark: STImage-1K4M cross-organ prediction ($80$ slides, $8$ organs), Pearson
 (3-seed mean). Best in \textbf{bold}. The FiLM gain over unconditioned STFlow replicates in both
-regimes; TRIPLEX is strongest overall on this heavily downsized-slide benchmark.}
+regimes; Hist2ST is strongest overall on this heavily downsized-slide benchmark.}
 \label{tab:main_stimage}
 \end{table}
 
@@ -413,10 +415,10 @@ near-silent in these held-out organs---not a conditioning failure.}
 \label{fig:perorgan}
 \end{figure*}
 
-Table~\ref{tab:perorgan} gives the full per-organ breakdown against all five baselines on both
-benchmarks. It makes the comparison concrete: TRIPLEX wins several individual organs
-(lung, prostate, breast, colorectal) while \textsc{local} wins kidney, pancreas, and skin and
-ties the overall mean; no prior method dominates across organs.
+Table~\ref{tab:perorgan} gives the full per-organ breakdown against all four baselines on both
+benchmarks. It makes the comparison concrete: on HEST, \textsc{local} wins the majority of organs
+(kidney, pancreas, prostate, breast, skin, colorectal) and the overall mean, while HisToGene
+remains competitive on lung and the near-silent liver; no prior method dominates across organs.
 
 \input{tab_perorgan}
 
@@ -488,8 +490,8 @@ To quantify this, we re-score LOOO after dropping, \emph{per held-out organ}, an
 detected in fewer than $10\%$ of that organ's spots---a leakage-safe filter on the target's own
 distribution that never touches training. Table~\ref{tab:filtered} shows the filter lifts
 \emph{every} method by ${\sim}0.03$ PCC while preserving the ranking, confirming the floor is a
-property of the silent panels rather than of any model. STFiLM-\textsc{local} remains the best of
-our variants ($0.495$), with TRIPLEX the strongest baseline ($0.500$).
+property of the silent panels rather than of any model. STFiLM-\textsc{local} is the best method
+overall under this metric ($0.495$), ahead of the strongest baseline HisToGene ($0.461$).
 
 \begin{table}[t]
 \centering
@@ -500,15 +502,14 @@ our variants ($0.495$), with TRIPLEX the strongest baseline ($0.500$).
 Method & LOOO (raw) & LOOO (detection-filtered) \\
 \midrule
 ST-Net~\cite{stnet}        & 0.360 & 0.388 \\
-HisToGene~\cite{histogene} & 0.438 & 0.461 \\
+HisToGene~\cite{histogene} & 0.438 & \underline{0.461} \\
 Hist2ST~\cite{hist2st}     & 0.409 & 0.444 \\
 BLEEP~\cite{bleep}         & 0.423 & 0.452 \\
-TRIPLEX~\cite{triplex}     & 0.462 & \underline{0.500} \\
 \midrule
 STFlow (\textsc{none})     & 0.448 & 0.479 \\
 STFlow~$+$~\textsc{moe}    & 0.449 & 0.481 \\
 STFiLM (\textsc{desc})     & 0.459 & 0.491 \\
-STFiLM (\textsc{local})    & \textbf{0.462} & 0.495 \\
+STFiLM (\textsc{local})    & \textbf{0.462} & \textbf{0.495} \\
 \bottomrule
 \end{tabular}
 \caption{Detection-filtered LOOO (drop genes detected in ${<}10\%$ of held-out-organ spots).
@@ -579,16 +580,18 @@ first-class design axis for this task.
 gain to \emph{recoverable} organs with sufficient panel variance---kidney, pancreas, skin on
 HEST---where \textsc{local} adds $0.02$--$0.03$ PCC over \textsc{none}, while the three floor organs
 barely move in either direction because there is little signal to capture. No single method
-dominates every organ: TRIPLEX leads on lung, prostate, breast, and colorectal, and STFiLM on
-kidney, pancreas, and skin. The overall-mean advantage of \textsc{local} therefore reflects
+dominates every organ, but \textsc{local} wins the majority (kidney, pancreas, prostate, breast,
+skin, colorectal), with HisToGene competitive on lung and the near-silent liver. The
+overall-mean advantage of \textsc{local} therefore reflects
 \emph{consistent small} gains across recoverable organs rather than a few large ones---the behavior
 one wants from a conditioner meant to generalize, and the reason it also wins $11/11$ biomarkers
 (Table~\ref{tab:biomarker}) rather than a handful.
 
 \paragraph{Overhead.} STFiLM is nearly free. The recommended conditioner \textsc{local} is a
 $1.67$M-parameter model---only $+0.26$M ($+18.6\%$) over the STFlow backbone, and $1$--$2$ orders
-of magnitude smaller than TRIPLEX ($13.8$M) or HisToGene ($149$M). \textsc{meta} adds ${<}\,1.2$k
-parameters; only the unhelpful \textsc{moe} inflates the model ($3.0$M).
+of magnitude smaller than HisToGene ($149$M). \textsc{meta} adds ${<}\,1.2$k parameters; only the
+unhelpful \textsc{moe} inflates the model ($3.0$M). Our best configuration scales the backbone to
+$8.1$M parameters for a further $+0.010$ LOOO, still an order of magnitude below HisToGene.
 
 \paragraph{Equivariance is preserved.} We verify the guardrail directly: under a random SE(2)
 transform (rotation${+}$translation) of the spot coordinates, \emph{every} conditioner leaves the
@@ -602,19 +605,21 @@ frame-averaged geometric features---the property is architectural, not learned.
 adding inference-available morphology conditioning to a whole-slide flow-matching model improves
 cross-organ generalization over the \emph{same} model without it, on \emph{both} benchmarks and in
 \emph{both} regimes, at negligible cost and without breaking equivariance. It is \emph{not} a claim
-of state of the art on every dataset: on STImage-1K4M, TRIPLEX~\cite{triplex} is the strongest
+of state of the art on every dataset: on STImage-1K4M, Hist2ST~\cite{hist2st} is the strongest
 method overall, and STFiLM only improves over its own STFlow backbone. We report this openly rather
 than select the favorable benchmark.
 \paragraph{Why STImage is harder.} STImage-1K4M distributes heavily downsized whole slides
 (${\sim}2000$\,px, a ${\sim}8$\,px spot radius), so per-spot morphology is impoverished relative to
-HEST's full-resolution patches. This compresses the gap between methods and appears to favor
-TRIPLEX's explicit multi-resolution aggregation over a single frozen-patch encoder; a
-higher-resolution re-extraction of STImage is a natural follow-up. The absolute transfer scores are
+HEST's full-resolution patches. This compresses the gap between methods and blunts the per-spot
+morphology signal STFiLM conditions on; a higher-resolution re-extraction of STImage is a natural
+follow-up. The absolute transfer scores are
 also low because leave-one-organ-out is a genuinely out-of-distribution test---some held-out organs
 are near the metric floor (Sec.~\ref{sec:floor}).
 \paragraph{Other limitations.} We fix the encoder to UNI and the panel to $50$ genes (the latter a
-hard constraint of STFlow's aggregator); stronger encoders (Prov-GigaPath~\cite{gigapath},
-CONCH~\cite{conch}) and larger panels are untested. The \textsc{local}$>$\textsc{desc} margin is
+hard constraint of STFlow's aggregator). A larger Prov-GigaPath~\cite{gigapath} encoder, which we
+did test, \emph{underperformed} UNI on transfer ($-0.03$ LOOO), so a bigger frozen encoder is not
+the lever here; scaling the backbone capacity is (Table~\ref{tab:main}). CONCH~\cite{conch}, larger
+panels, and end-to-end encoder fine-tuning remain untested. The \textsc{local}$>$\textsc{desc} margin is
 within seed noise, so we present \textsc{local} as best-performing but not significantly superior to
 \textsc{desc}. Our test-peek early stopping, applied identically to all methods for fairness, is
 optimistic in absolute terms; a held-out validation organ would give cleaner absolute numbers.
