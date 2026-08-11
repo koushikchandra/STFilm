@@ -30,28 +30,31 @@ Paper ID \paperID}
 \maketitle
 
 \begin{abstract}
-Predicting spatial gene expression from H\&E histology promises a low-cost surrogate for
-spatial transcriptomics (ST), but state-of-the-art models are trained and evaluated
-\emph{per cohort} and it is unknown whether a single model generalizes \emph{across organs}.
-We study cross-organ generalization for STFlow, a recent whole-slide flow-matching model, and
-introduce \textbf{STFiLM}, a family of feature-wise linear modulation (FiLM / adaLN-Zero)
-conditioners that adapt the denoiser to each slide while \emph{strictly preserving} STFlow's
-SE(2)-equivariant frame-averaging backbone. We evaluate on a leakage-safe cross-organ
-re-partition of HEST-1k under two regimes---leave-one-organ-out (LOOO, transfer) and pooled
-leave-patient-out (POOLED)---with three seeds, against five accepted baselines, and replicate the
-conditioning effect on a second dataset (STImage-1K4M). Conditioning on an inference-available
-histology descriptor significantly improves over the unconditioned model
-($+0.011$ to $+0.015$ Pearson, paired $t$-test $p\!\approx\!0.02$ in both regimes), a gain
-comparable in magnitude to STFlow's own core components. A per-spot local descriptor
-(\textsc{local}) attains the best mean and improves \emph{every} one of eleven clinically
-relevant biomarkers (11/11, e.g.\ Ki-67, CD8A, KIT), while categorical organ metadata alone and
-an elaborate morphology mixture-of-experts do \emph{not} help---the former because unseen
-organs fall back to a null token, the latter because added capacity washes out the gain on
-small folds. We further show that near-zero LOOO scores on three organs are a \emph{metric artifact}:
-the leakage-safe gene panel is near-silent in the held-out organ, and a detection-filtered
-re-scoring lifts all methods by ${\sim}0.03$ while preserving the ranking. Our results give a
-practical recipe---condition on continuous, inference-available morphology; keep equivariance
-intact---for organ-generalizable ST prediction. Code and configs will be released.
+Predicting spatial gene expression from H\&E histology is a low-cost surrogate for spatial
+transcriptomics (ST), yet state-of-the-art models are trained and evaluated one cohort at a time,
+leaving open whether a single model can generalize \emph{across organs}. We study this question for
+STFlow, a recent whole-slide flow-matching model, and introduce \textbf{STFiLM}, a family of
+feature-wise linear modulation (FiLM / adaLN-Zero) conditioners that calibrate the denoiser to each
+slide while \emph{strictly preserving} STFlow's SE(2)-equivariant frame-averaging backbone---an
+invariance we verify holds to floating-point precision. The guiding principle is \emph{inference
+availability}: a conditioner is admissible only if it is present for an \emph{unseen} organ at test
+time, which continuous morphology is and the gene-expression target is not. On a leakage-safe
+cross-organ re-partition of HEST-1k---evaluated under leave-one-organ-out (transfer) and pooled
+leave-patient-out regimes over three seeds and four accepted baselines, and replicated on a second
+benchmark (STImage-1K4M)---conditioning on a histology descriptor significantly improves over the
+\emph{identical} unconditioned model ($+0.011$ to $+0.015$ Pearson, paired $t$-test
+$p\!\approx\!0.02$ in both regimes), a gain on par with STFlow's own core components. A per-spot
+local descriptor is the strongest conditioner and improves \emph{every} one of eleven clinical
+biomarkers (11/11; e.g.\ Ki-67, CD8A, KIT) at a cost of only $+0.26$M parameters; scaling the
+backbone on top of it---the only architectural lever that moved the transfer ceiling---gives our
+best result. Two negative results sharpen the recipe: categorical organ identity does not help
+(unseen organs fall back to a null token), and a morphology mixture-of-experts overfits the small
+folds. Finally, we show that near-zero transfer scores on three organs are a \emph{metric
+artifact}---the leakage-safe panel is near-silent in the held-out organ---and a detection-filtered
+re-scoring lifts all methods by ${\sim}0.03$ while preserving the ranking. Together these give a
+simple, equivariance-safe recipe for organ-generalizable ST prediction: condition on continuous,
+inference-available morphology, and scale capacity rather than the encoder. Code and configs will be
+released.
 \end{abstract}
 
 \section{Introduction}
