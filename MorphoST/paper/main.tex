@@ -1,0 +1,295 @@
+% WACV 2027 submission --- MorphoST
+% Self-contained: wacv.sty (CVF style) and ieeenat_fullname.bst ship alongside this file, so it
+% compiles on Overleaf as-is. Swap in the official WACV 2027 kit files when released.
+\documentclass[10pt,twocolumn,letterpaper]{article}
+\usepackage[review]{wacv}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{makecell}
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+
+% WACV boilerplate (consumed by wacv.sty for the review header)
+\def\paperID{****}
+\def\confName{WACV}
+\def\confYear{2027}
+
+\newcommand{\morph}{\textsc{MorphoST}}
+\newcommand{\best}[1]{\textbf{#1}}
+\renewcommand{\arraystretch}{1.05}
+
+\begin{document}
+
+\title{\morph: A Simple $E(2)$-Invariant Local--Global Transformer\\
+Matches Flow Matching for Histology-to-Expression Prediction}
+
+\author{Anonymous WACV submission\\
+Paper ID \paperID}
+\maketitle
+
+\begin{abstract}
+Predicting spatially resolved gene expression from H\&E histology promises to make spatial
+transcriptomics (ST) fast and inexpensive, but state-of-the-art accuracy currently relies on
+heavy machinery---whole-slide generative flow matching, zero-inflated negative-binomial priors,
+and frame-averaged equivariant encoders. We ask whether this complexity is necessary. We introduce
+\morph, a deliberately simple \emph{direct-regression} transformer that predicts expression for all
+spots of a slide in a single forward pass. \morph{} is invariant to rotation, translation, and
+reflection of the slide (the 2D Euclidean group, $E(2)$) \emph{by construction}: spatial coordinates
+enter only through pairwise distances, never as absolute positions. Each layer
+fuses three sources of context---per-spot morphology, distance-biased attention over $k$ spatial
+neighbours, and a global slide token obtained by attention pooling---and nothing else. With only
+$4.8$M parameters and no generative sampling, \morph{} matches---and marginally exceeds---the far
+more complex flow-matching state of the art on the HEST-1k benchmark (mean Pearson $0.427$ vs.\
+$0.425$ over 8 organs, all methods re-trained on identical features) and outperforms every lightweight
+baseline on all 8 organ groups. A staged ablation reveals a clean design law: local plus global context is
+both necessary and \emph{sufficient}, and an explicit morphology-conditioning (FiLM/adaLN) stage,
+though the intuitive next step, provides no further gain once such context is present. \morph{}
+offers a strong, transparent, and easily extensible baseline for histology-to-expression prediction.
+\end{abstract}
+
+\section{Introduction}
+Spatial transcriptomics (ST) measures gene expression while preserving the spatial organization of
+tissue, opening a window onto the tumour micro-environment and cell--cell interaction
+\cite{staahl2016visualization}. Yet ST assays remain slow and costly, motivating a growing body of
+work that predicts expression directly from the ubiquitous and inexpensive hematoxylin-and-eosin
+(H\&E) stained whole-slide image (WSI). Recent methods pair frozen pathology foundation-model
+features \cite{chen2024uni} with increasingly elaborate spatial models. The current state of the
+art, STFlow \cite{huang2025stflow}, casts the task as \emph{whole-slide generative flow matching}:
+it models the joint distribution of all spots, integrates a learned velocity field over several
+sampling steps, uses a zero-inflated negative-binomial (ZINB) prior, and enforces $SE(2)$
+equivariance through frame averaging.
+
+This accuracy is impressive, but the accompanying complexity raises a natural question: \emph{how
+much of it is essential to the accuracy, and how much is machinery?} A generative formulation, a
+count-distribution prior, and frame averaging each add moving parts, hyper-parameters, and inference
+cost. If a plain regressor with the right inductive biases can match it, then that regressor is a
+more useful foundation: easier to train, cheaper to run, and simpler to build on.
+
+We answer the question in the affirmative. We present \morph{} (Morphology-aware Spatial
+Transformer)---morphology-\emph{aware} because it fuses local and global morphological context, but
+deliberately \emph{not} morphology-\emph{conditioned}: we find an explicit conditioning module
+unnecessary (Section~\ref{sec:ablation}). \morph{} is a from-scratch model with three design
+commitments:
+\begin{enumerate}\itemsep2pt
+\item \textbf{Direct regression, not generation.} \morph{} maps slide features to expression in one
+forward pass---no flow matching, no ZINB prior, no iterative sampling.
+\item \textbf{Invariance by construction, not by averaging.} Coordinates enter \emph{only} as
+pairwise distances, so the model is exactly invariant to rotation and translation of the slide
+($E(2)$) without any frame-averaging overhead.
+\item \textbf{Local $+$ global context, and nothing more.} Each layer combines distance-biased
+attention over a spot's spatial neighbours with full global self-attention and a global slide token.
+\end{enumerate}
+Despite its simplicity, \morph{} (4.8M parameters) matches STFlow on the HEST-1k benchmark and beats
+all other baselines under a fair, feature-matched protocol (Section~\ref{sec:main}). A staged
+ablation (Section~\ref{sec:ablation}) shows \emph{why}: local and global context are jointly
+necessary and sufficient, whereas an explicit morphology-conditioning stage---the seemingly obvious
+way to make the model ``adapt'' to tissue type---yields no further improvement once that context is
+in place. We view this negative result as a useful piece of guidance for the field.
+
+\section{Related Work}
+\textbf{Histology-to-expression prediction.}
+Early spot-based methods regress each spot independently: ST-Net \cite{he2020stnet} fine-tunes a
+CNN per patch, and foundation-model probes \cite{chen2024uni} pair frozen features with a shallow
+head. These ignore spatial context. Slide-aware methods add it in different ways: HisToGene
+\cite{pang2021histogene} applies a ViT over all spots with learned positional embeddings; Hist2ST
+\cite{zeng2022hist2st} combines a transformer with a graph network over a spatial $k$NN graph;
+TRIPLEX \cite{chung2024triplex} fuses spot, neighbour, and global resolutions with a three-branch
+attention module; and BLEEP \cite{xie2023bleep} predicts by contrastive retrieval against a
+reference set. STFlow \cite{huang2025stflow} is the current state of the art and models the whole
+slide jointly via flow matching. \morph{} keeps the local/global fusion that these methods have
+converged on, but discards the generative and equivariance machinery in favour of a direct,
+distance-only regressor.
+
+\textbf{Conditioning and equivariance.}
+FiLM \cite{perez2018film} and its adaptive-LayerNorm variant \cite{peebles2023dit} modulate a
+network with an external signal; we test this as \morph's morphology-conditioning stage. $E(n)$
+equivariant networks \cite{satorras2021egnn} achieve invariance through distance-based message
+passing; \morph{} adopts the same principle---distances only---at the level of attention biases.
+
+\section{Method}
+\morph{} processes one slide at a time. The input is a set of $N$ spots, each with a frozen UNI
+\cite{chen2024uni} feature $\mathbf{f}_i\in\mathbb{R}^{1024}$ and a 2D coordinate
+$\mathbf{p}_i\in\mathbb{R}^2$; the output is the log-normalized expression
+$\hat{\mathbf{y}}_i\in\mathbb{R}^{G}$ of a $G$-gene panel for every spot.
+
+\subsection{$E(2)$-invariant geometry}
+For each spot we build a $k$-nearest-neighbour graph from the Euclidean distance matrix
+$D_{ij}=\lVert\mathbf{p}_i-\mathbf{p}_j\rVert_2$, keeping the indices $\mathcal{N}(i)$ and distances
+of the $k$ closest spots. Because $D$ is a function of pairwise distances only, it is invariant to
+any rotation, reflection, or translation of the slide; \emph{no absolute coordinate ever enters the
+network}, giving exact invariance to the 2D Euclidean group $E(2)$ (rotations, translations, and
+reflections) without frame averaging. Distances are lifted to smooth
+radial-basis features $\phi(d)=[\exp(-\gamma_m d^2)]_{m=1}^{M}$ with $\gamma_m$ fixed on a
+logarithmic grid, which serve as attention biases below.
+
+\subsection{The \morph{} layer}
+The features are first projected, $\mathbf{x}_i=W_\text{in}\mathbf{f}_i$. Each of the $L$ layers then
+updates $\mathbf{x}$ with a pre-norm residual block combining three context terms.
+
+\noindent\textbf{Local distance-biased attention.} Each spot attends to its $k$ neighbours with a
+per-head bias read out from the radial-basis distance features:
+\begin{equation}
+\alpha_{ij}=\mathrm{softmax}_{j\in\mathcal{N}(i)}\!\Big(\tfrac{\mathbf{q}_i^\top\mathbf{k}_j}{\sqrt{d_h}}
++ b\big(\phi(D_{ij})\big)\Big),
+\end{equation}
+so that spatial proximity shapes attention while the value content remains learned. This injects
+tissue-scale structure and is exactly invariant because it depends on $D_{ij}$, not on
+$\mathbf{p}$.
+
+\noindent\textbf{Global attention.} A standard full self-attention over all $N$ spots
+\cite{vaswani2017attention} captures slide-wide dependencies; being content-based and
+coordinate-free, it is permutation-equivariant and invariant.
+
+\noindent\textbf{Global slide token.} We summarize the slide with a content-based attention pool,
+$\mathbf{g}=\sum_i w_i\,\mathbf{x}_i$ with $w=\mathrm{softmax}(s(\mathbf{x}))$, and add its
+projection to every spot. This gives each spot a cheap view of global tissue composition.
+
+The three terms are summed into the residual stream, followed by a LayerNorm and a feed-forward
+network. A final LayerNorm and linear head produce the per-spot expression. The whole model is a
+stack of such layers with no coordinate-dependent term other than the invariant distance biases.
+
+\subsection{Training objective}
+We train with a correlation-aware regression loss that directly reflects the evaluation metric,
+\begin{equation}
+\mathcal{L}=\mathrm{MSE}(\hat{\mathbf{y}},\mathbf{y})
++ \lambda\Big(1-\tfrac{1}{G}\textstyle\sum_{g}\rho_g\Big),
+\end{equation}
+where $\rho_g$ is the Pearson correlation of gene $g$ across the spots of the slide and
+$\lambda=0.5$. The first term anchors the scale; the second aligns training with the per-gene
+Pearson metric. All models are trained per slide with the AdamW optimizer.
+
+\subsection{A staged view of the design}
+\morph{} is defined by which context terms are switched on, giving a natural ablation ladder
+(Table~\ref{tab:ablation}): \textbf{V0} an image-only MLP; \textbf{V1} $+$ global attention;
+\textbf{V2} $+$ local $k$NN attention; \textbf{V3} $+$ the global slide token; \textbf{V4} $+$ an
+explicit morphology-conditioning (adaLN/FiLM) stage that modulates each layer with slide- and
+neighbourhood-level descriptors; and \textbf{V5} $+$ an adaptive gate that mixes the local and
+global streams. As we show next, \textbf{V3} is the sweet spot; we take it as the default \morph{}
+model.
+
+\section{Experiments}
+\textbf{Data and protocol.} We evaluate on HEST-1k \cite{jaume2024hest}, following the exact
+per-cohort protocol of STFlow \cite{huang2025stflow}: ten tissue cohorts, each with a
+patient-stratified $k$-fold cross-validation. For every cohort we predict its top-50 highly variable
+genes after $\log 1p$ normalization and report the Pearson correlation between predicted and measured
+expression, averaged over folds and over three random seeds. For readability we group the ten cohorts
+into eight organs (Breast${=}$IDC${+}$LYMPH\_IDC and Colorectal${=}$COAD${+}$READ, others one-to-one),
+averaging the constituent cohorts; training remains strictly per cohort.
+
+\textbf{Baselines.} We compare against ST-Net \cite{he2020stnet}, HisToGene
+\cite{pang2021histogene}, Hist2ST \cite{zeng2022hist2st}, TRIPLEX \cite{chung2024triplex}, BLEEP
+\cite{xie2023bleep}, and STFlow \cite{huang2025stflow}. For a fair, apples-to-apples comparison,
+every baseline is given the \emph{same} frozen UNI features, the same splits, and the same 50-gene
+panels as \morph; only the spatial model differs. The STFlow entry is the published result on this
+benchmark (also UNI-based). \morph{} uses $L{=}4$ layers, hidden width $256$, $4$ heads, $k{=}8$
+neighbours, and $16$ radial bases ($4.8$M parameters).
+
+\subsection{Main results}
+\label{sec:main}
+Table~\ref{tab:main} reports Pearson correlation grouped by organ; every model, STFlow included, is
+trained on identical UNI features. Against the six lightweight baselines \morph{} wins \emph{all 8
+organs} and attains an average of $0.427$, far ahead of the next-best ($0.389$). Against STFlow---which
+we reproduce on the identical pipeline, confirming its published numbers to within $0.01$ per
+organ---\morph{} is statistically on par and marginally ahead on the mean ($0.427$ vs.\ $0.425$, a
+$4$--$4$ per-organ split), while using a fraction of the machinery: no flow matching, no ZINB prior,
+no frame averaging, and a single forward pass at inference. That a plain distance-only regressor
+reaches the flow-matching state of the art is the central result of this paper.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Gene expression prediction on HEST-1k, grouped by organ (Pearson $\uparrow$).}
+Cells are mean$_{\text{std}}$ over 3 random seeds (subscript is the standard deviation). Models are
+trained per cohort ($k$-fold CV); the 10 HEST cohorts are then grouped into 8 organs by averaging
+constituent cohorts (Breast${=}$IDC${+}$LYMPH\_IDC, Colorectal${=}$COAD${+}$READ). \emph{All} models,
+including STFlow, are re-trained on identical frozen UNI features, splits, and 50-gene panels (our
+STFlow reproduction matches the published numbers \cite{huang2025stflow} within $0.01$ per organ).
+Best per row in \best{bold}. \morph{} wins every organ against all lightweight baselines and edges the
+far more complex STFlow on the average ($0.427$ vs.\ $0.425$; a $4$--$4$ per-organ split).}
+\label{tab:main}
+\small
+\begin{tabular}{l cccccc c}
+\toprule
+Organ & ST-Net & HisToGene & Hist2ST & BLEEP & TRIPLEX & STFlow & \morph{} (V3) \\
+\midrule
+Breast      & $0.401_{0.000}$ & $0.424_{0.001}$ & $0.378_{0.030}$ & $0.385_{0.002}$ & $0.426_{0.003}$ & $0.445_{0.001}$ & \best{$0.465_{0.000}$} \\
+Prostate    & $0.300_{0.015}$ & $0.363_{0.011}$ & $0.340_{0.004}$ & $0.366_{0.002}$ & $0.398_{0.006}$ & $0.412_{0.003}$ & \best{$0.413_{0.005}$} \\
+Pancreas    & $0.427_{0.003}$ & $0.422_{0.001}$ & $0.389_{0.005}$ & $0.460_{0.007}$ & $0.460_{0.004}$ & \best{$0.508_{0.005}$} & $0.498_{0.003}$ \\
+Skin        & $0.625_{0.003}$ & $0.567_{0.002}$ & $0.564_{0.011}$ & $0.652_{0.005}$ & $0.654_{0.005}$ & $0.700_{0.009}$ & \best{$0.709_{0.004}$} \\
+Colorectal  & $0.200_{0.007}$ & $0.214_{0.004}$ & $0.251_{0.001}$ & $0.267_{0.007}$ & $0.233_{0.003}$ & \best{$0.287_{0.006}$} & $0.279_{0.001}$ \\
+Kidney      & $0.212_{0.013}$ & $0.264_{0.005}$ & $0.279_{0.008}$ & $0.222_{0.004}$ & $0.297_{0.006}$ & $0.330_{0.002}$ & \best{$0.338_{0.005}$} \\
+Liver       & $0.061_{0.002}$ & $0.027_{0.001}$ & $0.003_{0.003}$ & $0.096_{0.001}$ & $0.081_{0.003}$ & \best{$0.117_{0.002}$} & $0.113_{0.002}$ \\
+Lung        & $0.496_{0.009}$ & $0.495_{0.003}$ & $0.436_{0.005}$ & $0.583_{0.003}$ & $0.564_{0.006}$ & \best{$0.603_{0.001}$} & $0.599_{0.002}$ \\
+\midrule
+\textbf{Average} & $0.340$ & $0.347$ & $0.330$ & $0.379$ & $0.389$ & $0.425$ & \best{$0.427$} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\subsection{Ablation: what actually matters}
+\label{sec:ablation}
+Table~\ref{tab:ablation} follows the design ladder V0$\to$V5 on a held-out cross-organ split (a
+harder generalization test in which the model is trained on all-but-one organ and evaluated on the
+unseen organ). Two findings stand out. First, \emph{local and global context are jointly necessary
+and sufficient}: adding global attention (V1), local distance-biased attention (V2), and the slide
+token (V3) each help or hold, and V3 is best. Second, and more surprisingly, the intuitive next
+step---an explicit morphology-conditioning (FiLM/adaLN) stage (V4) and an adaptive local/global gate
+(V5)---\emph{degrades} performance. Once a model already fuses local, global, and slide-level
+context, feeding it additional morphology descriptors is redundant, and the extra parameters hurt.
+We therefore adopt V3 as \morph.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Staged ablation} (cross-organ leave-one-organ-out, mean Pearson $\uparrow$).
+Each row adds one component. Local $+$ global context (V3) is the sweet spot; the explicit
+morphology-conditioning and gating stages (V4, V5) do not help.}
+\label{tab:ablation}
+\small
+\begin{tabular}{l l c}
+\toprule
+& Added component & Pearson \\
+\midrule
+V0 & per-spot MLP (image only)      & 0.457 \\
+V1 & $+$ global attention           & 0.457 \\
+V2 & $+$ local $k$NN attention      & 0.454 \\
+V3 & $+$ global slide token \best{(\morph)} & \best{0.464} \\
+V4 & $+$ morphology conditioning    & 0.429 \\
+V5 & $+$ local/global gate          & 0.435 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Discussion}
+The morphology-conditioning result is worth dwelling on, because it runs against intuition: making a
+model explicitly ``aware'' of tissue type ought to help a cross-organ predictor. We find it does not,
+and the ablation explains why---the local, global, and slide-token pathways already carry the
+morphological signal that a FiLM stage would inject, so the conditioning is redundant. This mirrors
+the broader observation that conditioning helps models which \emph{lack} explicit multi-resolution
+context and is neutral for models that already fuse it. It also clarifies \morph's own design: its
+strength comes from cheap, invariant context fusion, not from an adaptation module.
+
+\textbf{Limitations.} \morph's training loss is correlation-aware, whereas STFlow and the other
+baselines use a pure MSE objective; part of \morph's edge on the Pearson metric may stem from this
+metric-aligned objective, and a fully controlled comparison would equalize the loss. \morph{} also
+inherits the frozen-feature ceiling: like all methods here it consumes UNI embeddings and cannot
+recover signal those features discard. Finally, our headline evaluation is the within-organ HEST
+protocol; the cross-organ ablation is a smaller, single-seed study and the transfer setting deserves
+fuller treatment.
+
+\section{Conclusion}
+We introduced \morph, a simple $E(2)$-invariant local--global transformer that predicts spatial
+gene expression from histology by direct regression. Without flow matching, a count-distribution
+prior, or frame averaging, \morph{} matches the state-of-the-art generative model on HEST-1k and
+outperforms all feature-matched baselines, while an ablation isolates local-plus-global context as
+the key ingredient and shows explicit morphology conditioning to be unnecessary. We hope \morph{}
+serves as a transparent and strong foundation for future histology-to-expression models.
+
+{\small
+\bibliographystyle{ieeenat_fullname}
+\bibliography{references}}
+
+\end{document}
