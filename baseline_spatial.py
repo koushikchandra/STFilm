@@ -77,13 +77,15 @@ def knn_adj(coords, k):
     return A
 
 
-def load_slides(df, args, gene_list, normalize_method, n_pos, k):
+def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None):
+    """cohort=None -> parse from patches_path (cross-organ CSVs, prefixed). Pass cohort explicitly
+    for the STFlow-style per-cohort CSVs where patches_path has no cohort prefix."""
     slides = []
     for _, row in df.iterrows():
-        cohort = row["patches_path"].split("/")[0]
+        coh = cohort if cohort is not None else row["patches_path"].split("/")[0]
         sid = row["sample_id"]
-        h5 = os.path.join(args.embed_dataroot, cohort, args.feature_encoder, f"fp32/{sid}.h5")
-        h5ad = os.path.join(args.source_dataroot, cohort, f"adata/{sid}.h5ad")
+        h5 = os.path.join(args.embed_dataroot, coh, args.feature_encoder, f"fp32/{sid}.h5")
+        h5ad = os.path.join(args.source_dataroot, coh, f"adata/{sid}.h5ad")
         dd, _ = read_assets_from_h5(h5)
         barcodes = dd["barcodes"].flatten().astype(str).tolist()
         coords = dd["coords"].astype(np.float64)
@@ -190,6 +192,42 @@ class STNetNet(nn.Module):
         return self.net(feat)
 
 
+class DeepSpaCENet(nn.Module):
+    """DeepSpaCE (Monjo et al. 2022): per-spot regression, NO spatial context. The original VGG16
+    CNN front-end is replaced by the shared UNI feature; we keep the fully-connected ReLU/dropout
+    regression head. A second context-free backbone (distinct from ST-Net's BN-GELU head)."""
+    def __init__(self, fdim, dim, n_genes, dropout):
+        super().__init__()
+        self.net = nn.Sequential(
+            nn.Linear(fdim, dim), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(dim, dim), nn.ReLU(), nn.Dropout(dropout),
+            nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy=None, adj=None):  # per-spot, no coords / graph
+        return self.net(feat)
+
+
+class MLPProbeNet(nn.Module):
+    """Strong per-spot foundation-feature probe: a deep pre-norm residual MLP over UNI features
+    (the high-capacity, context-free regressor used as the HEST-bench probing baseline). Modern and
+    competitive, yet processes each spot independently -> a strong test of whether FiLM helps even a
+    *strong* context-poor backbone (not just weak ones)."""
+    def __init__(self, fdim, dim, n_genes, depth, dropout):
+        super().__init__()
+        self.inp = nn.Linear(fdim, dim)
+        self.blocks = nn.ModuleList([
+            nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, 2 * dim), nn.GELU(),
+                          nn.Dropout(dropout), nn.Linear(2 * dim, dim))
+            for _ in range(depth)])
+        self.head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy=None, adj=None):  # per-spot, no coords / graph
+        x = self.inp(feat)
+        for b in self.blocks:
+            x = x + b(x)
+        return self.head(x)
+
+
 class TriplexNet(nn.Module):
     """TRIPLEX (Chung et al. 2024): fuse spot / neighbor / global resolutions. We build the
     three streams from shared UNI features — spot = per-spot feature, neighbor = kNN(coords)
@@ -246,6 +284,10 @@ def build_model(args, n_genes):
                           n_genes, args.n_pos, args.dropout)
     if args.model == "stnet":
         return STNetNet(args.feature_dim, args.dim, n_genes, args.dropout)
+    if args.model == "deepspace":
+        return DeepSpaCENet(args.feature_dim, args.dim, n_genes, args.dropout)
+    if args.model == "mlpprobe":
+        return MLPProbeNet(args.feature_dim, args.dim, n_genes, args.depth, args.dropout)
     if args.model == "triplex":
         return TriplexNet(args.feature_dim, args.dim, args.heads, args.depth, n_genes, args.dropout)
     raise ValueError(f"unknown model {args.model}")
@@ -397,7 +439,7 @@ def run(args):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
-                   choices=["histogene", "hist2st", "stnet", "triplex", "bleep"])
+                   choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
