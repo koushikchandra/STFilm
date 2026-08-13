@@ -79,6 +79,44 @@ cluster). Every script is **fold-level idempotent** — rerun to fill only what 
 Single-slide cohorts (COAD/HCC/LUNG/SKCM) are handled by the same scripts via the spot-level inner
 split; `rerun_smallcohort_*.sbatch` are targeted reruns for just those four.
 
+### SLURM
+
+Every `*.sbatch` here is a GPU **job array** with this header (edit the first five lines for your
+cluster — partition, account, and QOS are site-specific):
+
+```bash
+#SBATCH --job-name=morph_corr_hest
+#SBATCH --partition=scavenger      # <-- your partition
+#SBATCH --account=weile-lab        # <-- your account
+#SBATCH --qos=scavenger            # <-- your QOS
+#SBATCH --requeue                  # scavenger is preemptible; requeue on preemption
+#SBATCH --gres=gpu:a100:1          # pin a100 (sm_80); generic gpu:1 may hit sm_70 nodes and crash
+#SBATCH --cpus-per-task=8
+#SBATCH --mem=64G
+#SBATCH --time=8:00:00
+#SBATCH --output=morph_corr_hest_%a_%j.log
+#SBATCH --array=0-59               # one task per (cohort, seed, loss) combination
+```
+
+Each array index is decoded to a `(cohort/regime, seed, ...)` tuple inside the script, so one `sbatch`
+launches the whole grid. Array sizes: `morphost_corrected_hest` `0-59` (10 cohorts × 3 seeds × {MSE,
+MSE+PCC}), `corrected_baselines_hest` `0-209` (7 models × 10 × 3), `loss_control_baselines` `0-89`,
+`morphost_factorial` `0-23` (8 L/G/S combos × 3), `morphost_corrected_stimage` `0-5`,
+`morphost_geometry` `0-8`, `morphost_sensitivity` `0-38`.
+
+```bash
+sbatch morphost_corrected_hest.sbatch          # submit a grid
+squeue -u $USER -r                             # watch it (arrays expanded)
+sacct -X --name=morph_corr_hest -o JobID,State # per-task outcomes
+sbatch morphost_corrected_hest.sbatch          # rerun: fold-level idempotency skips finished work
+```
+
+**Notes.** (1) Pin `--gres=gpu:a100:1` (or another sm_80+ type) — the bundled PyTorch lacks sm_70
+kernels, so v100 nodes crash with *"no kernel image."* (2) On a preemptible partition, `--requeue`
+plus the fold-level `if os.path.isfile(out): skip` logic means a preempted task resumes without redoing
+completed folds. (3) No SLURM? Run the `python train_hest.py … --cohort all` / `python train.py …`
+commands from §4 in a shell loop over seeds.
+
 ## 6. Build the tables and figures
 
 ```bash
