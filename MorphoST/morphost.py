@@ -173,11 +173,22 @@ _VERSIONS = {   # (local, global, slide_token, morph_cond, gate)
 class MorphoST(nn.Module):
     def __init__(self, feat_dim=1024, dim=256, n_genes=50, n_layers=4, n_heads=4,
                  k=8, num_rbf=16, dropout=0.1, attn_dropout=0.1, version="V5",
-                 morph_scope="both", cond_dropout=0.0):
+                 morph_scope="both", cond_dropout=0.0, components=None,
+                 use_distance_bias=True, coordinate_mode="distance"):
         super().__init__()
         loc, glob, slide, morph, gate = _VERSIONS[version]
+        if components is not None:
+            if len(components) != 3 or any(c not in "01" for c in components):
+                raise ValueError("components must be a three-bit LOCAL/GLOBAL/SLIDE code, e.g. 101")
+            loc, glob, slide = (c == "1" for c in components)
+            morph, gate = False, False
+        if coordinate_mode not in ("distance", "absolute"):
+            raise ValueError("coordinate_mode must be 'distance' or 'absolute'")
         self.k, self.use_morph, self.morph_scope = k, morph, morph_scope
+        self.coordinate_mode = coordinate_mode
         self.in_proj = nn.Linear(feat_dim, dim)
+        if coordinate_mode == "absolute":
+            self.coord_proj = nn.Sequential(nn.Linear(2, dim), nn.GELU(), nn.Linear(dim, dim))
         self.rbf = RBF(num_rbf)
         # morphology descriptors from RAW UNI features. morph_scope selects which are used:
         #   both  -> global slide mean + per-spot kNN mean  (original V4/V5)
@@ -192,12 +203,23 @@ class MorphoST(nn.Module):
         self.blocks = nn.ModuleList([
             MorphoBlock(dim, n_heads, num_rbf, dropout, attn_dropout,
                         loc, glob, slide, morph, gate) for _ in range(n_layers)])
+        if not use_distance_bias:
+            for block in self.blocks:
+                if block.use_local:
+                    nn.init.zeros_(block.local_attn.dist_bias[0].weight)
+                    nn.init.zeros_(block.local_attn.dist_bias[0].bias)
+                    for parameter in block.local_attn.dist_bias.parameters():
+                        parameter.requires_grad_(False)
         self.head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, n_genes))
 
     def forward(self, feats, coords):                    # feats[N,1024], coords[N,2] -> [N,G]
         nbr_idx, dist = knn_graph(coords, self.k)
         rbf = self.rbf(dist)                             # [N,k,R]
         x = self.in_proj(feats)
+        if self.coordinate_mode == "absolute":
+            centered = coords - coords.mean(0, keepdim=True)
+            scaled = centered / centered.std(0, keepdim=True).clamp_min(1e-6)
+            x = x + self.coord_proj(scaled)
         cond = None
         if self.use_morph:
             terms = []

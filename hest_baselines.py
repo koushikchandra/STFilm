@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 
 import baseline_spatial as B
+from MorphoST.evaluation import train_val_split
 from stflow.utils import set_random_seed
 from stflow.data.normalize_utils import get_normalize_method
 
@@ -33,14 +34,19 @@ def run_cohort(args, cohort, device, nm):
         if os.path.isfile(out):
             r = json.load(open(out)); fold_means.append(r["pearson_mean"])
             print(f"=== {cohort} {args.model} fold {i} SKIP ({r['pearson_mean']:.4f}) ==="); continue
-        train_df = pd.read_csv(os.path.join(split_dir, f"train_{i}.csv"))
+        outer_train_df = pd.read_csv(os.path.join(split_dir, f"train_{i}.csv"))
         test_df = pd.read_csv(os.path.join(split_dir, f"test_{i}.csv"))
+        train_df, val_df = train_val_split(outer_train_df, args.seed + i, args.val_fraction)
         train_slides = B.load_slides(train_df, args, gene_list, nm, args.n_pos, args.k, cohort=cohort)
+        val_slides = B.load_slides(val_df, args, gene_list, nm, args.n_pos, args.k, cohort=cohort)
         test_slides = B.load_slides(test_df, args, gene_list, nm, args.n_pos, args.k, cohort=cohort)
+        fold_dir = os.path.join(save_dir, f"fold_{i}")
         if args.model == "bleep":
-            res = B.bleep_train_fold(args, train_slides, test_slides, gene_list, device)
+            res = B.bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list,
+                                     device, fold_dir)
         else:
-            res = B.train_fold(args, train_slides, test_slides, gene_list, device)
+            res = B.train_fold(args, train_slides, val_slides, test_slides, gene_list,
+                               device, fold_dir)
         res["fold"] = i
         json.dump(res, open(out, "w"), sort_keys=True, indent=4)
         fold_means.append(res["pearson_mean"])
@@ -81,6 +87,8 @@ def main():
     p.add_argument("--bleep_batch", type=int, default=512)
     p.add_argument("--k_retrieval", type=int, default=50)
     p.add_argument("--max_ref", type=int, default=30000)
+    p.add_argument("--val_fraction", type=float, default=0.15)
+    p.add_argument("--corr_weight", type=float, default=0.0)
     args = p.parse_args()
     import torch
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"

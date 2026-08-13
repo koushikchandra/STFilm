@@ -34,6 +34,10 @@ def load_sample(row, feature_encoder, embed_dataroot, source_dataroot, gene_list
     feats = d["embeddings"]
     norm = normalize_method if callable(normalize_method) else get_normalize_method(normalize_method)
     expr = load_adata(h5ad, genes=gene_list, barcodes=barcodes, normalize_method=norm).values
+    from evaluation import spot_role_index  # single-slide inner-val fallback (no-op for full slides)
+    idx = spot_role_index(row, len(feats))
+    if idx is not None:
+        feats, coords, expr = feats[idx], coords[idx], expr[idx]
     return (torch.from_numpy(feats).float().to(device),
             torch.from_numpy(coords).float().to(device),
             torch.from_numpy(expr).float().to(device))

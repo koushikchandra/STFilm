@@ -27,9 +27,17 @@ PAPER_AVG = {"UNI": 0.344, "BLEEP": 0.368, "TRIPLEX": 0.395, "STFlow": 0.415}
 
 def cell(root, cohort, model_tag):
     """(mean, std, nseeds) over the per-seed kfold means for one method/cohort."""
+    import glob
     vals = []
     for s in SEEDS:
-        f = os.path.join(root, f"{cohort}_{model_tag}_seed{s}", "results_kfold.json")
+        if model_tag == "STFlow":  # STFlow nests results under a timestamped exp dir
+            base = os.path.join(root, f"{cohort}_STFlow_seed{s}")
+            fs = glob.glob(f"{base}/*/{cohort}/results_kfold.json") + glob.glob(f"{base}/*/results_kfold.json")
+            if not fs:
+                continue
+            fs.sort(key=os.path.getmtime); f = fs[-1]
+        else:
+            f = os.path.join(root, f"{cohort}_{model_tag}_seed{s}", "results_kfold.json")
         if os.path.isfile(f):
             try:
                 vals.append(json.load(open(f))["pearson_mean"])

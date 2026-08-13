@@ -42,6 +42,7 @@ from stflow.data.normalize_utils import get_normalize_method
 from stflow.hest_utils.st_dataset import load_adata
 from stflow.hest_utils.file_utils import read_assets_from_h5
 from stflow.app.flow.test import metric_func
+from MorphoST.evaluation import expression_metrics, save_predictions, train_val_split
 
 COHORT_TO_GROUP = {
     "CCRCC": "kidney", "COAD": "colorectal", "READ": "colorectal", "HCC": "liver",
@@ -92,8 +93,14 @@ def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None):
         feat = dd["embeddings"].astype(np.float32)
         labels = load_adata(h5ad, genes=gene_list, barcodes=barcodes,
                             normalize_method=normalize_method).values.astype(np.float32)
+        from MorphoST.evaluation import spot_role_index  # single-slide inner-val fallback (no-op otherwise)
+        idx = spot_role_index(row, len(feat))
+        if idx is not None:
+            coords, feat, labels = coords[idx], feat[idx], labels[idx]
         slides.append({
+            "slide_id": str(sid),
             "feat": torch.from_numpy(feat),
+            "coords": torch.from_numpy(coords.astype(np.float32)),
             "gxy": torch.from_numpy(grid_coords(coords, n_pos)),
             "adj": knn_adj(coords, k),
             "labels": torch.from_numpy(labels),
@@ -295,22 +302,36 @@ def build_model(args, n_genes):
 
 # ----------------------------- train / eval -----------------------------
 @torch.no_grad()
-def evaluate(model, slides, gene_list, device):
+def evaluate(model, slides, gene_list, device, prediction_path=None):
     model.eval()
-    preds, gts = [], []
+    preds, gts, coords, slide_ids = [], [], [], []
     for s in slides:
         feat = s["feat"].to(device); gxy = s["gxy"].to(device); adj = s["adj"].to(device)
         pred = model(feat, gxy, adj).cpu().numpy()
-        preds.append(pred); gts.append(s["labels"].numpy())
-    res = metric_func(np.concatenate(preds, 0), np.concatenate(gts, 0), gene_list)
-    res["n_test"] = sum(len(g) for g in gts)
+        preds.append(pred); gts.append(s["labels"].numpy()); coords.append(s["coords"].numpy())
+        slide_ids.extend([s["slide_id"]] * len(pred))
+    pred = np.concatenate(preds, 0); target = np.concatenate(gts, 0)
+    coords = np.concatenate(coords, 0); slide_ids = np.asarray(slide_ids)
+    res = expression_metrics(pred, target, gene_list, slide_ids)
+    if prediction_path:
+        save_predictions(prediction_path, pred, target, coords, slide_ids, gene_list)
     return res
 
 
-def train_fold(args, train_slides, test_slides, gene_list, device):
+def regression_loss(pred, target, corr_weight):
+    mse = F.mse_loss(pred, target)
+    if corr_weight == 0:
+        return mse
+    pd = pred - pred.mean(0, keepdim=True); yd = target - target.mean(0, keepdim=True)
+    valid = yd.norm(dim=0) > 1e-6
+    corr = (pd * yd).sum(0) / (pd.norm(dim=0) * yd.norm(dim=0) + 1e-6)
+    return mse + corr_weight * (1 - corr[valid].mean()) if valid.any() else mse
+
+
+def train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir=None):
     model = build_model(args, len(gene_list)).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
-    best_pearson, best_res, early = -1, None, 0
+    best_pearson, best_state, early = -1, None, 0
     order = list(range(len(train_slides)))
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -324,16 +345,26 @@ def train_fold(args, train_slides, test_slides, gene_list, device):
                 adj = adj[sel][:, sel]
             feat = feat.to(device); gxy = gxy.to(device); adj = adj.to(device); lab = lab.to(device)
             pred = model(feat, gxy, adj)
-            loss = F.mse_loss(pred, lab)
+            loss = regression_loss(pred, lab, args.corr_weight)
             opt.zero_grad(); loss.backward(); opt.step()
-        res = evaluate(model, test_slides, gene_list, device)
+        res = evaluate(model, val_slides, gene_list, device)
         if res["pearson_mean"] > best_pearson:
-            best_pearson, best_res, early = res["pearson_mean"], res, 0
+            best_pearson = res["pearson_mean"]
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            early = 0
         else:
             early += 1
             if early >= 20:
                 break
-    return best_res
+    if best_state is None:
+        raise RuntimeError("No validation checkpoint was selected")
+    model.load_state_dict(best_state)
+    if fold_dir:
+        os.makedirs(fold_dir, exist_ok=True)
+        torch.save({"model": best_state, "args": vars(args), "genes": gene_list},
+                   os.path.join(fold_dir, "best_model.pt"))
+    return evaluate(model, test_slides, gene_list, device,
+                    os.path.join(fold_dir, "test_predictions.npz") if fold_dir else None)
 
 
 # ----------------------------- BLEEP (contrastive + retrieval) -----------------------------
@@ -345,23 +376,27 @@ def _bleep_pool(slides, device):
 
 
 @torch.no_grad()
-def bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, k):
+def bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, k, prediction_path=None):
     model.eval()
     zi_ref = model.embed_img(ref_feat.to(device))          # [M, dim]
     ref_expr = ref_expr.to(device)                          # [M, G] log1p true expression
-    preds, gts = [], []
+    preds, gts, coords, slide_ids = [], [], [], []
     for s in test_slides:
         zi_q = model.embed_img(s["feat"].to(device))       # [N, dim]
         sim = zi_q @ zi_ref.t()                            # [N, M] cosine (both L2-normed)
         idx = sim.topk(min(k, zi_ref.shape[0]), dim=1).indices
         pred = ref_expr[idx].mean(1)                       # avg neighbour expression (imputation)
-        preds.append(pred.cpu().numpy()); gts.append(s["labels"].numpy())
-    res = metric_func(np.concatenate(preds, 0), np.concatenate(gts, 0), gene_list)
-    res["n_test"] = sum(len(g) for g in gts)
+        pred = pred.cpu().numpy(); preds.append(pred); gts.append(s["labels"].numpy())
+        coords.append(s["coords"].numpy()); slide_ids.extend([s["slide_id"]] * len(pred))
+    pred = np.concatenate(preds, 0); target = np.concatenate(gts, 0)
+    coords = np.concatenate(coords, 0); slide_ids = np.asarray(slide_ids)
+    res = expression_metrics(pred, target, gene_list, slide_ids)
+    if prediction_path:
+        save_predictions(prediction_path, pred, target, coords, slide_ids, gene_list)
     return res
 
 
-def bleep_train_fold(args, train_slides, test_slides, gene_list, device):
+def bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir=None):
     model = BleepEncoder(args.feature_dim, len(gene_list), args.dim, args.dropout).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
     all_feat, all_expr = _bleep_pool(train_slides, device)          # [M, .]
@@ -370,7 +405,7 @@ def bleep_train_fold(args, train_slides, test_slides, gene_list, device):
     g = torch.Generator().manual_seed(args.seed)
     ref_sel = torch.randperm(M, generator=g)[:min(args.max_ref, M)]
     ref_feat, ref_expr = all_feat[ref_sel], all_expr[ref_sel]
-    best_pearson, best_res, early = -1, None, 0
+    best_pearson, best_state, early = -1, None, 0
     for epoch in range(1, args.epochs + 1):
         model.train()
         perm = torch.randperm(M, generator=g)
@@ -383,14 +418,24 @@ def bleep_train_fold(args, train_slides, test_slides, gene_list, device):
             tgt = torch.arange(logits.shape[0], device=device)
             loss = 0.5 * (F.cross_entropy(logits, tgt) + F.cross_entropy(logits.t(), tgt))
             opt.zero_grad(); loss.backward(); opt.step()
-        res = bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, args.k_retrieval)
+        res = bleep_eval(model, ref_feat, ref_expr, val_slides, gene_list, device, args.k_retrieval)
         if res["pearson_mean"] > best_pearson:
-            best_pearson, best_res, early = res["pearson_mean"], res, 0
+            best_pearson = res["pearson_mean"]
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            early = 0
         else:
             early += 1
             if early >= 20:
                 break
-    return best_res
+    if best_state is None:
+        raise RuntimeError("No validation checkpoint was selected")
+    model.load_state_dict(best_state)
+    if fold_dir:
+        os.makedirs(fold_dir, exist_ok=True)
+        torch.save({"model": best_state, "args": vars(args), "genes": gene_list},
+                   os.path.join(fold_dir, "best_model.pt"))
+    return bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, args.k_retrieval,
+                      os.path.join(fold_dir, "test_predictions.npz") if fold_dir else None)
 
 
 def run(args):
@@ -414,15 +459,19 @@ def run(args):
         if os.path.isfile(out):
             print(f"=== {args.regime} {args.model} fold {fold} seed{args.seed} -> SKIP ===")
             all_res.append(json.load(open(out))); continue
-        train_df = pd.read_csv(os.path.join(split_dir, f"train_{fold}.csv"))
+        outer_train_df = pd.read_csv(os.path.join(split_dir, f"train_{fold}.csv"))
         test_df = pd.read_csv(os.path.join(split_dir, f"test_{fold}.csv"))
+        train_df, val_df = train_val_split(outer_train_df, args.seed + sum(map(ord, str(fold))),
+                                           args.val_fraction)
         gene_list = json.load(open(os.path.join(regime_dir, f"genes_{fold}.json")))["genes"]
         train_slides = load_slides(train_df, args, gene_list, nm, args.n_pos, args.k)
+        val_slides = load_slides(val_df, args, gene_list, nm, args.n_pos, args.k)
         test_slides = load_slides(test_df, args, gene_list, nm, args.n_pos, args.k)
+        fold_dir = os.path.join(save_dir, f"fold_{fold}")
         if args.model == "bleep":
-            res = bleep_train_fold(args, train_slides, test_slides, gene_list, device)
+            res = bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
         else:
-            res = train_fold(args, train_slides, test_slides, gene_list, device)
+            res = train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
         res["fold"] = fold
         json.dump(res, open(out, "w"), sort_keys=True, indent=4)
         all_res.append(res)
@@ -464,5 +513,7 @@ if __name__ == "__main__":
     p.add_argument("--bleep_batch", type=int, default=512)   # InfoNCE contrastive batch
     p.add_argument("--k_retrieval", type=int, default=50)    # neighbours averaged at inference
     p.add_argument("--max_ref", type=int, default=30000)     # retrieval reference-pool cap
+    p.add_argument("--val_fraction", type=float, default=0.15)
+    p.add_argument("--corr_weight", type=float, default=0.0)
     args = p.parse_args()
     run(args)

@@ -23,33 +23,44 @@ import torch
 from morphost import MorphoST, morphost_loss
 from data import load_sample
 from train import set_seed, metric_func, subsample  # reuse cross-organ helpers unchanged
+from evaluation import expression_metrics, save_predictions, train_val_split
 
 HEST_COHORTS = ["CCRCC", "COAD", "READ", "HCC", "IDC", "LYMPH_IDC",
                 "LUNG", "PAAD", "PRAD", "SKCM"]
 
 
 @torch.no_grad()
-def evaluate(model, test_rows, args, gene_list, cohort):
+def evaluate(model, test_rows, args, gene_list, cohort, prediction_path=None):
     model.eval()
-    preds_all, y_all = [], []
+    preds_all, y_all, coords_all, slide_ids = [], [], [], []
     for _, row in test_rows.iterrows():
         feats, coords, expr = load_sample(row, args.feature_encoder, args.embed_dataroot,
                                           args.source_dataroot, gene_list, args.normalize_method,
                                           args.device, cohort=cohort)
         pred = model(feats, coords)
         preds_all.append(pred.cpu().numpy()); y_all.append(expr.cpu().numpy())
-    return metric_func(np.concatenate(preds_all), np.concatenate(y_all), gene_list)
+        coords_all.append(coords.cpu().numpy())
+        slide_ids.extend([str(row["sample_id"])] * len(expr))
+    pred = np.concatenate(preds_all); target = np.concatenate(y_all)
+    coords = np.concatenate(coords_all); slide_ids = np.asarray(slide_ids)
+    res = expression_metrics(pred, target, gene_list, slide_ids)
+    if prediction_path:
+        save_predictions(prediction_path, pred, target, coords, slide_ids, gene_list)
+    return res
 
 
-def train_fold(args, train_df, test_df, gene_list, cohort):
+def train_fold(args, train_df, val_df, test_df, gene_list, cohort, fold_dir):
     model = MorphoST(feat_dim=1024, dim=args.dim, n_genes=len(gene_list), n_layers=args.n_layers,
                      n_heads=args.n_heads, k=args.k, dropout=args.dropout,
+                     num_rbf=args.num_rbf,
                      attn_dropout=args.dropout, version=args.version,
-                     morph_scope=args.morph_scope, cond_dropout=args.cond_dropout).to(args.device)
+                     morph_scope=args.morph_scope, cond_dropout=args.cond_dropout,
+                     components=args.components, use_distance_bias=args.use_distance_bias,
+                     coordinate_mode=args.coordinate_mode).to(args.device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
     train_rows = list(train_df.iterrows())
-    best, best_res, bad = -1e9, None, 0
+    best, best_state, bad = -1e9, None, 0
     for ep in range(1, args.epochs + 1):
         model.train(); np.random.shuffle(train_rows)
         tot = 0.0
@@ -65,16 +76,25 @@ def train_fold(args, train_df, test_df, gene_list, cohort):
             opt.step(); tot += loss.item()
         sched.step()
         if ep % args.eval_step == 0 or ep == args.epochs:
-            res = evaluate(model, test_df, args, gene_list, cohort)
-            if res["pearson_mean"] > best:
-                best, best_res, bad = res["pearson_mean"], res, 0
+            res = evaluate(model, val_df, args, gene_list, cohort)
+            score = res[args.selection_metric]
+            if score > best:
+                best = score
+                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                bad = 0
             else:
                 bad += 1
-            print(f"  ep{ep:3d} loss {tot/len(train_rows):.4f}  PCC {res['pearson_mean']:.4f}"
+            print(f"  ep{ep:3d} loss {tot/len(train_rows):.4f}  val_PCC {res['pearson_mean']:.4f}"
                   f"  (best {best:.4f})", flush=True)
             if bad >= args.patience:
                 print(f"  early stop @ ep{ep}"); break
-    return best_res
+    if best_state is None:
+        raise RuntimeError("Training completed without a validation checkpoint")
+    model.load_state_dict(best_state)
+    torch.save({"model": best_state, "args": vars(args), "genes": gene_list},
+               os.path.join(fold_dir, "best_model.pt"))
+    return evaluate(model, test_df, args, gene_list, cohort,
+                    os.path.join(fold_dir, "test_predictions.npz"))
 
 
 def run_cohort(args, cohort):
@@ -91,10 +111,15 @@ def run_cohort(args, cohort):
             r = json.load(open(fout)); fold_means.append(r["pearson_mean"])
             print(f"=== {cohort} fold {i} SKIP ({r['pearson_mean']:.4f}) ==="); continue
         print(f"\n=== {cohort} fold {i}/{n_folds} ({args.version}, seed{args.seed}) ===", flush=True)
-        train_df = pd.read_csv(os.path.join(split_dir, f"train_{i}.csv"))
+        outer_train_df = pd.read_csv(os.path.join(split_dir, f"train_{i}.csv"))
         test_df = pd.read_csv(os.path.join(split_dir, f"test_{i}.csv"))
-        res = train_fold(args, train_df, test_df, gene_list, cohort)
+        train_df, val_df = train_val_split(outer_train_df, args.seed + i, args.val_fraction)
+        fold_dir = os.path.join(save_dir, f"fold_{i}")
+        os.makedirs(fold_dir, exist_ok=True)
+        res = train_fold(args, train_df, val_df, test_df, gene_list, cohort, fold_dir)
         res["fold"] = i
+        res["n_train_slides"] = len(train_df); res["n_val_slides"] = len(val_df)
+        res["n_test_slides"] = len(test_df)
         json.dump(res, open(fout, "w")); fold_means.append(res["pearson_mean"])
 
     kfold = {"cohort": cohort, "pearson_mean": float(np.mean(fold_means)),
@@ -121,6 +146,7 @@ def main():
     p.add_argument("--n_layers", type=int, default=4)
     p.add_argument("--n_heads", type=int, default=4)
     p.add_argument("--k", type=int, default=8)
+    p.add_argument("--num_rbf", type=int, default=16)
     p.add_argument("--dropout", type=float, default=0.1)
     p.add_argument("--lr", type=float, default=1e-3)
     p.add_argument("--weight_decay", type=float, default=0.01)
@@ -131,6 +157,12 @@ def main():
     p.add_argument("--max_spots", type=int, default=3000)
     p.add_argument("--morph_scope", default="both", choices=["both", "global", "local"])
     p.add_argument("--cond_dropout", type=float, default=0.0)
+    p.add_argument("--val_fraction", type=float, default=0.15)
+    p.add_argument("--selection_metric", default="pearson_mean", choices=["pearson_mean", "spearman_mean"])
+    p.add_argument("--components", default=None,
+                   help="factorial LOCAL/GLOBAL/SLIDE bit mask, e.g. 101; overrides version components")
+    p.add_argument("--use_distance_bias", action=argparse.BooleanOptionalAction, default=True)
+    p.add_argument("--coordinate_mode", default="distance", choices=["distance", "absolute"])
     args = p.parse_args()
     if not torch.cuda.is_available():
         args.device = "cpu"
