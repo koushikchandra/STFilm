@@ -514,6 +514,10 @@ regimes with PCC and MSE.
 On HEST-1k \textsc{looo}, \morph{} achieves an average PCC of $0.421$, below Gene-DML
 ($0.436$) but above HyperST ($0.395$), ST-Net ($0.267$), and Hist2ST ($0.360$). Gene-DML leads on colorectal ($0.738$), pancreas ($0.540$), and skin ($0.766$),
 while \morph{} leads on breast, kidney, and prostate. In the pooled regime Gene-DML leads at $0.766$, followed by \morph{} ($0.760$) and HyperST ($0.756$).
+To probe cross-species generalization, we additionally evaluate on 59 Visium slides spanning 7 mouse
+organs (brain, liver, skin, heart, bowel, kidney, muscle) from the MahmoodLab HEST collection~\cite{jaume2024hest}.
+Table~\ref{tab:mouse} reports PCC under the same \textsc{looo} and \textsc{pooled} protocols using mouse-specific 50-gene HVG panels;
+\morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, with \textsc{looo} and baseline comparisons pending completion.
 
 \begin{table*}[t]
 \centering
@@ -585,6 +589,30 @@ Gene-DML~\cite{song2026genedml} (2026)      & $0.435_{0.00}$ & $1.022_{0.02}$ & 
 HyperST~\cite{zhang2026hyperst} (2026)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$\\
 \midrule
 \morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & \running\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
+59 Visium slides across 7 mouse organs (brain, liver, skin, heart, bowel, kidney, muscle).
+\textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: 5-fold pooled cross-validation.
+PCC$\uparrow$ on 50 mouse HVGs. Baselines use the same UNI features and protocol as Table~\ref{tab:crossorgan}.}
+\label{tab:mouse}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l c c}
+\toprule
+Method & \textsc{looo} PCC & \textsc{pooled} PCC \\
+\midrule
+ST-Net~\cite{he2020stnet} (2020)          & \running & \running \\
+HisToGene~\cite{pang2021histogene} (2021) & \running & \running \\
+Hist2ST~\cite{zeng2022hist2st} (2022)     & \running & \running \\
+TRIPLEX~\cite{chung2024triplex} (2024)    & \running & \running \\
+BLEEP~\cite{xie2023bleep} (2023)          & \running & \running \\
+\midrule
+\morph{} (V3) & \running & $\mathbf{0.887_{0.005}}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
