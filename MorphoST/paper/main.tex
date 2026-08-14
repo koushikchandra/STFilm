@@ -365,7 +365,8 @@ organ group and the best average across all three metrics (PCC $0.389$, SCC $0.3
 best HyperST $0.365$).
 Table~\ref{tab:stimage} reports the same per-organ intra-organ comparison on STImage-1K4M
 (per-organ 5-fold, identical protocol to Table~\ref{tab:main}); runs are in progress.
-Table~\ref{tab:crossorgan} reports the harder cross-organ transfer. All reported cells use
+Table~\ref{tab:looo} reports the harder cross-organ LOOO transfer per organ on both
+benchmarks, and Table~\ref{tab:pooled} summarizes the pooled cross-validation on both. All reported cells use
 inner-validation checkpoint selection rather than the earlier test-selected exploratory numbers; the
 corrected cross-organ baselines under this protocol are still in progress.
 
@@ -457,6 +458,70 @@ HisToGene \cite{pang2021histogene} & $0.237$ & $0.232$ \\
 TRIPLEX \cite{chung2024triplex} & $0.395$ & $0.252$ \\
 STFlow \cite{huang2025stflow}   & $0.415$ & $0.293$ \\
 MCToGene \cite{sun2026mctogene} & \best{$0.435$} & \best{$0.316$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer, per organ (Pearson $\uparrow$).} Leave-one-organ-out:
+trained on all other organs, tested on the held-out organ. Top block: HEST-1k (8 organ groups).
+Bottom block: STImage-1K4M (8 organs). Mean$_{\mathrm{std}}$ over three seeds, nested validation.
+Best per row in \best{bold}. Baseline runs in progress.}
+\label{tab:looo}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{l cccc cc c}
+\toprule
+Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
+\midrule
+\multicolumn{8}{c}{\textit{HEST-1k}} \\
+\midrule
+Breast      & \running & \running & \running & \running & \running & \running & \running \\
+Prostate    & \running & \running & \running & \running & \running & \running & \running \\
+Pancreas    & \running & \running & \running & \running & \running & \running & \running \\
+Skin        & \running & \running & \running & \running & \running & \running & \running \\
+Colorectal  & \running & \running & \running & \running & \running & \running & \running \\
+Kidney      & \running & \running & \running & \running & \running & \running & \running \\
+Liver       & \running & \running & \running & \running & \running & \running & \running \\
+Lung        & \running & \running & \running & \running & \running & \running & $0.421_{0.01}$ \\
+\textbf{Average} & \running & \running & \running & \running & \running & \running & \running \\
+\midrule
+\multicolumn{8}{c}{\textit{STImage-1K4M}} \\
+\midrule
+Breast      & \running & \running & \running & \running & \running & \running & $0.112_{0.02}$ \\
+Kidney      & \running & \running & \running & \running & \running & \running & $0.049_{0.05}$ \\
+Liver       & \running & \running & \running & \running & \running & \running & $0.178_{0.05}$ \\
+Pancreas    & \running & \running & \running & \running & \running & \running & $-0.079_{0.05}$ \\
+Skin        & \running & \running & \running & \running & \running & \running & $0.214_{0.02}$ \\
+Prostate    & \running & \running & \running & \running & \running & \running & $0.205_{0.04}$ \\
+Brain       & \running & \running & \running & \running & \running & \running & $0.043_{0.02}$ \\
+Heart       & \running & \running & \running & \running & \running & \running & $-0.034_{0.04}$ \\
+\textbf{Average} & \running & \running & \running & \running & \running & \running & $0.086$ \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Cross-organ POOLED, average Pearson $\uparrow$} (5-fold pooled cross-validation;
+mean$_{\mathrm{std}}$ over three seeds; nested validation). Both HEST-1k and STImage-1K4M.
+Best per column in \best{bold}. Runs in progress.}
+\label{tab:pooled}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l cc}
+\toprule
+Method & HEST-1k & STImage-1K4M \\
+\midrule
+ST-Net      & \running & \running \\
+HisToGene   & \running & \running \\
+Hist2ST     & \running & \running \\
+TRIPLEX     & \running & \running \\
+Gene-DML    & \running & \running \\
+HyperST     & \running & \running \\
+\midrule
+\morph{} (V3) & \running & $0.652_{0.01}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
