@@ -427,16 +427,16 @@ Corrected runs in progress.}
 \toprule
 Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
 \midrule
-Breast    & \running & \running & \running & \running & \running & \running & \running \\
-Kidney    & \running & \running & \running & \running & \running & \running & \running \\
-Liver     & \running & \running & \running & \running & \running & \running & \running \\
-Pancreas  & \running & \running & \running & \running & \running & \running & \running \\
-Skin      & \running & \running & \running & \running & \running & \running & \running \\
-Prostate  & \running & \running & \running & \running & \running & \running & \running \\
-Brain     & \running & \running & \running & \running & \running & \running & \running \\
-Heart     & \running & \running & \running & \running & \running & \running & \running \\
+Breast    & $0.111_{0.01}$ & $0.229_{0.04}$ & $0.203_{0.05}$ & \best{$0.269_{0.04}$} & \running & \running & \running \\
+Kidney    & $0.202_{0.02}$ & $0.267_{0.02}$ & \best{$0.302_{0.01}$} & $0.290_{0.05}$ & \running & \running & \running \\
+Liver     & $0.038_{0.07}$ & $0.034_{0.20}$ & $0.106_{0.07}$ & \best{$0.117_{0.19}$} & \running & \running & \running \\
+Pancreas  & $0.090_{0.01}$ & $0.323_{0.01}$ & $0.315_{0.03}$ & \best{$0.325_{0.02}$} & \running & \running & \running \\
+Skin      & $0.713_{0.00}$ & $0.750_{0.00}$ & $0.744_{0.01}$ & \best{$0.755_{0.01}$} & \running & \running & \running \\
+Prostate  & $0.170_{0.02}$ & \best{$0.461_{0.01}$} & $0.442_{0.02}$ & $0.347_{0.04}$ & \running & \running & \running \\
+Brain     & $0.262_{0.03}$ & $0.350_{0.06}$ & $0.349_{0.06}$ & \best{$0.389_{0.06}$} & \running & \running & \running \\
+Heart     & $0.225_{0.04}$ & $0.335_{0.04}$ & $0.352_{0.03}$ & \best{$0.352_{0.01}$} & \running & \running & \running \\
 \midrule
-\textbf{Average} & \running & \running & \running & \running & \running & \running & \running \\
+\textbf{Average} & $0.226$ & $0.344$ & $0.352$ & \best{$0.356$} & \running & \running & \running \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -477,27 +477,27 @@ Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (
 \midrule
 \multicolumn{8}{c}{\textit{HEST-1k}} \\
 \midrule
-Breast      & \running & \running & \running & \running & \running & \running & \running \\
-Prostate    & \running & \running & \running & \running & \running & \running & \running \\
-Pancreas    & \running & \running & \running & \running & \running & \running & \running \\
-Skin        & \running & \running & \running & \running & \running & \running & \running \\
-Colorectal  & \running & \running & \running & \running & \running & \running & \running \\
-Kidney      & \running & \running & \running & \running & \running & \running & \running \\
-Liver       & \running & \running & \running & \running & \running & \running & \running \\
-Lung        & \running & \running & \running & \running & \running & \running & $0.421_{0.01}$ \\
-\textbf{Average} & \running & \running & \running & \running & \running & \running & \running \\
+Breast      & $0.217_{0.06}$ & $0.510_{0.02}$ & $0.459_{0.02}$ & $0.528_{0.02}$ & \running & \running & \best{$0.534_{0.02}$} \\
+Colorectal  & $0.430_{0.03}$ & \best{$0.735_{0.01}$} & $0.688_{0.04}$ & $0.726_{0.03}$ & \running & \running & $0.703_{0.01}$ \\
+Kidney      & $0.084_{0.03}$ & $0.064_{0.02}$ & $0.084_{0.01}$ & $0.113_{0.01}$ & \running & \running & \best{$0.124_{0.00}$} \\
+Liver       & $0.024_{0.00}$ & \best{$0.049_{0.01}$} & $0.033_{0.00}$ & $0.038_{0.01}$ & \running & \running & $0.032_{0.01}$ \\
+Lung        & $0.504_{0.04}$ & $0.675_{0.00}$ & $0.499_{0.06}$ & \best{$0.680_{0.01}$} & \running & \running & $0.660_{0.01}$ \\
+Pancreas    & $0.404_{0.05}$ & $0.469_{0.01}$ & $0.360_{0.07}$ & \best{$0.521_{0.02}$} & \running & \running & $0.507_{0.04}$ \\
+Prostate    & $0.071_{0.01}$ & $0.078_{0.01}$ & $0.104_{0.02}$ & $0.112_{0.03}$ & \running & \running & \best{$0.119_{0.02}$} \\
+Skin        & $0.402_{0.08}$ & $0.740_{0.03}$ & $0.652_{0.08}$ & \best{$0.742_{0.03}$} & \running & \running & $0.692_{0.06}$ \\
+\textbf{Average} & $0.267$ & $0.415$ & $0.360$ & \best{$0.433$} & \running & \running & $0.421$ \\
 \midrule
 \multicolumn{8}{c}{\textit{STImage-1K4M}} \\
 \midrule
-Breast      & \running & \running & \running & \running & \running & \running & $0.112_{0.02}$ \\
-Kidney      & \running & \running & \running & \running & \running & \running & $0.049_{0.05}$ \\
-Liver       & \running & \running & \running & \running & \running & \running & $0.178_{0.05}$ \\
-Pancreas    & \running & \running & \running & \running & \running & \running & $-0.079_{0.05}$ \\
-Skin        & \running & \running & \running & \running & \running & \running & $0.214_{0.02}$ \\
-Prostate    & \running & \running & \running & \running & \running & \running & $0.205_{0.04}$ \\
-Brain       & \running & \running & \running & \running & \running & \running & $0.043_{0.02}$ \\
-Heart       & \running & \running & \running & \running & \running & \running & $-0.034_{0.04}$ \\
-\textbf{Average} & \running & \running & \running & \running & \running & \running & $0.086$ \\
+Breast      & $0.056_{0.01}$ & $0.122_{0.03}$ & \best{$0.131_{0.01}$} & $0.113_{0.02}$ & \running & \running & $0.112_{0.02}$ \\
+Kidney      & $0.051_{0.02}$ & \best{$0.108_{0.01}$} & $0.077_{0.03}$ & $0.103_{0.05}$ & \running & \running & $0.049_{0.05}$ \\
+Liver       & $0.051_{0.04}$ & $0.112_{0.03}$ & $0.131_{0.05}$ & \best{$0.230_{0.06}$} & \running & \running & $0.178_{0.05}$ \\
+Pancreas    & \best{$-0.007_{0.02}$} & $-0.127_{0.01}$ & $-0.104_{0.03}$ & $-0.112_{0.01}$ & \running & \running & $-0.079_{0.05}$ \\
+Skin        & $0.190_{0.02}$ & $0.147_{0.02}$ & $0.175_{0.02}$ & $0.196_{0.01}$ & \running & \running & \best{$0.214_{0.02}$} \\
+Prostate    & $0.016_{0.02}$ & $0.180_{0.05}$ & $0.186_{0.02}$ & $0.151_{0.03}$ & \running & \running & \best{$0.205_{0.04}$} \\
+Brain       & $-0.008_{0.04}$ & $0.006_{0.02}$ & \best{$0.057_{0.04}$} & $0.000_{0.01}$ & \running & \running & $0.043_{0.02}$ \\
+Heart       & \best{$0.026_{0.04}$} & $-0.025_{0.03}$ & $-0.024_{0.02}$ & $-0.051_{0.01}$ & \running & \running & $-0.034_{0.04}$ \\
+\textbf{Average} & $0.047$ & $0.065$ & $0.079$ & $0.079$ & \running & \running & \best{$0.086$} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -514,14 +514,14 @@ Best per column in \best{bold}. Runs in progress.}
 \toprule
 Method & HEST-1k & STImage-1K4M \\
 \midrule
-ST-Net      & \running & \running \\
-HisToGene   & \running & \running \\
-Hist2ST     & \running & \running \\
-TRIPLEX     & \running & \running \\
+ST-Net      & $0.370_{0.01}$ & \running \\
+HisToGene   & $0.757_{0.00}$ & \running \\
+Hist2ST     & $0.737_{0.01}$ & \running \\
+TRIPLEX     & \best{$0.772_{0.00}$} & \running \\
 Gene-DML    & \running & \running \\
 HyperST     & \running & \running \\
 \midrule
-\morph{} (V3) & \running & $0.652_{0.01}$ \\
+\morph{} (V3) & $0.760_{0.01}$ & \best{$0.652_{0.01}$} \\
 \bottomrule
 \end{tabular}
 \end{table}
