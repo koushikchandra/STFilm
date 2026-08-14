@@ -363,8 +363,8 @@ summarizes all methods under the three metrics. Among the feature-matched baseli
 identical nested-validation protocol, \morph{} attains the best per-organ Pearson correlation on every
 organ group and the best average across all three metrics (PCC $0.389$, SCC $0.348$, MSE $1.072$; next
 best HyperST $0.365$).
-Table~\ref{tab:stimage} reports the same per-organ comparison on STImage-1K4M under the
-leave-one-organ-out protocol; baseline runs are in progress.
+Table~\ref{tab:stimage} reports the same per-organ intra-organ comparison on STImage-1K4M
+(per-organ 5-fold, identical protocol to Table~\ref{tab:main}); runs are in progress.
 Table~\ref{tab:crossorgan} reports the harder cross-organ transfer. All reported cells use
 inner-validation checkpoint selection rather than the earlier test-selected exploratory numbers; the
 corrected cross-organ baselines under this protocol are still in progress.
@@ -414,10 +414,11 @@ Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.569_{0.00}$ 
 \begin{table*}[t]
 \centering
 \caption{\textbf{Intra-organ gene expression prediction on STImage-1K4M, per organ (Pearson
-$\uparrow$).} Leave-one-organ-out protocol: trained on 7 organs, tested on the held-out organ.
-Mean$_{\mathrm{std}}$ over three seeds with nested validation. All methods use identical frozen
-UNI features, the same organ splits, and 50-gene panels (organ-specific leakage-safe panels).
-Corrected nested-validation runs in progress.}
+$\uparrow$).} Same protocol as Table~\ref{tab:main}: per-organ 5-fold cross-validation,
+Mean$_{\mathrm{std}}$ over three seeds with nested inner-validation selection. All methods use
+identical frozen UNI features, organ-specific 50-gene panels (leakage-safe: HVGs computed
+from training slides only), and the same training budget (100 epochs, patience 20).
+Corrected runs in progress.}
 \label{tab:stimage}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
@@ -425,16 +426,16 @@ Corrected nested-validation runs in progress.}
 \toprule
 Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
 \midrule
-Breast    & \running & \running & \running & \running & \running & \running & $0.112_{0.02}$ \\
-Kidney    & \running & \running & \running & \running & \running & \running & $0.049_{0.05}$ \\
-Liver     & \running & \running & \running & \running & \running & \running & $0.178_{0.05}$ \\
-Pancreas  & \running & \running & \running & \running & \running & \running & $-0.079_{0.05}$ \\
-Skin      & \running & \running & \running & \running & \running & \running & $0.214_{0.02}$ \\
-Prostate  & \running & \running & \running & \running & \running & \running & $0.205_{0.04}$ \\
-Brain     & \running & \running & \running & \running & \running & \running & $0.043_{0.02}$ \\
-Heart     & \running & \running & \running & \running & \running & \running & $-0.034_{0.04}$ \\
+Breast    & \running & \running & \running & \running & \running & \running & \running \\
+Kidney    & \running & \running & \running & \running & \running & \running & \running \\
+Liver     & \running & \running & \running & \running & \running & \running & \running \\
+Pancreas  & \running & \running & \running & \running & \running & \running & \running \\
+Skin      & \running & \running & \running & \running & \running & \running & \running \\
+Prostate  & \running & \running & \running & \running & \running & \running & \running \\
+Brain     & \running & \running & \running & \running & \running & \running & \running \\
+Heart     & \running & \running & \running & \running & \running & \running & \running \\
 \midrule
-\textbf{Average} & \running & \running & \running & \running & \running & \running & $0.086$ \\
+\textbf{Average} & \running & \running & \running & \running & \running & \running & \running \\
 \bottomrule
 \end{tabular}
 \end{table*}

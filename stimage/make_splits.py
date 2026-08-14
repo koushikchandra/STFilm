@@ -106,6 +106,20 @@ def main():
         print(f"  LOOO {organ:9s}: train={len(train_rows)} test={len(test_rows)} "
               f"cand={len(cand)} panel={len(panel)}")
 
+    # ---- INTRA (per-organ K-fold, mirrors HEST intra-cohort protocol) ----
+    intra_dir = os.path.join(args.out, "INTRA"); os.makedirs(intra_dir, exist_ok=True)
+    for organ, ss in slides.items():
+        ss = list(ss); rng.shuffle(ss)
+        for k in range(args.k_pooled):
+            test_rows = [(organ, ss[i]) for i in range(k, len(ss), args.k_pooled)]
+            train_rows = [(organ, ss[i]) for i in range(len(ss)) if i % args.k_pooled != k]
+            cand = common_genes(args.src_root, train_rows) & common_genes(args.src_root, test_rows)
+            panel = hvg_panel(args.src_root, train_rows, cand)
+            fold_name = f"{organ}_{k}"
+            write_split(intra_dir, fold_name, train_rows, test_rows, panel)
+            print(f"  INTRA {fold_name:14s}: train={len(train_rows)} test={len(test_rows)} "
+                  f"panel={len(panel)}")
+
     # ---- POOLED (leave-slide-out, organ-stratified K-fold) ----
     pool_dir = os.path.join(args.out, "POOLED"); os.makedirs(pool_dir, exist_ok=True)
     fold_of = {}
