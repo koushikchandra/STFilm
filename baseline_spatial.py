@@ -693,7 +693,7 @@ def run(args):
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     set_random_seed(args.seed)
     args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024}[args.feature_encoder]
-    regime_dir = os.path.join(args.splits_root, args.regime)
+    regime_dir = args.splits_dir if args.splits_dir else os.path.join(args.splits_root, args.regime)
     split_dir = os.path.join(regime_dir, "splits")
     # derive fold names from the split CSVs so this works for both HEST and STImage organ sets
     trains = glob.glob(os.path.join(split_dir, "train_*.csv"))
@@ -744,6 +744,8 @@ if __name__ == "__main__":
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO", "INTRA"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
+    p.add_argument("--splits_dir", default=None,
+                   help="direct path to splits dir (overrides splits_root/regime); for per-organ INTRA")
     p.add_argument("--source_dataroot", default="dataset")
     p.add_argument("--embed_dataroot", default="embed_dataroot")
     p.add_argument("--feature_encoder", default="uni_v1_official")

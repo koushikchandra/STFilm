@@ -59,8 +59,9 @@ def load_sample(row, feature_encoder, embed_dataroot, source_dataroot, gene_list
 
 
 def load_gene_list(splits_root, regime, fold):
-    """Leakage-safe per-fold gene panel (genes_<fold>.json), falling back to a shared panel."""
-    path = os.path.join(splits_root, regime, f"genes_{fold}.json")
+    """Leakage-safe per-fold gene panel (genes_<fold>.json)."""
+    path = os.path.join(splits_root, regime, f"genes_{fold}.json") if regime else \
+           os.path.join(splits_root, f"genes_{fold}.json")
     if os.path.isfile(path):
         return json.load(open(path))["genes"]
     raise FileNotFoundError(f"no gene panel {path}")

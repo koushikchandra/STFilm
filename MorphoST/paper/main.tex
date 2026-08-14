@@ -422,6 +422,33 @@ Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.564_{0.00}$ 
 \end{tabular}
 \end{table*}
 
+\begin{table*}[!t]
+\centering
+\caption{\textbf{Intra-organ gene expression prediction on mouse HEST (Pearson $\uparrow$).}
+5-fold cross-validation within each mouse organ; mean$_{\mathrm{std}}$ over three seeds with nested-validation.
+59 Visium slides across 7 mouse organs from the MahmoodLab HEST collection~\cite{jaume2024hest}.
+All methods use identical frozen UNI features and organ-specific 50-gene HVG panels.
+Best per row in \best{bold}.}
+\label{tab:mouse_intra}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{l ccccc c}
+\toprule
+Organ & ST-Net~\tiny{'20} & HisToGene~\tiny{'21} & Hist2ST~\tiny{'22} & TRIPLEX~\tiny{'24} & BLEEP~\tiny{'23} & \morph{} (V3) \\
+\midrule
+Brain   & \running & \running & \running & \running & \running & \running \\
+Liver   & \running & \running & \running & \running & \running & \running \\
+Skin    & \running & \running & \running & \running & \running & \running \\
+Heart   & \running & \running & \running & \running & \running & \running \\
+Bowel   & \running & \running & \running & \running & \running & \running \\
+Kidney  & \running & \running & \running & \running & \running & \running \\
+Muscle  & \running & \running & \running & \running & \running & \running \\
+\midrule
+\textbf{Average} & \running & \running & \running & \running & \running & \running \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
 \section{Experiments}
 
 \subsection{Datasets}

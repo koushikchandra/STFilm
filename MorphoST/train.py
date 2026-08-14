@@ -130,7 +130,8 @@ def run(args):
     model_tag = f"C{args.components}" if args.components else args.version
     tag = args.exp_code or f"{args.regime}_{model_tag}_seed{args.seed}"
     save_dir = os.path.join(args.save_root, tag); os.makedirs(save_dir, exist_ok=True)
-    split_dir = os.path.join(args.splits_root, args.regime, "splits")
+    regime_dir = args.splits_dir if args.splits_dir else os.path.join(args.splits_root, args.regime)
+    split_dir = os.path.join(regime_dir, "splits")
 
     all_res = []
     for fold in folds:
@@ -142,7 +143,7 @@ def run(args):
         test_df = pd.read_csv(os.path.join(split_dir, f"test_{fold}.csv"))
         train_df, val_df = train_val_split(outer_train_df, args.seed + sum(map(ord, str(fold))),
                                            args.val_fraction)
-        gene_list = load_gene_list(args.splits_root, args.regime, fold)
+        gene_list = load_gene_list(regime_dir, "", fold) if args.splits_dir else load_gene_list(args.splits_root, args.regime, fold)
         fold_dir = os.path.join(save_dir, f"fold_{fold}")
         os.makedirs(fold_dir, exist_ok=True)
         res = train_fold(args, train_df, val_df, test_df, gene_list, fold_dir)
@@ -169,6 +170,8 @@ def main():
     p.add_argument("--folds", nargs="+", default=None,
                    help="explicit fold names (overrides --organ_set defaults)")
     p.add_argument("--splits_root", default="../cross_organ_splits8")
+    p.add_argument("--splits_dir", default=None,
+                   help="direct path to regime dir (overrides splits_root/regime); for per-organ INTRA")
     p.add_argument("--source_dataroot", default="../dataset")
     p.add_argument("--embed_dataroot", default="../embed_dataroot")
     p.add_argument("--feature_encoder", default="uni_v1_official")
