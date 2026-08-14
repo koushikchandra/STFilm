@@ -4,11 +4,26 @@ exact same UNI features, leakage-safe splits, and 50-gene panels as the STFiLM e
 import os
 import json
 import numpy as np
+import scanpy as sc
 import torch
 
 from stflow.hest_utils.st_dataset import load_adata
 from stflow.hest_utils.file_utils import read_assets_from_h5
 from stflow.data.normalize_utils import get_normalize_method
+
+
+def _load_adata(h5ad, genes, barcodes, normalize_method):
+    """load_adata wrapper that strips GRCm38_ prefix from mouse MEND-series samples."""
+    adata = sc.read_h5ad(h5ad)
+    if len(adata.var_names) > 0 and adata.var_names[0].startswith("GRCm38_"):
+        adata.var_names = adata.var_names.str.replace("GRCm38_", "", regex=False)
+    if barcodes is not None:
+        adata = adata[barcodes]
+    if genes is not None:
+        adata = adata[:, genes]
+    if normalize_method is not None:
+        adata = normalize_method(adata)
+    return adata.to_df()
 
 # organ groupings (mirror make_cross_organ_splits.py / train_cross_organ.py)
 COHORT_TO_GROUP = {
@@ -33,7 +48,7 @@ def load_sample(row, feature_encoder, embed_dataroot, source_dataroot, gene_list
     coords = d["coords"]
     feats = d["embeddings"]
     norm = normalize_method if callable(normalize_method) else get_normalize_method(normalize_method)
-    expr = load_adata(h5ad, genes=gene_list, barcodes=barcodes, normalize_method=norm).values
+    expr = _load_adata(h5ad, genes=gene_list, barcodes=barcodes, normalize_method=norm).values
     from evaluation import spot_role_index  # single-slide inner-val fallback (no-op for full slides)
     idx = spot_role_index(row, len(feats))
     if idx is not None:

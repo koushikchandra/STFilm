@@ -37,12 +37,27 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+import scanpy as sc
 from stflow.utils import set_random_seed, merge_fold_results
 from stflow.data.normalize_utils import get_normalize_method
 from stflow.hest_utils.st_dataset import load_adata
 from stflow.hest_utils.file_utils import read_assets_from_h5
 from stflow.app.flow.test import metric_func
 from MorphoST.evaluation import expression_metrics, save_predictions, train_val_split
+
+
+def _load_adata(h5ad, genes, barcodes, normalize_method):
+    """load_adata wrapper that strips GRCm38_ prefix from mouse MEND-series samples."""
+    adata = sc.read_h5ad(h5ad)
+    if len(adata.var_names) > 0 and adata.var_names[0].startswith("GRCm38_"):
+        adata.var_names = adata.var_names.str.replace("GRCm38_", "", regex=False)
+    if barcodes is not None:
+        adata = adata[barcodes]
+    if genes is not None:
+        adata = adata[:, genes]
+    if normalize_method is not None:
+        adata = normalize_method(adata)
+    return adata.to_df()
 
 COHORT_TO_GROUP = {
     "CCRCC": "kidney", "COAD": "colorectal", "READ": "colorectal", "HCC": "liver",
@@ -96,8 +111,8 @@ def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None, ca
         barcodes = dd["barcodes"].flatten().astype(str).tolist()
         coords = dd["coords"].astype(np.float64)
         feat = dd["embeddings"].astype(np.float32)
-        labels = load_adata(h5ad, genes=gene_list, barcodes=barcodes,
-                            normalize_method=normalize_method).values.astype(np.float32)
+        labels = _load_adata(h5ad, genes=gene_list, barcodes=barcodes,
+                             normalize_method=normalize_method).values.astype(np.float32)
         from MorphoST.evaluation import spot_role_index  # single-slide inner-val fallback (no-op otherwise)
         idx = spot_role_index(row, len(feat))
         if idx is not None:
@@ -725,7 +740,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
                    choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
-                            "mctogene", "hist", "histogpa"])
+                            "mctogene", "hist", "histogpa", "genedml", "hyperst"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO", "INTRA"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")

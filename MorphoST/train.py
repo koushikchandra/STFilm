@@ -121,7 +121,9 @@ def train_fold(args, train_df, val_df, test_df, gene_list, fold_dir):
 
 def run(args):
     set_seed(args.seed)
-    if args.organ_set == "stimage":
+    if args.folds:
+        folds = args.folds
+    elif args.organ_set == "stimage":
         folds = STIMAGE_LOOO if args.regime == "LOOO" else POOLED_FOLDS
     else:
         folds = LOOO_FOLDS if args.regime == "LOOO" else POOLED_FOLDS
@@ -164,6 +166,8 @@ def main():
     p.add_argument("--version", default="V5", choices=["V0", "V1", "V2", "V3", "V4", "V5"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--organ_set", default="hest", choices=["hest", "stimage"])
+    p.add_argument("--folds", nargs="+", default=None,
+                   help="explicit fold names (overrides --organ_set defaults)")
     p.add_argument("--splits_root", default="../cross_organ_splits8")
     p.add_argument("--source_dataroot", default="../dataset")
     p.add_argument("--embed_dataroot", default="../embed_dataroot")
