@@ -363,6 +363,8 @@ summarizes all methods under the three metrics. Among the feature-matched baseli
 identical nested-validation protocol, \morph{} attains the best per-organ Pearson correlation on every
 organ group and the best average across all three metrics (PCC $0.389$, SCC $0.348$, MSE $1.072$; next
 best HyperST $0.365$).
+Table~\ref{tab:stimage} reports the same per-organ comparison on STImage-1K4M under the
+leave-one-organ-out protocol; baseline runs are in progress.
 Table~\ref{tab:crossorgan} reports the harder cross-organ transfer. All reported cells use
 inner-validation checkpoint selection rather than the earlier test-selected exploratory numbers; the
 corrected cross-organ baselines under this protocol are still in progress.
@@ -405,6 +407,34 @@ Liver       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.084_{0.00}$ 
 Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.569_{0.00}$ & $0.564_{0.00}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
 \midrule
 \textbf{Average} & $0.311$ & $0.309$ & $0.271$ & $0.361$ & $0.360$ & $0.365$ & \best{$0.389$} \\
+\bottomrule
+\end{tabular}
+\end{table*}
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Intra-organ gene expression prediction on STImage-1K4M, per organ (Pearson
+$\uparrow$).} Leave-one-organ-out protocol: trained on 7 organs, tested on the held-out organ.
+Mean$_{\mathrm{std}}$ over three seeds with nested validation. All methods use identical frozen
+UNI features, the same organ splits, and 50-gene panels (organ-specific leakage-safe panels).
+Corrected nested-validation runs in progress.}
+\label{tab:stimage}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{l cccc cc c}
+\toprule
+Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
+\midrule
+Breast    & \running & \running & \running & \running & \running & \running & $0.112_{0.02}$ \\
+Kidney    & \running & \running & \running & \running & \running & \running & $0.049_{0.05}$ \\
+Liver     & \running & \running & \running & \running & \running & \running & $0.178_{0.05}$ \\
+Pancreas  & \running & \running & \running & \running & \running & \running & $-0.079_{0.05}$ \\
+Skin      & \running & \running & \running & \running & \running & \running & $0.214_{0.02}$ \\
+Prostate  & \running & \running & \running & \running & \running & \running & $0.205_{0.04}$ \\
+Brain     & \running & \running & \running & \running & \running & \running & $0.043_{0.02}$ \\
+Heart     & \running & \running & \running & \running & \running & \running & $-0.034_{0.04}$ \\
+\midrule
+\textbf{Average} & \running & \running & \running & \running & \running & \running & $0.086$ \\
 \bottomrule
 \end{tabular}
 \end{table*}
