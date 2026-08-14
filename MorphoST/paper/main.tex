@@ -544,7 +544,7 @@ while \morph{} leads on breast, kidney, and prostate. In the pooled regime Gene-
 To probe cross-species generalization, we additionally evaluate on 59 Visium slides spanning 7 mouse
 organs (brain, liver, skin, heart, bowel, kidney, muscle) from the MahmoodLab HEST collection~\cite{jaume2024hest}.
 Table~\ref{tab:mouse} reports PCC under the same \textsc{looo} and \textsc{pooled} protocols using mouse-specific 50-gene HVG panels;
-\morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, with \textsc{looo} and baseline comparisons pending completion.
+\morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, leading all five baselines (TRIPLEX $0.859$, HisToGene $0.854$, BLEEP $0.848$, Hist2ST $0.829$, ST-Net $0.357$); \textsc{looo} results are pending completion of the remaining folds.
 
 \begin{table*}[t]
 \centering
@@ -633,13 +633,13 @@ PCC$\uparrow$ on 50 mouse HVGs. Baselines use the same UNI features and protocol
 \toprule
 Method & \textsc{looo} PCC & \textsc{pooled} PCC \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)          & \running & \running \\
-HisToGene~\cite{pang2021histogene} (2021) & \running & \running \\
-Hist2ST~\cite{zeng2022hist2st} (2022)     & \running & \running \\
-TRIPLEX~\cite{chung2024triplex} (2024)    & \running & \running \\
-BLEEP~\cite{xie2023bleep} (2023)          & \running & \running \\
+ST-Net~\cite{he2020stnet} (2020)          & \running & $0.357_{0.036}$ \\
+HisToGene~\cite{pang2021histogene} (2021) & \running & $0.854_{0.019}$ \\
+Hist2ST~\cite{zeng2022hist2st} (2022)     & \running & $0.829_{0.028}$ \\
+TRIPLEX~\cite{chung2024triplex} (2024)    & \running & $0.859_{0.017}$ \\
+BLEEP~\cite{xie2023bleep} (2023)          & \running & $0.848_{0.012}$ \\
 \midrule
-\morph{} (V3) & \running & $\mathbf{0.887_{0.005}}$ \\
+\morph{} (V3) & \running & \best{$0.887_{0.005}$} \\
 \bottomrule
 \end{tabular}
 \end{table}
