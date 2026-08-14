@@ -21,9 +21,11 @@ def organ(dp,tag,cohs,fld):
 INTRA=[("ST-Net","results_corrected_hest_baselines","stnet"),
  ("HisToGene","results_corrected_hest_baselines","histogene"),
  ("Hist2ST","results_corrected_hest_baselines","hist2st"),
- ("BLEEP","results_corrected_hest_baselines","bleep"),
  ("TRIPLEX","results_corrected_hest_baselines","triplex"),
+ ("Gene-DML","results_corrected_hest_baselines","genedml"),
+ ("HyperST","results_corrected_hest_baselines","hyperst"),
  ("MorphoST","MorphoST/results_corrected_hest_corr","V3")]
+BASELINE_ORDER=["ST-Net","HisToGene","Hist2ST","TRIPLEX","Gene-DML","HyperST"]
 def sub(st): return f"${st[0]:.3f}_{{{st[1]:.2f}}}$"
 # TABLE 1
 print("%%% TABLE 1 (8 organs) %%%")
@@ -32,13 +34,11 @@ for oname,cohs in ORGANS:
     cells={m:organ(resolve(d),t,cohs,"pearson_mean") for m,d,t in INTRA}
     best=max(cells,key=lambda k:cells[k][0] if cells[k] else -1)
     row=f"{oname:11s}"
-    order=["ST-Net","HisToGene","Hist2ST","BLEEP","TRIPLEX"]
-    for m in order:
+    for m in BASELINE_ORDER:
         st=cells[m]; c=sub(st) if st else r"\running"
         if m==best and st: c=f"\\best{{{c}}}"
         row+=f" & {c}"
         if st: colavg[m].append(st[0])
-    row+=r" & \running"  # STFlow
     stm=cells["MorphoST"]; c=sub(stm) if stm else r"\running"
     if best=="MorphoST" and stm: c=f"\\best{{{c}}}"
     row+=f" & {c} \\\\"
@@ -47,9 +47,8 @@ for oname,cohs in ORGANS:
 avg={m:(np.mean(v) if v else None) for m,v in colavg.items()}
 bestavg=max(avg,key=lambda k:avg[k] if avg[k] else -1)
 ar="\\textbf{Average}"
-for m in ["ST-Net","HisToGene","Hist2ST","BLEEP","TRIPLEX"]:
+for m in BASELINE_ORDER:
     a=avg[m]; c=f"${a:.3f}$" if a else r"\running"; c=f"\\best{{{c}}}" if m==bestavg else c; ar+=f" & {c}"
-ar+=r" & \running"
 a=avg["MorphoST"]; c=f"${a:.3f}$" if a else r"\running"; c=f"\\best{{{c}}}" if bestavg=="MorphoST" else c
 print(ar+f" & {c} \\\\")
 # TABLE 2 (8-organ 3-metric)

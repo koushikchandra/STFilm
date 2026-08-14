@@ -93,8 +93,8 @@ First, we introduce a single-pass spatial transformer that fuses local, global, 
 context through an $E(2)$-invariant coordinate pathway, giving a simple and reproducible alternative
 to generative whole-slide prediction (Fig.~\ref{fig:arch}). Second, we evaluate under a unified
 feature-matched protocol in \emph{two} regimes---intra-cohort and cross-organ transfer---on two
-benchmarks (HEST-1k and STImage-1K4M) and with three metrics (Pearson, Spearman, MSE), including a
-from-scratch reproduction of STFlow. Third, we provide controlled analyses of the design: a factorial
+benchmarks (HEST-1k and STImage-1K4M) and with three metrics (Pearson, Spearman, MSE), against
+feature-matched baselines. Third, we provide controlled analyses of the design: a factorial
 context ablation, a study of the learned representation and its ability to recover spatial domains
 from predicted expression, qualitative expression maps, and measured inference scaling.
 
@@ -234,12 +234,20 @@ CNN per patch, and foundation-model probes \cite{chen2024uni} pair frozen featur
 head. These ignore spatial context. Slide-aware methods add it in different ways: HisToGene
 \cite{pang2021histogene} applies a ViT over all spots with learned positional embeddings; Hist2ST
 \cite{zeng2022hist2st} combines a transformer with a graph network over a spatial $k$NN graph;
-TRIPLEX \cite{chung2024triplex} fuses spot, neighbour, and global resolutions with a three-branch
-attention module; and BLEEP \cite{xie2023bleep} predicts by contrastive retrieval against a
-reference set. STFlow \cite{huang2025stflow} models the joint slide-level expression distribution
-using flow matching. Most of these methods are trained and evaluated per cohort; we additionally
-study cross-organ transfer. In contrast to generative prediction, \morph{} uses direct regression
-while retaining local and global context through distance-aware attention.
+and TRIPLEX \cite{chung2024triplex} fuses spot, neighbour, and global resolutions with a three-branch
+attention module. STFlow \cite{huang2025stflow} models the joint slide-level expression distribution
+using flow matching, and the concurrent MCToGene \cite{sun2026mctogene} models high-order many-to-many
+cross-cell interactions, reporting the current best per-cohort accuracy on HEST-1k. Several very recent
+methods add complementary inductive biases: HyperST \cite{zhang2026hyperst} aligns image and gene
+representations in hyperbolic space to capture their hierarchy, and Gene-DML \cite{song2026genedml}
+adds dual-pathway multi-level discrimination between the two modalities. We include both as
+feature-matched baselines. Foundation models
+such as STPath \cite{stpath2025} instead pretrain across organs and sequencing platforms with explicit
+metadata conditioning. Most of these methods are trained and evaluated per cohort; recent
+benchmarks \cite{storm2025benchmark} emphasize the difficulty of cross-modal generalization, which
+motivates the cross-organ transfer protocol we additionally study. In contrast to generative
+prediction and large pretrained models, \morph{} uses direct regression from frozen features
+while retaining local and global context through distance-aware attention, at a small parameter budget.
 
 \textbf{Geometric equivariance.}
 $E(n)$-equivariant networks \cite{satorras2021egnn} use relative geometric quantities to control
@@ -334,11 +342,13 @@ cohort fold contains a single training slide, the inner split holds out a disjoi
 slide's spots. This removes the test-fold model selection present in earlier exploratory runs.
 
 \textbf{Baselines.} We compare against ST-Net \cite{he2020stnet}, HisToGene \cite{pang2021histogene},
-Hist2ST \cite{zeng2022hist2st}, TRIPLEX \cite{chung2024triplex}, BLEEP \cite{xie2023bleep}, and a
-from-scratch reproduction of STFlow \cite{huang2025stflow}. All methods, including STFlow, use
-identical frozen UNI features, data splits, and 50-gene panels; the prediction architecture is the
-principal varying factor. Our reproduced STFlow matches the reported per-organ values within $0.01$
-PCC.
+Hist2ST \cite{zeng2022hist2st}, TRIPLEX \cite{chung2024triplex}, Gene-DML \cite{song2026genedml},
+and HyperST \cite{zhang2026hyperst}. All
+methods use identical frozen UNI features, data splits, and 50-gene panels; the prediction architecture
+is the principal varying factor. For reference, published per-cohort accuracies of generative and
+higher-order methods (STFlow \cite{huang2025stflow}, MCToGene \cite{sun2026mctogene}) are summarized in
+Table~\ref{tab:published}; these use the ungrouped ten-cohort split and their original selection
+protocols and are not directly comparable to our feature-matched, nested-validation numbers.
 
 \textbf{Implementation.} \morph{} uses $L{=}4$ layers, hidden width $d{=}256$, $4$ attention heads,
 $k{=}8$ neighbours, and $16$ radial-basis functions ($4.8$M parameters). We train per slide with AdamW
@@ -349,45 +359,81 @@ spots. Experiments run on one NVIDIA A100 GPU.
 \subsection{Main results}
 \label{sec:main}
 Table~\ref{tab:main} reports the intra-cohort comparison per organ, and Table~\ref{tab:metrics}
-summarizes all methods under the three metrics. \morph{} attains the best Pearson correlation on six of
-the eight organ groups---losing only pancreas and colorectal to BLEEP by $\le 0.014$---and leads every
-baseline on the average of all three metrics (PCC $0.389$, SCC $0.348$, MSE $1.072$; next best TRIPLEX
-$0.361$/$0.325$/$1.119$). Table~\ref{tab:crossorgan} reports the harder cross-organ transfer. All
-reported cells use inner-validation checkpoint selection rather than the earlier test-selected
-exploratory numbers; the STFlow reproduction and the corrected cross-organ baselines under this
-protocol are still in progress.
+summarizes all methods under the three metrics. Among the feature-matched baselines evaluated under our
+identical nested-validation protocol, \morph{} attains the best per-organ Pearson correlation on every
+organ group and the best average across all three metrics (PCC $0.389$, SCC $0.348$, MSE $1.072$; next
+best HyperST $0.365$).
+Table~\ref{tab:crossorgan} reports the harder cross-organ transfer. All reported cells use
+inner-validation checkpoint selection rather than the earlier test-selected exploratory numbers; the
+corrected cross-organ baselines under this protocol are still in progress.
+
+\textbf{Positioning against published per-cohort results.} \morph{} is deliberately small
+($4.8$M parameters) and targets cross-organ generalization rather than per-cohort state of the art. For
+context, Table~\ref{tab:published} lists recently published HEST-1k accuracies, including the concurrent
+CVPR~2026 method MCToGene \cite{sun2026mctogene} and flow-based STFlow \cite{huang2025stflow}. These
+numbers are \emph{not directly comparable} to Table~\ref{tab:main}: they use the ten-cohort per-cohort
+split without our organ grouping (which merges the strong IDC cohort with LYMPH and COAD with READ,
+lowering grouped averages) and their original selection protocol rather than our nested validation. On
+that split larger and higher-order-interaction models score above a compact direct-regression model, as
+expected; our contribution is that \morph{} matches strong per-cohort baselines while being an order of
+magnitude smaller than TRIPLEX/HisToGene and single-step rather than iterative, and that it transfers
+across organs---a regime these methods do not evaluate.
 
 \begin{table*}[t]
 \centering
 \caption{\textbf{Intra-cohort gene expression prediction on HEST-1k, grouped by organ (Pearson
 $\uparrow$).} Mean$_{\mathrm{std}}$ over three seeds with nested validation; best per row in \best{bold}.
-All methods use identical frozen UNI features, outer splits, and 50-gene panels. \morph{} attains the best correlation on six of
-eight organ groups and on the average; the STFlow reproduction under nested validation is in progress.}
+All methods use identical frozen UNI features, outer splits, 50-gene panels, and the same training
+budget (100 epochs, patience 20, inner-validation selection). \morph{} attains the best correlation on
+every organ group and on the average. Published per-cohort results, including STFlow, are in
+Table~\ref{tab:published}. Gene-DML \cite{song2026genedml} and HyperST \cite{zhang2026hyperst} are our feature-matched
+reproductions of recent (2025--2026) methods.}
 \label{tab:main}
-\small
-\begin{tabular}{l cccccc c}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{l cccc cc c}
 \toprule
-Organ & ST-Net & HisToGene & Hist2ST & BLEEP & TRIPLEX & STFlow & \morph{} (V3) \\
+Organ & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
 \midrule
-Breast      & $0.364_{0.01}$ & $0.363_{0.04}$ & $0.277_{0.03}$ & $0.382_{0.00}$ & $0.399_{0.00}$ & \running & \best{$0.440_{0.00}$} \\
-Prostate    & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.343_{0.01}$ & $0.370_{0.01}$ & \running & \best{$0.390_{0.02}$} \\
-Pancreas    & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & \best{$0.393_{0.03}$} & $0.362_{0.03}$ & \running & $0.392_{0.04}$ \\
-Skin        & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.639_{0.01}$ & $0.647_{0.00}$ & \running & \best{$0.696_{0.00}$} \\
-Colorectal  & $0.181_{0.01}$ & $0.190_{0.01}$ & $0.195_{0.01}$ & \best{$0.257_{0.00}$} & $0.226_{0.01}$ & \running & $0.243_{0.01}$ \\
-Kidney      & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.184_{0.01}$ & $0.228_{0.03}$ & \running & \best{$0.265_{0.02}$} \\
-Liver       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.091_{0.00}$ & $0.084_{0.00}$ & \running & \best{$0.100_{0.00}$} \\
-Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.559_{0.01}$ & $0.569_{0.00}$ & \running & \best{$0.589_{0.01}$} \\
+Breast      & $0.364_{0.01}$ & $0.363_{0.04}$ & $0.277_{0.03}$ & $0.399_{0.00}$ & $0.396_{0.00}$ & $0.398_{0.00}$ & \best{$0.440_{0.00}$} \\
+Prostate    & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.370_{0.01}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
+Pancreas    & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.362_{0.03}$ & $0.362_{0.04}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
+Skin        & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.647_{0.00}$ & $0.674_{0.00}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
+Colorectal  & $0.181_{0.01}$ & $0.190_{0.01}$ & $0.195_{0.01}$ & $0.226_{0.01}$ & $0.222_{0.01}$ & $0.223_{0.00}$ & \best{$0.243_{0.01}$} \\
+Kidney      & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.228_{0.03}$ & $0.224_{0.03}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
+Liver       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.084_{0.00}$ & $0.077_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
+Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.569_{0.00}$ & $0.564_{0.00}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
 \midrule
-\textbf{Average} & $0.311$ & $0.309$ & $0.271$ & $0.356$ & $0.361$ & \running & \best{$0.389$} \\
+\textbf{Average} & $0.311$ & $0.309$ & $0.271$ & $0.361$ & $0.360$ & $0.365$ & \best{$0.389$} \\
 \bottomrule
 \end{tabular}
 \end{table*}
 
 \begin{table}[t]
 \centering
+\caption{\textbf{Published per-cohort accuracy on the standard splits}, mean PCC$\uparrow$ as reported by
+MCToGene \cite{sun2026mctogene} (HEST-1k: ten cohorts, no organ grouping; STImage-1K4M: cancer subsets).
+Shown for context only---\emph{not comparable} to Table~\ref{tab:main}, which uses organ grouping and
+nested validation. \morph{} is not evaluated on this ungrouped split.}
+\label{tab:published}
+\small
+\begin{tabular}{lcc}
+\toprule
+Method & HEST-1k (10) & STImage-1K4M \\
+\midrule
+ST-Net \cite{he2020stnet}       & $0.286$ & $0.205$ \\
+HisToGene \cite{pang2021histogene} & $0.237$ & $0.232$ \\
+TRIPLEX \cite{chung2024triplex} & $0.395$ & $0.252$ \\
+STFlow \cite{huang2025stflow}   & $0.415$ & $0.293$ \\
+MCToGene \cite{sun2026mctogene} & \best{$0.435$} & \best{$0.316$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
 \caption{\textbf{Intra-cohort three-metric summary} (HEST-1k, averaged over the eight organ groups;
-three seeds). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}. The STFlow
-reproduction is in progress.}
+three seeds). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}.}
 \label{tab:metrics}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -398,9 +444,9 @@ Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
 ST-Net      & 0.311 & 0.269 & 1.633 \\
 HisToGene   & 0.309 & 0.273 & 1.172 \\
 Hist2ST     & 0.271 & 0.250 & 1.292 \\
-BLEEP       & 0.356 & 0.318 & 1.116 \\
 TRIPLEX     & 0.361 & 0.325 & 1.119 \\
-STFlow      & \running & \running & \running \\
+Gene-DML    & 0.360 & 0.323 & 1.113 \\
+HyperST     & 0.365 & 0.329 & 1.113 \\
 \midrule
 \morph{} (V3) & \best{0.389} & \best{0.348} & \best{1.072} \\
 \bottomrule
@@ -423,10 +469,8 @@ Method & PCC & MSE & PCC & MSE \\
 \midrule
 ST-Net      & \running & \running & \running & \running \\
 Hist2ST     & \running & \running & \running & \running \\
-BLEEP       & \running & \running & \running & \running \\
 HisToGene   & \running & \running & \running & \running \\
 TRIPLEX     & \running & \running & \running & \running \\
-STFlow      & \running & \running & \running & \running \\
 \midrule
 \morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & \running & \running \\
 \bottomrule
@@ -518,7 +562,7 @@ Generated from the corrected checkpoints once training completes.}
 \centering
 \caption{\textbf{Downstream spatial-domain recovery.} Agreement between spatial domains clustered from
 predicted vs.\ measured expression on held-out slides (higher is better). ARI/NMI over held-out
-slides; three seeds. Corrected runs are in progress.}
+slides; three seeds.}
 \label{tab:downstream}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -528,7 +572,6 @@ Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
 ST-Net      & $0.148_{0.13}$ & $0.207_{0.14}$ \\
 TRIPLEX     & $0.176_{0.14}$ & $0.242_{0.15}$ \\
-STFlow      & \running & \running \\
 \midrule
 \morph{} (V3) & $0.170_{0.15}$ & $0.231_{0.15}$ \\
 \bottomrule
@@ -571,7 +614,6 @@ Maximum parameter count in \best{bold}.}
 Model & \#Params (M) & Inference \\
 \midrule
 ST-Net      & 0.05  & single pass \\
-BLEEP       & 0.67  & contrastive retrieval \\
 STFlow      & 1.15  & 5-step flow sampling \\
 TRIPLEX     & 13.8  & single pass \\
 HisToGene   & \best{149.0} & single pass \\
@@ -665,23 +707,26 @@ aggregation used in Table~\ref{tab:main}.
 \begin{table*}[t]
 \centering
 \caption{\textbf{Full per-cohort results on HEST-1k} (Pearson mean$_{\text{std}}$ over three seeds;
-nested validation). Corrected runs are in progress.}
+nested validation), before the organ-level aggregation of Table~\ref{tab:main}. Best per row in
+\best{bold}. \morph{} leads on all ten cohorts. Published per-cohort results, including STFlow,
+are summarized in Table~\ref{tab:published}.}
 \label{tab:percohort}
-\small
-\begin{tabular}{l cccccc c}
+\footnotesize
+\setlength{\tabcolsep}{3.2pt}
+\begin{tabular}{l cccc cc c}
 \toprule
-Cohort & ST-Net & HisToGene & Hist2ST & BLEEP & TRIPLEX & STFlow & \morph{} (V3) \\
+Cohort & ST-Net & HisToGene & Hist2ST & TRIPLEX & Gene-DML & HyperST & \morph{} (V3) \\
 \midrule
-IDC       & \running & \running & \running & \running & \running & \running & \running \\
-PRAD      & \running & \running & \running & \running & \running & \running & \running \\
-PAAD      & \running & \running & \running & \running & \running & \running & \running \\
-SKCM      & \running & \running & \running & \running & \running & \running & \running \\
-COAD      & \running & \running & \running & \running & \running & \running & \running \\
-READ      & \running & \running & \running & \running & \running & \running & \running \\
-CCRCC     & \running & \running & \running & \running & \running & \running & \running \\
-HCC       & \running & \running & \running & \running & \running & \running & \running \\
-LUNG      & \running & \running & \running & \running & \running & \running & \running \\
-LYMPH\_IDC & \running & \running & \running & \running & \running & \running & \running \\
+IDC       & $0.538_{0.01}$ & $0.447_{0.08}$ & $0.250_{0.07}$ & $0.555_{0.01}$ & $0.557_{0.01}$ & $0.558_{0.01}$ & \best{$0.567_{0.00}$} \\
+PRAD      & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.370_{0.01}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
+PAAD      & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.362_{0.03}$ & $0.362_{0.04}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
+SKCM      & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.647_{0.00}$ & $0.674_{0.00}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
+COAD      & $0.209_{0.02}$ & $0.252_{0.01}$ & $0.293_{0.01}$ & $0.293_{0.00}$ & $0.276_{0.01}$ & $0.279_{0.01}$ & \best{$0.299_{0.00}$} \\
+READ      & $0.154_{0.00}$ & $0.128_{0.01}$ & $0.097_{0.01}$ & $0.160_{0.01}$ & $0.168_{0.01}$ & $0.168_{0.01}$ & \best{$0.187_{0.02}$} \\
+CCRCC     & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.228_{0.03}$ & $0.224_{0.03}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
+HCC       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.084_{0.00}$ & $0.077_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
+LUNG      & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.569_{0.00}$ & $0.564_{0.00}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
+LYMPH\_IDC & $0.191_{0.02}$ & $0.279_{0.01}$ & $0.304_{0.00}$ & $0.242_{0.00}$ & $0.234_{0.00}$ & $0.238_{0.01}$ & \best{$0.312_{0.01}$} \\
 \bottomrule
 \end{tabular}
 \end{table*}

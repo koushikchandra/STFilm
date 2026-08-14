@@ -63,7 +63,8 @@ def run_cohort(args, cohort, device, nm):
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
-                   choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep"])
+                   choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
+                            "mctogene", "hist", "histogpa", "hyperst", "genedml", "m2ost"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--cohort", default="all")
     p.add_argument("--source_dataroot", default="dataset")
@@ -89,6 +90,10 @@ def main():
     p.add_argument("--max_ref", type=int, default=30000)
     p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--corr_weight", type=float, default=0.0)
+    # recent baselines (feature-matched)
+    p.add_argument("--alignment_beta", type=float, default=0.2)   # HyperST hyperbolic alignment weight
+    p.add_argument("--entail_weight", type=float, default=0.4)    # HyperST entailment term
+    p.add_argument("--aux_weight", type=float, default=0.25)      # Gene-DML per-stream metric weight
     args = p.parse_args()
     import torch
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"

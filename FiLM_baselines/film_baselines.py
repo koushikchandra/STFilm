@@ -30,8 +30,9 @@ import torch.nn.functional as F
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 import baseline_spatial as B
-from stflow.utils import set_random_seed, merge_fold_results
+from stflow.utils import set_random_seed
 from stflow.data.normalize_utils import get_normalize_method
+from MorphoST.evaluation import train_val_split   # nested-validation inner split (+ single-slide fallback)
 
 
 # ----------------------------- FiLM conditioner -----------------------------
@@ -173,8 +174,65 @@ class BleepFiLM(B.BleepEncoder):
 
 
 # ----------------------------- build / train -----------------------------
+def _load_hyperst():
+    """Import the official HyperST hyperbolic-alignment core (baselines/HyperST/hyperst)."""
+    hp = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "baselines", "HyperST")
+    hp = os.path.abspath(hp)
+    if hp not in sys.path: sys.path.insert(0, hp)
+    from hyperst.modules.alignment import HHAlignment
+    from hyperst.modules.encoder import ResMLPEncoder
+    return HHAlignment, ResMLPEncoder
+
+
+class HyperSTFiLM(nn.Module):
+    """Feature-matched HyperST (CVPR 2026): the official Hierarchical Hyperbolic Alignment + ResMLP
+    decoder, fed frozen UNI features instead of the paper's LoRA-tuned image encoder. The niche stream
+    is the kNN-neighbour mean of UNI features (their "spot + neighbours" niche). The gene branch takes
+    the log expression and drives ONLY the contrastive/entailment alignment loss during training; the
+    prediction path (image_feats -> decoder) is gene-independent, so eval passes zeros and is
+    leakage-free. `film` is accepted for interface parity but HyperST already conditions via the niche
+    stream, so only `none` is meaningful (a warning is not raised)."""
+    def __init__(self, fdim, emb, genes, dropout, alignment_beta, entail_weight):
+        super().__init__()
+        HHAlignment, ResMLPEncoder = _load_hyperst()
+        self.alignment_beta = alignment_beta
+        self.gene_dim = genes
+        self.image_projector = nn.Linear(fdim, emb)
+        self.niche_image_projector = nn.Linear(fdim, emb)
+        self.gene_encoder = nn.Linear(genes, emb)
+        self.niche_gene_encoder = nn.Linear(genes, emb)
+        self.alignment = HHAlignment(image_dim=emb, gene_dim=emb, embed_dim=emb, mlp_ratio=2.0,
+                                     image_dropout=dropout, gene_dropout=dropout,
+                                     entail_weight=entail_weight, niche_project=True, predict_norm=False)
+        self.gene_decoder = ResMLPEncoder(in_features=emb * 2, hidden_size=emb, mlp_ratio=2.0,
+                                          drop=0., depth=2)
+        self.fc = nn.Linear(emb, genes)
+        self.align_loss = torch.zeros(())
+
+    def forward(self, feat, gxy, adj, labels=None):
+        w = adj / adj.sum(1, keepdim=True).clamp(min=1)
+        image_emb = self.image_projector(feat)
+        niche_image_emb = self.niche_image_projector(w @ feat)
+        if self.alignment_beta > 0:
+            if labels is not None:
+                gene_in, niche_gene_in = labels, w @ labels
+            else:  # eval: image_feats are gene-independent, so zeros give identical predictions
+                gene_in = torch.zeros(feat.shape[0], self.gene_dim, device=feat.device)
+                niche_gene_in = gene_in
+            r = self.alignment(image_emb=image_emb, niche_image_emb=niche_image_emb,
+                               gene_emb=self.gene_encoder(gene_in),
+                               niche_gene_emb=self.niche_gene_encoder(niche_gene_in))
+            self.align_loss = r["loss"] if labels is not None else torch.zeros((), device=feat.device)
+            image_feats, niche_image_feats = r["emb"]["image_feats"], r["emb"]["niche_image_feats"]
+        else:
+            self.align_loss = torch.zeros((), device=feat.device)
+            image_feats, niche_image_feats = image_emb, niche_image_emb
+        return self.fc(self.gene_decoder(torch.cat([image_feats, niche_image_feats], dim=-1)))
+
+
 def build_model(args, n_genes):
     m = args.model
+    if m == "hyperst":   return HyperSTFiLM(args.feature_dim, args.dim, n_genes, args.dropout, args.alignment_beta, args.entail_weight)
     if m == "histogene": return HistoGeneFiLM(args.feature_dim, args.dim, args.depth, args.heads, n_genes, args.n_pos, args.dropout, args.film)
     if m == "hist2st":   return Hist2STFiLM(args.feature_dim, args.dim, args.depth2, args.depth3, args.heads, n_genes, args.n_pos, args.dropout, args.film)
     if m == "triplex":   return TriplexFiLM(args.feature_dim, args.dim, args.heads, args.depth, n_genes, args.dropout, args.film)
@@ -184,10 +242,10 @@ def build_model(args, n_genes):
     raise ValueError(m)
 
 
-def train_fold_reg(args, train_slides, test_slides, gene_list, device):
+def train_fold_reg(args, train_slides, val_slides, test_slides, gene_list, device):
     model = build_model(args, len(gene_list)).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
-    best, best_res, early = -1, None, 0
+    best, best_state, early = -1e9, None, 0
     order = list(range(len(train_slides)))
     for epoch in range(1, args.epochs + 1):
         model.train(); np.random.shuffle(order)
@@ -198,19 +256,25 @@ def train_fold_reg(args, train_slides, test_slides, gene_list, device):
                 sel = torch.randperm(feat.shape[0])[:args.max_spots]
                 feat, gxy, lab, adj = feat[sel], gxy[sel], lab[sel], adj[sel][:, sel]
             feat, gxy, adj, lab = feat.to(device), gxy.to(device), adj.to(device), lab.to(device)
-            pred = model(feat, gxy, adj)
-            loss = F.mse_loss(pred, lab)
+            if args.model == "hyperst":
+                pred = model(feat, gxy, adj, lab)                       # gene branch drives alignment
+                loss = F.mse_loss(pred, lab) + args.alignment_beta * model.align_loss
+            else:
+                pred = model(feat, gxy, adj)
+                loss = F.mse_loss(pred, lab)
             opt.zero_grad(); loss.backward(); opt.step()
-        res = B.evaluate(model, test_slides, gene_list, device)
-        if res["pearson_mean"] > best:
-            best, best_res, early = res["pearson_mean"], res, 0
+        score = B.evaluate(model, val_slides, gene_list, device)["pearson_mean"]   # select on VAL
+        if best_state is None or (score == score and score > best):
+            best, best_state, early = score, {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}, 0
         else:
             early += 1
             if early >= 20: break
-    return best_res
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return B.evaluate(model, test_slides, gene_list, device)                       # score TEST once
 
 
-def train_fold_bleep(args, train_slides, test_slides, gene_list, device):
+def train_fold_bleep(args, train_slides, val_slides, test_slides, gene_list, device):
     """BLEEP contrastive train + retrieval eval, but with the FiLM'd image head."""
     model = BleepFiLM(args.feature_dim, len(gene_list), args.dim, args.dropout, args.film).to(device)
     opt = torch.optim.Adam(model.parameters(), lr=args.lr)
@@ -219,7 +283,7 @@ def train_fold_bleep(args, train_slides, test_slides, gene_list, device):
     g = torch.Generator().manual_seed(args.seed)
     ref_sel = torch.randperm(M, generator=g)[:min(args.max_ref, M)]
     ref_feat, ref_expr = all_feat[ref_sel], all_expr[ref_sel]
-    best, best_res, early = -1, None, 0
+    best, best_state, early = -1e9, None, 0
     for epoch in range(1, args.epochs + 1):
         model.train(); perm = torch.randperm(M, generator=g)
         for i in range(0, M, args.bleep_batch):
@@ -231,13 +295,17 @@ def train_fold_bleep(args, train_slides, test_slides, gene_list, device):
             tgt = torch.arange(logits.shape[0], device=device)
             loss = 0.5 * (F.cross_entropy(logits, tgt) + F.cross_entropy(logits.t(), tgt))
             opt.zero_grad(); loss.backward(); opt.step()
-        res = B.bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device, args.k_retrieval)
-        if res["pearson_mean"] > best:
-            best, best_res, early = res["pearson_mean"], res, 0
+        score = B.bleep_eval(model, ref_feat, ref_expr, val_slides, gene_list, device,
+                             args.k_retrieval)["pearson_mean"]                      # select on VAL
+        if best_state is None or (score == score and score > best):
+            best, best_state, early = score, {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}, 0
         else:
             early += 1
             if early >= 20: break
-    return best_res
+    if best_state is not None:
+        model.load_state_dict(best_state)
+    return B.bleep_eval(model, ref_feat, ref_expr, test_slides, gene_list, device,  # score TEST once
+                        args.k_retrieval)
 
 
 def run(args):
@@ -260,28 +328,33 @@ def run(args):
         out = os.path.join(save_dir, f"fold_{fold}_results.json")
         if os.path.isfile(out):
             print(f"=== {tag} fold {fold} SKIP ==="); all_res.append(json.load(open(out))); continue
-        train_df = pd.read_csv(os.path.join(split_dir, f"train_{fold}.csv"))
+        outer_train_df = pd.read_csv(os.path.join(split_dir, f"train_{fold}.csv"))
         test_df = pd.read_csv(os.path.join(split_dir, f"test_{fold}.csv"))
         gene_list = json.load(open(os.path.join(regime_dir, f"genes_{fold}.json")))["genes"]
-        train_slides = B.load_slides(train_df, args, gene_list, nm, args.n_pos, args.k)
+        seed_fold = args.seed + (int(fold) if str(fold).isdigit() else abs(hash(str(fold))) % 1000)
+        inner_train_df, val_df = train_val_split(outer_train_df, seed_fold, args.val_fraction)
+        train_slides = B.load_slides(inner_train_df, args, gene_list, nm, args.n_pos, args.k)
+        val_slides = B.load_slides(val_df, args, gene_list, nm, args.n_pos, args.k)
         test_slides = B.load_slides(test_df, args, gene_list, nm, args.n_pos, args.k)
         fn = train_fold_bleep if is_bleep else train_fold_reg
-        res = fn(args, train_slides, test_slides, gene_list, device)
-        res["fold"] = fold
+        res = fn(args, train_slides, val_slides, test_slides, gene_list, device)   # nested validation
+        res["fold"] = fold; res["n_val_slides"] = len(val_df)
         json.dump(res, open(out, "w"), sort_keys=True, indent=4); all_res.append(res)
         print(f"=== {tag} fold {fold}: pearson_mean={res['pearson_mean']:.4f} ===", flush=True)
 
-    kfold = merge_fold_results(all_res)
-    kfold["pearson_corrs"] = sorted(kfold["pearson_corrs"], key=itemgetter("mean"), reverse=True)
+    pm = [r["pearson_mean"] for r in all_res]
+    kfold = {"pearson_mean": float(np.mean(pm)), "pearson_std": float(np.std(pm)), "mean_per_split": pm,
+             "spearman_mean": float(np.nanmean([r.get("spearman_mean", float("nan")) for r in all_res])),
+             "mse": float(np.nanmean([r.get("mse", float("nan")) for r in all_res])), "n_folds": len(all_res)}
     json.dump(kfold, open(os.path.join(save_dir, "results_kfold.json"), "w"), sort_keys=True, indent=4)
     print(f"\n{tag}: pearson_mean = {kfold['pearson_mean']:.4f} "
-          f"(per-fold {[round(x,4) for x in kfold['mean_per_split']]})")
+          f"(per-fold {[round(x,4) for x in pm]})")
 
 
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
-                   choices=["histogene", "hist2st", "triplex", "stnet", "deepspace", "mlpprobe", "bleep"])
+                   choices=["histogene", "hist2st", "triplex", "stnet", "deepspace", "mlpprobe", "bleep", "hyperst"])
     p.add_argument("--film", required=True, choices=["none", "desc", "local"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO"])
     p.add_argument("--seed", type=int, default=1)
@@ -291,6 +364,7 @@ if __name__ == "__main__":
     p.add_argument("--feature_encoder", default="uni_v1_official")
     p.add_argument("--save_root", default="results_film_baselines")
     p.add_argument("--normalize_method", default="log1p")
+    p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--device", type=int, default=0)
     p.add_argument("--epochs", type=int, default=100)
     p.add_argument("--lr", type=float, default=1e-4)
@@ -303,6 +377,9 @@ if __name__ == "__main__":
     p.add_argument("--n_pos", type=int, default=128)
     p.add_argument("--k", type=int, default=8)
     p.add_argument("--max_spots", type=int, default=4000)
+    # hyperst (feature-matched HyperST, CVPR 2026)
+    p.add_argument("--alignment_beta", type=float, default=0.2)   # weight of hyperbolic alignment loss
+    p.add_argument("--entail_weight", type=float, default=0.4)    # entailment term inside alignment
     # bleep
     p.add_argument("--bleep_batch", type=int, default=512)
     p.add_argument("--k_retrieval", type=int, default=50)

@@ -78,9 +78,14 @@ def knn_adj(coords, k):
     return A
 
 
-def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None):
+def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None, cap=None):
     """cohort=None -> parse from patches_path (cross-organ CSVs, prefixed). Pass cohort explicitly
-    for the STFlow-style per-cohort CSVs where patches_path has no cohort prefix."""
+    for the STFlow-style per-cohort CSVs where patches_path has no cohort prefix.
+
+    cap: if set, deterministically subsample each slide to <=cap spots BEFORE building the dense
+    [N,N] kNN adjacency. Needed for models with O(N^2) attention (e.g. FEAST) where a large pooled
+    slide's adjacency otherwise exhausts host/GPU memory. Seeded by slide id, so repeated loads (and
+    none/desc/local FiLM variants) get identical spots."""
     slides = []
     for _, row in df.iterrows():
         coh = cohort if cohort is not None else row["patches_path"].split("/")[0]
@@ -97,6 +102,10 @@ def load_slides(df, args, gene_list, normalize_method, n_pos, k, cohort=None):
         idx = spot_role_index(row, len(feat))
         if idx is not None:
             coords, feat, labels = coords[idx], feat[idx], labels[idx]
+        if cap is not None and len(feat) > cap:
+            g = np.random.default_rng(abs(hash(str(sid))) % (2**31))
+            sel = np.sort(g.permutation(len(feat))[:cap])
+            coords, feat, labels = coords[sel], feat[sel], labels[sel]
         slides.append({
             "slide_id": str(sid),
             "feat": torch.from_numpy(feat),
@@ -282,7 +291,230 @@ class BleepEncoder(nn.Module):
         return zi, ze
 
 
+class MCToGeneNet(nn.Module):
+    """Feature-matched adaptation of MCToGene (Sun et al., CVPR 2026): high-order, many-to-many
+    multi-cell interaction via induced-set (latent) attention, hierarchically coupled with pairwise
+    graph aggregation. Captures the core mechanism under shared UNI features; not the official model."""
+    def __init__(self, fdim, dim, depth, heads, n_genes, dropout, n_latents=16):
+        super().__init__()
+        self.proj = nn.Linear(fdim, dim)
+        self.latents = nn.Parameter(torch.randn(n_latents, dim) * 0.02)
+        self.pair = nn.ModuleList([GSBlock(dim, dim) for _ in range(depth)])
+        self.to_lat = nn.ModuleList([nn.MultiheadAttention(dim, heads, dropout=dropout, batch_first=True) for _ in range(depth)])
+        self.from_lat = nn.ModuleList([nn.MultiheadAttention(dim, heads, dropout=dropout, batch_first=True) for _ in range(depth)])
+        self.ln = nn.ModuleList([nn.LayerNorm(dim) for _ in range(depth)])
+        self.head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy, adj):
+        x = self.proj(feat)
+        for pair, tl, fl, ln in zip(self.pair, self.to_lat, self.from_lat, self.ln):
+            lat = self.latents[None] + tl(self.latents[None], x[None], x[None], need_weights=False)[0]  # latents gather from cells
+            mb = fl(x[None], lat, lat, need_weights=False)[0][0]     # cells read high-order (many-body) context
+            pr = pair(x, adj)                                        # pairwise graph aggregation
+            x = ln(x + mb + pr)                                      # hierarchical coupling
+        return self.head(x)
+
+
+class HiSTNet(nn.Module):
+    """Feature-matched adaptation of HiST (Wu et al., 2026): hierarchical sparse WINDOW attention for
+    local geometric correspondence, a coarse window-token level for multiscale context, and a slide
+    calibration token for global conditioning. Core mechanism under shared UNI features; not official."""
+    def __init__(self, fdim, dim, depth, heads, n_genes, n_pos, dropout, win=8):
+        super().__init__()
+        self.proj = nn.Linear(fdim, dim); self.win = win; self.stride = n_pos // win + 1
+        self.q1 = nn.ModuleList([nn.LayerNorm(dim) for _ in range(depth)])
+        self.wattn = nn.ModuleList([nn.MultiheadAttention(dim, heads, dropout=dropout, batch_first=True) for _ in range(depth)])
+        self.q2 = nn.ModuleList([nn.LayerNorm(dim) for _ in range(depth)])
+        self.cattn = nn.ModuleList([nn.MultiheadAttention(dim, heads, dropout=dropout, batch_first=True) for _ in range(depth)])
+        self.ff = nn.ModuleList([nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, 2 * dim), nn.GELU(),
+                                               nn.Dropout(dropout), nn.Linear(2 * dim, dim)) for _ in range(depth)])
+        self.calib = nn.Linear(dim, 2 * dim)
+        self.head = nn.Sequential(nn.LayerNorm(dim), nn.Linear(dim, n_genes))
+
+    def forward(self, feat, gxy, adj=None):
+        x = self.proj(feat)
+        wid = (gxy[:, 0] // self.win) * self.stride + (gxy[:, 1] // self.win)   # spatial window id
+        s = x.mean(0); gamma, beta = self.calib(s).chunk(2, -1); x = x * (1 + gamma) + beta  # slide calibration token
+        wmask = wid[:, None] != wid[None, :]                                    # True -> different window (masked)
+        for q1, wa, q2, ca, ff in zip(self.q1, self.wattn, self.q2, self.cattn, self.ff):
+            h = q1(x)[None]
+            x = x + wa(h, h, h, attn_mask=wmask, need_weights=False)[0][0]      # sparse window attention
+            uniq, inv = torch.unique(wid, return_inverse=True)
+            cnt = torch.bincount(inv).clamp(min=1).float()[:, None]
+            wtok = torch.zeros(len(uniq), x.shape[1], device=x.device).index_add_(0, inv, q2(x)) / cnt
+            wtok = wtok + ca(wtok[None], wtok[None], wtok[None], need_weights=False)[0][0]  # multiscale window attn
+            x = x + wtok[inv] + ff(x)                                           # broadcast coarse context back
+        return self.head(x)
+
+
+class HistoGPANet(nn.Module):
+    """Feature-matched adaptation of HistoGPA (Liu et al., 2026): a shared slide-level representation
+    modulates local morphology (pathway 1) and conditions learned gene-prior embeddings that each spot
+    retrieves via cross-attention (pathway 2); prediction is the affinity to the conditioned gene
+    embeddings. Core mechanism under shared UNI features; not the official model."""
+    def __init__(self, fdim, dim, depth, heads, n_genes, dropout):
+        super().__init__()
+        self.proj = nn.Linear(fdim, dim)
+        self.local = nn.ModuleList([TBlock(dim, heads, 2 * dim, dropout) for _ in range(depth)])
+        self.gene = nn.Parameter(torch.randn(n_genes, dim) * 0.02)             # learned gene prior
+        self.slide_to_gene = nn.Sequential(nn.Linear(dim, dim), nn.GELU(), nn.Linear(dim, dim))
+        self.slide_film = nn.Linear(dim, 2 * dim)
+        self.cross = nn.MultiheadAttention(dim, heads, dropout=dropout, batch_first=True)
+        self.scale = nn.Parameter(torch.ones(1)); self.bias = nn.Parameter(torch.zeros(n_genes))
+
+    def forward(self, feat, gxy=None, adj=None):
+        x = self.proj(feat)
+        for b in self.local:
+            x = b(x[None])[0]
+        s = x.mean(0)
+        gamma, beta = self.slide_film(s).chunk(2, -1); x = x * (1 + gamma) + beta   # pathway 1: modulate morphology
+        g = self.gene + self.slide_to_gene(s)[None]                                 # pathway 2: condition gene prior
+        x = x + self.cross(x[None], g, g, need_weights=False)[0][0]                 # retrieve context-adapted gene prior
+        return self.scale * (x @ g[0].t()) + self.bias                              # gene-affinity prediction
+
+
+def _load_hyperst():
+    """Import the official HyperST hyperbolic-alignment core (baselines/HyperST/hyperst)."""
+    import sys
+    hp = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "baselines", "HyperST"))
+    if hp not in sys.path: sys.path.insert(0, hp)
+    from hyperst.modules.alignment import HHAlignment
+    from hyperst.modules.encoder import ResMLPEncoder
+    return HHAlignment, ResMLPEncoder
+
+
+class HyperSTNet(nn.Module):
+    """Feature-matched HyperST (Zhang et al., CVPR 2026): the official Hierarchical Hyperbolic
+    Alignment + ResMLP decoder, fed frozen UNI features instead of the paper's LoRA-tuned image
+    encoder. Niche = kNN-neighbour mean of UNI features (their "spot + neighbours" niche). The gene
+    branch takes the log expression and drives ONLY the contrastive/entailment alignment loss during
+    training; the prediction path (image_feats -> decoder) is gene-independent, so eval passes zeros
+    and is leakage-free. `needs_labels`/`aux_loss` let the shared trainer add the alignment term."""
+    needs_labels = True
+    def __init__(self, fdim, emb, genes, dropout, alignment_beta=0.2, entail_weight=0.4):
+        super().__init__()
+        HHAlignment, ResMLPEncoder = _load_hyperst()
+        self.alignment_beta = alignment_beta; self.gene_dim = genes
+        self.image_projector = nn.Linear(fdim, emb)
+        self.niche_image_projector = nn.Linear(fdim, emb)
+        self.gene_encoder = nn.Linear(genes, emb)
+        self.niche_gene_encoder = nn.Linear(genes, emb)
+        self.alignment = HHAlignment(image_dim=emb, gene_dim=emb, embed_dim=emb, mlp_ratio=2.0,
+                                     image_dropout=dropout, gene_dropout=dropout,
+                                     entail_weight=entail_weight, niche_project=True, predict_norm=False)
+        self.gene_decoder = ResMLPEncoder(in_features=emb * 2, hidden_size=emb, mlp_ratio=2.0, drop=0., depth=2)
+        self.fc = nn.Linear(emb, genes)
+        self.aux_loss = torch.zeros(())
+
+    def forward(self, feat, gxy, adj, labels=None):
+        w = adj / adj.sum(1, keepdim=True).clamp(min=1)
+        image_emb = self.image_projector(feat)
+        niche_image_emb = self.niche_image_projector(w @ feat)
+        if self.alignment_beta > 0:
+            if labels is not None:
+                gene_in, niche_gene_in = labels, w @ labels
+            else:
+                gene_in = torch.zeros(feat.shape[0], self.gene_dim, device=feat.device); niche_gene_in = gene_in
+            r = self.alignment(image_emb=image_emb, niche_image_emb=niche_image_emb,
+                               gene_emb=self.gene_encoder(gene_in), niche_gene_emb=self.niche_gene_encoder(niche_gene_in))
+            self.aux_loss = self.alignment_beta * r["loss"] if labels is not None else torch.zeros((), device=feat.device)
+            image_feats, niche_image_feats = r["emb"]["image_feats"], r["emb"]["niche_image_feats"]
+        else:
+            self.aux_loss = torch.zeros((), device=feat.device)
+            image_feats, niche_image_feats = image_emb, niche_image_emb
+        return self.fc(self.gene_decoder(torch.cat([image_feats, niche_image_feats], dim=-1)))
+
+
+class GeneDMLNet(nn.Module):
+    """Feature-matched Gene-DML: spot / neighbour / global UNI streams fused by a small transformer
+    with per-stream deep-metric supervision (the aux term), returning the fused prediction. Aux loss
+    is added by the shared trainer via `needs_labels`/`aux_loss`."""
+    needs_labels = True
+    def __init__(self, fdim, dim, genes, heads, depth, dropout, aux_weight=0.25):
+        super().__init__()
+        self.aux_weight = aux_weight
+        self.spot = nn.Linear(fdim, dim); self.neigh = nn.Linear(fdim, dim); self.glob = nn.Linear(fdim, dim)
+        layer = nn.TransformerEncoderLayer(dim, heads, 2 * dim, dropout, batch_first=True, norm_first=True)
+        self.fuse = nn.TransformerEncoder(layer, depth)
+        self.type_emb = nn.Parameter(torch.zeros(3, dim)); nn.init.normal_(self.type_emb, std=.02)
+        self.stream_heads = nn.ModuleList([nn.Linear(dim, genes) for _ in range(3)])
+        self.mix = nn.Sequential(nn.LayerNorm(3 * dim), nn.Linear(3 * dim, genes))
+        self.aux_loss = torch.zeros(())
+
+    def forward(self, feat, gxy, adj, labels=None):
+        w = adj / adj.sum(1, keepdim=True).clamp(min=1)
+        nfeat = w @ feat; gfeat = feat.mean(0, keepdim=True).expand_as(feat)
+        toks = torch.stack([self.spot(feat), self.neigh(nfeat), self.glob(gfeat)], 1) + self.type_emb[None]
+        toks = self.fuse(toks)
+        pred = self.mix(toks.flatten(1))
+        if labels is not None:
+            aux = sum(F.mse_loss(h(toks[:, i]), labels) for i, h in enumerate(self.stream_heads)) / 3
+            self.aux_loss = self.aux_weight * aux
+        else:
+            self.aux_loss = torch.zeros((), device=feat.device)
+        return pred
+
+
+def _load_m2ost():
+    """Import M2OST's cross-scale Transformer core (baselines/M2OST/m2ost_core.py)."""
+    import sys
+    mp = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "baselines", "M2OST"))
+    if mp not in sys.path: sys.path.insert(0, mp)
+    from m2ost_core import Transformer
+    return Transformer
+
+
+class M2OSTNet(nn.Module):
+    """Feature-matched M2OST (Wang et al., AAAI 2025): the official many-to-one cross-scale Transformer
+    (intra-scale ITMM + cross-scale CTMM + channel-mixing CCMM) fed frozen UNI features. Since we cache
+    single-magnification UNI features, the paper's 40x/10x/5x image pyramid is approximated by three
+    *spatial* scales -- the spot itself (fine), its kNN neighbours (mid), and the slide-global mean
+    (coarse) -- so M2OST's cross-scale mixing operates over spatial rather than magnification levels.
+    A [cls] token per scale is read out, concatenated, and mapped to the gene panel."""
+    def __init__(self, fdim, dim, genes, depth, heads, dropout, k):
+        super().__init__()
+        Transformer = _load_m2ost()
+        self.k = k
+        d3 = dim // 3; self.d3 = d3; eff = 3 * d3
+        m2ost_heads = 6   # M2OST splits attention as heads//3 and chunks qkv by 3 -> heads must be a
+                          # multiple of 3 with inner_dim divisible by 3 (the shared --heads=8 breaks this)
+        self.proj_fine = nn.Linear(fdim, d3)
+        self.proj_mid = nn.Linear(fdim, d3)
+        self.proj_coarse = nn.Linear(fdim, d3)
+        self.cls = nn.Parameter(torch.randn(1, 1, d3))
+        self.pos_fine = nn.Parameter(torch.randn(1, 2, d3))
+        self.pos_mid = nn.Parameter(torch.randn(1, k + 1, d3))
+        self.pos_coarse = nn.Parameter(torch.randn(1, 2, d3))
+        self.transformer = Transformer(eff, depth, m2ost_heads, 64, eff, dropout)
+        self.head = nn.Linear(eff, genes)
+
+    def forward(self, feat, gxy, adj):
+        N = feat.shape[0]; kk = min(self.k, N)
+        nbr = adj.topk(kk, dim=1).indices                      # [N, kk] nearest neighbours
+        cls = self.cls.expand(N, -1, -1)
+        fine = torch.cat([cls, self.proj_fine(feat).unsqueeze(1)], 1) + self.pos_fine[:, :2]
+        mid = torch.cat([cls, self.proj_mid(feat[nbr])], 1) + self.pos_mid[:, :kk + 1]
+        gmean = feat.mean(0, keepdim=True).expand(N, -1)
+        coarse = torch.cat([cls, self.proj_coarse(gmean).unsqueeze(1)], 1) + self.pos_coarse[:, :2]
+        x = self.transformer(fine, mid, coarse)
+        return self.head(torch.cat([a[:, 0] for a in x], dim=-1))   # concat per-scale [cls]
+
+
 def build_model(args, n_genes):
+    if args.model == "m2ost":
+        return M2OSTNet(args.feature_dim, args.dim, n_genes, args.depth, args.heads, args.dropout, args.k)
+    if args.model == "hyperst":
+        return HyperSTNet(args.feature_dim, args.dim, n_genes, args.dropout,
+                          getattr(args, "alignment_beta", 0.2), getattr(args, "entail_weight", 0.4))
+    if args.model == "genedml":
+        return GeneDMLNet(args.feature_dim, args.dim, n_genes, args.heads, args.depth, args.dropout,
+                          getattr(args, "aux_weight", 0.25))
+    if args.model == "mctogene":
+        return MCToGeneNet(args.feature_dim, args.dim, args.depth, args.heads, n_genes, args.dropout)
+    if args.model == "hist":
+        return HiSTNet(args.feature_dim, args.dim, args.depth, args.heads, n_genes, args.n_pos, args.dropout)
+    if args.model == "histogpa":
+        return HistoGPANet(args.feature_dim, args.dim, args.depth, args.heads, n_genes, args.dropout)
     if args.model == "histogene":
         return HistoGeneNet(args.feature_dim, args.dim, args.depth, args.heads,
                             n_genes, args.n_pos, args.dropout)
@@ -344,8 +576,12 @@ def train_fold(args, train_slides, val_slides, test_slides, gene_list, device, f
                 feat, gxy, lab = feat[sel], gxy[sel], lab[sel]
                 adj = adj[sel][:, sel]
             feat = feat.to(device); gxy = gxy.to(device); adj = adj.to(device); lab = lab.to(device)
-            pred = model(feat, gxy, adj)
-            loss = regression_loss(pred, lab, args.corr_weight)
+            if getattr(model, "needs_labels", False):
+                pred = model(feat, gxy, adj, lab)           # model bakes its own weighted aux term
+                loss = regression_loss(pred, lab, args.corr_weight) + model.aux_loss
+            else:
+                pred = model(feat, gxy, adj)
+                loss = regression_loss(pred, lab, args.corr_weight)
             opt.zero_grad(); loss.backward(); opt.step()
         res = evaluate(model, val_slides, gene_list, device)
         if res["pearson_mean"] > best_pearson:
@@ -488,7 +724,8 @@ def run(args):
 if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
-                   choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep"])
+                   choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
+                            "mctogene", "hist", "histogpa"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
