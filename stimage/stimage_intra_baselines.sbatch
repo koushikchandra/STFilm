@@ -51,7 +51,7 @@ PYTHONPATH=STFlow OMP_NUM_THREADS=5 MKL_NUM_THREADS=5 \
   --embed_dataroot embed_dataroot_stimage \
   --save_root "$ROOT" \
   --val_fraction 0.15 \
-  --epochs 100 --patience 20 \
+  --epochs 100 \
   --device 0 \
   2>&1 | grep -vE "FutureWarning|pynvml|fa.py:24|accum.append"
 echo "[sti_ib] $(date +%H:%M:%S) END $TAG"

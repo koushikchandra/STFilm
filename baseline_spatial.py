@@ -726,7 +726,7 @@ if __name__ == "__main__":
     p.add_argument("--model", required=True,
                    choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
                             "mctogene", "hist", "histogpa"])
-    p.add_argument("--regime", required=True, choices=["POOLED", "LOOO"])
+    p.add_argument("--regime", required=True, choices=["POOLED", "LOOO", "INTRA"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
     p.add_argument("--source_dataroot", default="dataset")
