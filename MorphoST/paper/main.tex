@@ -427,14 +427,14 @@ Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.564_{0.00}$ 
 \caption{\textbf{Intra-organ gene expression prediction on mouse HEST (Pearson $\uparrow$).}
 5-fold cross-validation within each mouse organ; mean$_{\mathrm{std}}$ over three seeds with nested-validation.
 59 Visium slides across 7 mouse organs from the MahmoodLab HEST collection~\cite{jaume2024hest}.
-All methods use identical frozen UNI features and organ-specific 50-gene HVG panels.
+Same five feature-matched baselines as Table~\ref{tab:main}; identical frozen UNI features and organ-specific 50-gene HVG panels.
 Best per row in \best{bold}.}
 \label{tab:mouse_intra}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{l ccccc c}
 \toprule
-Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & TRIPLEX~\tiny{CVPR'24} & BLEEP~\tiny{NeurIPS'23} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
 Brain   & \running & \running & \running & \running & \running & $0.695_{0.009}$ \\
 Liver   & \running & \running & \running & \running & \running & $0.404_{0.014}$ \\
@@ -626,7 +626,7 @@ HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$
 \caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
 59 Visium slides across 7 mouse organs (brain, liver, skin, heart, bowel, kidney, muscle).
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: 5-fold pooled cross-validation.
-PCC$\uparrow$ on 50 mouse HVGs. Baselines use the same UNI features and protocol as Table~\ref{tab:crossorgan}.}
+PCC$\uparrow$ on 50 mouse HVGs. Same five feature-matched baselines as Table~\ref{tab:main}.}
 \label{tab:mouse}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -637,8 +637,8 @@ Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 ST-Net~\cite{he2020stnet} (NBE'20)          & $0.015_{0.013}$ & $0.357_{0.036}$ \\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \best{$0.026_{0.009}$} & $0.854_{0.019}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.021_{0.014}$ & $0.829_{0.028}$ \\
-TRIPLEX~\cite{chung2024triplex} (CVPR'24)    & $0.025_{0.005}$ & $0.859_{0.017}$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)          & $-0.006_{0.003}$ & $0.848_{0.012}$ \\
+Gene-DML~\cite{song2026genedml} (WACV'26)   & \running & \running \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)   & \running & \running \\
 \midrule
 \morph{} (V3) & $0.014_{0.005}$ & \best{$0.887_{0.005}$} \\
 \bottomrule

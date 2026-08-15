@@ -23,7 +23,7 @@ echo "[mouse_bl] node=$(hostname) job=$SLURM_JOB_ID task=$SLURM_ARRAY_TASK_ID"
 python -c "import torch; print('[mouse_bl] cuda:', torch.cuda.is_available())"
 
 REGIMES=(LOOO POOLED)
-MODELS=(stnet histogene hist2st triplex bleep)
+MODELS=(stnet histogene hist2st genedml hyperst)
 SEEDS=(1 2 3)
 
 IDX=$SLURM_ARRAY_TASK_ID

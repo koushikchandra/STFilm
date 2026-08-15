@@ -20,7 +20,7 @@ export PATH=/lustre/hdd/LAS/weile-lab/howlader/miniconda3/bin:$PATH
 
 echo "[mouse_intra_bl] node=$(hostname) task=$SLURM_ARRAY_TASK_ID"
 
-MODELS=(stnet histogene hist2st triplex bleep)
+MODELS=(stnet histogene hist2st genedml hyperst)
 ORGANS=(brain liver skin heart bowel kidney muscle)
 SEEDS=(1 2 3)
 
