@@ -46,6 +46,7 @@ PYTHONPATH=STFlow OMP_NUM_THREADS=5 PYTORCH_CUDA_ALLOC_CONF=expandable_segments:
   python baseline_spatial.py \
   --model "$MODEL" --regime INTRA --seed "$SEED" \
   --splits_dir "$SPLITS_DIR" \
+  --exp_code "$TAG" \
   --feature_encoder uni_v1_official \
   --source_dataroot dataset \
   --embed_dataroot embed_dataroot \

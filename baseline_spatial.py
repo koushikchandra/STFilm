@@ -700,7 +700,8 @@ def run(args):
     fold_names = [os.path.basename(t)[len("train_"):-len(".csv")] for t in trains]
     fold_names.sort(key=lambda x: (int(x) if x.isdigit() else 1 << 30, x))
 
-    save_dir = os.path.join(args.save_root, f"{args.regime}_{args.model}_seed{args.seed}")
+    exp_code = args.exp_code if args.exp_code else f"{args.regime}_{args.model}_seed{args.seed}"
+    save_dir = os.path.join(args.save_root, exp_code)
     os.makedirs(save_dir, exist_ok=True)
     nm = get_normalize_method(args.normalize_method)
 
@@ -750,6 +751,8 @@ if __name__ == "__main__":
     p.add_argument("--embed_dataroot", default="embed_dataroot")
     p.add_argument("--feature_encoder", default="uni_v1_official")
     p.add_argument("--save_root", default="results_spatial_uni8")
+    p.add_argument("--exp_code", default=None,
+                   help="override save directory name (default: regime_model_seed)")
     p.add_argument("--normalize_method", default="log1p")
     p.add_argument("--device", type=int, default=0)
     p.add_argument("--epochs", type=int, default=100)

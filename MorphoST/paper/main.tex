@@ -436,16 +436,17 @@ Best per row in \best{bold}.}
 \toprule
 Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & TRIPLEX~\tiny{CVPR'24} & BLEEP~\tiny{NeurIPS'23} & \morph{} (V3) \\
 \midrule
-Brain   & \running & \running & \running & \running & \running & \running \\
-Liver   & \running & \running & \running & \running & \running & \running \\
-Skin    & \running & \running & \running & \running & \running & \running \\
-Heart   & \running & \running & \running & \running & \running & \running \\
-Bowel   & \running & \running & \running & \running & \running & \running \\
+Brain   & \running & \running & \running & \running & \running & $0.695_{0.009}$ \\
+Liver   & \running & \running & \running & \running & \running & $0.404_{0.014}$ \\
+Skin    & \running & \running & \running & \running & \running & $0.463_{0.002}$ \\
+Heart   & \running & \running & \running & \running & \running & $0.432_{0.028}$ \\
+Bowel   & \running & \running & \running & \running & \running & $0.604_{0.011}$ \\
 Kidney  & \running & \running & \running & \running & \running & \running \\
-Muscle  & \running & \running & \running & \running & \running & \running \\
+Muscle  & \running & \running & \running & \running & \running & $0.611_{0.021}$ \\
 \midrule
-\textbf{Average} & \running & \running & \running & \running & \running & \running \\
+\textbf{Average} & \running & \running & \running & \running & \running & $0.535^\dag$ \\
 \bottomrule
+\multicolumn{7}{l}{\scriptsize$^\dag$6/7 organs (kidney pending); baselines rerunning after exp-code fix.}\\
 \end{tabular}
 \end{table*}
 
@@ -631,17 +632,22 @@ PCC$\uparrow$ on 50 mouse HVGs. Baselines use the same UNI features and protocol
 \setlength{\tabcolsep}{5pt}
 \begin{tabular}{l c c}
 \toprule
-Method & \textsc{looo} PCC & \textsc{pooled} PCC \\
+Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)          & \running & $0.357_{0.036}$ \\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \running & $0.854_{0.019}$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & \running & $0.829_{0.028}$ \\
-TRIPLEX~\cite{chung2024triplex} (CVPR'24)    & \running & $0.859_{0.017}$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)          & \running & $0.848_{0.012}$ \\
+ST-Net~\cite{he2020stnet} (NBE'20)          & $0.015_{0.013}$ & $0.357_{0.036}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \best{$0.026_{0.009}$} & $0.854_{0.019}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.021_{0.014}$ & $0.829_{0.028}$ \\
+TRIPLEX~\cite{chung2024triplex} (CVPR'24)    & $0.025_{0.005}$ & $0.859_{0.017}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)          & $-0.006_{0.003}$ & $0.848_{0.012}$ \\
 \midrule
-\morph{} (V3) & \running & \best{$0.887_{0.005}$} \\
+\morph{} (V3) & $0.014_{0.005}$ & \best{$0.887_{0.005}$} \\
 \bottomrule
 \end{tabular}
+\begin{minipage}{\linewidth}\vspace{2pt}
+\scriptsize $^\dag$Avg.\ over 5/7 organs (skin+muscle pending) for baselines;
+6/7 organs (muscle pending) for \morph{}. All \textsc{looo} values are near
+floor due to cross-organ gene-panel mismatch (see text).
+\end{minipage}
 \end{table}
 
 \FloatBarrier
