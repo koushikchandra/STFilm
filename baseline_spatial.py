@@ -48,16 +48,24 @@ from MorphoST.evaluation import expression_metrics, save_predictions, train_val_
 
 def _load_adata(h5ad, genes, barcodes, normalize_method):
     """load_adata wrapper that strips GRCm38_ prefix from mouse MEND-series samples."""
+    import pandas as pd
     adata = sc.read_h5ad(h5ad)
     if len(adata.var_names) > 0 and adata.var_names[0].startswith("GRCm38_"):
         adata.var_names = adata.var_names.str.replace("GRCm38_", "", regex=False)
     if barcodes is not None:
         adata = adata[barcodes]
     if genes is not None:
-        adata = adata[:, genes]
+        available = [g for g in genes if g in adata.var_names]
+        adata = adata[:, available]
     if normalize_method is not None:
         adata = normalize_method(adata)
-    return adata.to_df()
+    df = adata.to_df()
+    if genes is not None:
+        missing = [g for g in genes if g not in df.columns]
+        if missing:
+            df = pd.concat([df, pd.DataFrame(0.0, index=df.index, columns=missing)], axis=1)
+        df = df[genes]
+    return df
 
 COHORT_TO_GROUP = {
     "CCRCC": "kidney", "COAD": "colorectal", "READ": "colorectal", "HCC": "liver",
