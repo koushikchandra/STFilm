@@ -585,13 +585,13 @@ Best in \best{bold}.}
 \toprule
 Method & HEST-1k \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)\\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21)\\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)\\
-Gene-DML~\cite{song2026genedml} (WACV'26)    & \best{$0.766_{0.00}$} \\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.757_{0.00}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
+Gene-DML~\cite{song2026genedml} (WACV'26)      & \best{$0.766_{0.00}$} \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
 \midrule
-\morph{} (V3)\\
+\morph{} (V3)                               & $0.760_{0.01}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -610,13 +610,13 @@ PCC$\uparrow$ / MSE$\downarrow$ on HEST-1k.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Method & PCC & MSE & PCC & MSE \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & \running & \running & \running\\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & \running & \running & \running\\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running & \running & \running\\
-Gene-DML~\cite{song2026genedml} (WACV'26)      & $0.435_{0.00}$ & $1.022_{0.02}$ & $0.766_{0.00}$\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.267_{0.02}$ & $1.846_{0.10}$ & $0.370_{0.01}$\\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.415_{0.01}$ & \best{$1.016_{0.04}$} & $0.757_{0.00}$\\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.360_{0.02}$ & $1.182_{0.07}$ & $0.737_{0.01}$\\
+Gene-DML~\cite{song2026genedml} (WACV'26)      & \best{$0.435_{0.00}$} & $1.022_{0.02}$ & \best{$0.766_{0.00}$}\\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$\\
 \midrule
-\morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & \running\\
+\morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & $0.760_{0.01}$\\
 \bottomrule
 \end{tabular}
 \end{table}
