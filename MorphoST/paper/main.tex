@@ -406,7 +406,7 @@ reproductions of recent (2025--2026) methods.}
 \setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{l ccc cc c}
 \toprule
-Organ & ST-Net~\tiny{'20} & HisToGene~\tiny{'21} & Hist2ST~\tiny{'22} & Gene-DML~\tiny{'26} & HyperST~\tiny{'26} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
 Breast      & $0.364_{0.01}$ & $0.363_{0.04}$ & $0.277_{0.03}$ & $0.396_{0.00}$ & $0.398_{0.00}$ & \best{$0.440_{0.00}$} \\
 Prostate    & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
@@ -434,7 +434,7 @@ Best per row in \best{bold}.}
 \setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{l ccccc c}
 \toprule
-Organ & ST-Net~\tiny{'20} & HisToGene~\tiny{'21} & Hist2ST~\tiny{'22} & TRIPLEX~\tiny{'24} & BLEEP~\tiny{'23} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & TRIPLEX~\tiny{CVPR'24} & BLEEP~\tiny{NeurIPS'23} & \morph{} (V3) \\
 \midrule
 Brain   & \running & \running & \running & \running & \running & \running \\
 Liver   & \running & \running & \running & \running & \running & \running \\
@@ -517,11 +517,11 @@ three seeds). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in 
 \toprule
 Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)      & 0.311 & 0.269 & 1.633 \\
-HisToGene~\cite{pang2021histogene} (2021)   & 0.309 & 0.273 & 1.172 \\
-Hist2ST~\cite{zeng2022hist2st} (2022)     & 0.271 & 0.250 & 1.292 \\
-Gene-DML~\cite{song2026genedml} (2026)    & 0.360 & 0.323 & 1.113 \\
-HyperST~\cite{zhang2026hyperst} (2026)     & 0.365 & 0.329 & 1.113 \\
+ST-Net~\cite{he2020stnet} (NBE'20)      & 0.311 & 0.269 & 1.633 \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & 0.309 & 0.273 & 1.172 \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & 0.271 & 0.250 & 1.292 \\
+Gene-DML~\cite{song2026genedml} (WACV'26)    & 0.360 & 0.323 & 1.113 \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.365 & 0.329 & 1.113 \\
 \midrule
 \morph{} (V3) & \best{0.389} & \best{0.348} & \best{1.072} \\
 \bottomrule
@@ -556,7 +556,7 @@ mean$_{\mathrm{std}}$ over three seeds, nested-validation. Best per row in \best
 \setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{l ccc cc c}
 \toprule
-Organ & ST-Net~\tiny{'20} & HisToGene~\tiny{'21} & Hist2ST~\tiny{'22} & Gene-DML~\tiny{'26} & HyperST~\tiny{'26} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
 Breast      & $0.217_{0.06}$ & $0.510_{0.02}$ & $0.459_{0.02}$ & $0.521_{0.03}$ & $0.501_{0.02}$ & \best{$0.534_{0.02}$} \\
 Colorectal  & $0.430_{0.03}$ & $0.735_{0.01}$ & $0.688_{0.04}$ & \best{$0.737_{0.01}$} & $0.669_{0.06}$ & $0.703_{0.01}$ \\
@@ -584,11 +584,11 @@ Best in \best{bold}.}
 \toprule
 Method & HEST-1k \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)\\
-HisToGene~\cite{pang2021histogene} (2021)\\
-Hist2ST~\cite{zeng2022hist2st} (2022)\\
-Gene-DML~\cite{song2026genedml} (2026)    & \best{$0.766_{0.00}$} \\
-HyperST~\cite{zhang2026hyperst} (2026)\\
+ST-Net~\cite{he2020stnet} (NBE'20)\\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)\\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)\\
+Gene-DML~\cite{song2026genedml} (WACV'26)    & \best{$0.766_{0.00}$} \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)\\
 \midrule
 \morph{} (V3)\\
 \bottomrule
@@ -601,19 +601,19 @@ HyperST~\cite{zhang2026hyperst} (2026)\\
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: pooled sample-level cross-validation.
 PCC$\uparrow$ / MSE$\downarrow$ on HEST-1k.}
 \label{tab:crossorgan}
-\small
-\setlength{\tabcolsep}{4pt}
+\scriptsize
+\setlength{\tabcolsep}{2pt}
 \begin{tabular}{l cc cc}
 \toprule
 & \multicolumn{2}{c}{\textsc{looo}} & \multicolumn{2}{c}{\textsc{pooled}} \\
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Method & PCC & MSE & PCC & MSE \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)         & \running & \running & \running\\
-HisToGene~\cite{pang2021histogene} (2021)   & \running & \running & \running\\
-Hist2ST~\cite{zeng2022hist2st} (2022)       & \running & \running & \running\\
-Gene-DML~\cite{song2026genedml} (2026)      & $0.435_{0.00}$ & $1.022_{0.02}$ & $0.766_{0.00}$\\
-HyperST~\cite{zhang2026hyperst} (2026)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & \running & \running & \running\\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & \running & \running & \running\\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running & \running & \running\\
+Gene-DML~\cite{song2026genedml} (WACV'26)      & $0.435_{0.00}$ & $1.022_{0.02}$ & $0.766_{0.00}$\\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$\\
 \midrule
 \morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & \running\\
 \bottomrule
@@ -633,11 +633,11 @@ PCC$\uparrow$ on 50 mouse HVGs. Baselines use the same UNI features and protocol
 \toprule
 Method & \textsc{looo} PCC & \textsc{pooled} PCC \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)          & \running & $0.357_{0.036}$ \\
-HisToGene~\cite{pang2021histogene} (2021) & \running & $0.854_{0.019}$ \\
-Hist2ST~\cite{zeng2022hist2st} (2022)     & \running & $0.829_{0.028}$ \\
-TRIPLEX~\cite{chung2024triplex} (2024)    & \running & $0.859_{0.017}$ \\
-BLEEP~\cite{xie2023bleep} (2023)          & \running & $0.848_{0.012}$ \\
+ST-Net~\cite{he2020stnet} (NBE'20)          & \running & $0.357_{0.036}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \running & $0.854_{0.019}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & \running & $0.829_{0.028}$ \\
+TRIPLEX~\cite{chung2024triplex} (CVPR'24)    & \running & $0.859_{0.017}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)          & \running & $0.848_{0.012}$ \\
 \midrule
 \morph{} (V3) & \running & \best{$0.887_{0.005}$} \\
 \bottomrule
@@ -737,11 +737,11 @@ slides; three seeds.}
 \toprule
 Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)         & $0.148_{0.13}$\\
-HisToGene~\cite{pang2021histogene} (2021)   & \running\\
-Hist2ST~\cite{zeng2022hist2st} (2022)       & \running\\
-Gene-DML~\cite{song2026genedml} (2026)      & \running\\
-HyperST~\cite{zhang2026hyperst} (2026)      & \running\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.148_{0.13}$\\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & \running\\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running\\
+Gene-DML~\cite{song2026genedml} (WACV'26)      & \running\\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & \running\\
 \midrule
 \morph{} (V3) & $0.170_{0.15}$\\
 \bottomrule
@@ -778,8 +778,8 @@ a single forward pass. Maximum parameter count in \best{bold}.}
 \toprule
 Model & \#Params (M) & Inference \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)      & 0.05  & single-pass \\
-HisToGene~\cite{pang2021histogene} (2021)   & \best{149.0} & single-pass \\
+ST-Net~\cite{he2020stnet} (NBE'20)      & 0.05  & single-pass \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & \best{149.0} & single-pass \\
 \midrule
 \morph{} (V3) & 4.75 & single-pass \\
 \bottomrule
@@ -879,7 +879,7 @@ Appendix~\ref{app:published}.}
 \setlength{\tabcolsep}{3.2pt}
 \begin{tabular}{l ccc cc c}
 \toprule
-Cohort & ST-Net~\tiny{'20} & HisToGene~\tiny{'21} & Hist2ST~\tiny{'22} & Gene-DML~\tiny{'26} & HyperST~\tiny{'26} & \morph{} (V3) \\
+Cohort & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
 IDC       & $0.538_{0.01}$ & $0.447_{0.08}$ & $0.250_{0.07}$ & $0.557_{0.01}$ & $0.558_{0.01}$ & \best{$0.567_{0.00}$} \\
 PRAD      & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
@@ -910,12 +910,12 @@ nested-validation. $\dagger$\morph{} uses our organ-grouped splits, not the stan
 \toprule
 Method & HEST-1k (10 cohorts) \\
 \midrule
-ST-Net~\cite{he2020stnet} (2020)            & $0.286$ \\
-HisToGene~\cite{pang2021histogene} (2021)   & $0.237$ \\
-Hist2ST~\cite{zeng2022hist2st} (2022)       & \running \\
-Gene-DML~\cite{song2026genedml} (2026)      & \running \\
-HyperST~\cite{zhang2026hyperst} (2026)      & \running \\
-MCToGene~\cite{sun2026mctogene} (2026)      & \best{$0.435$} \\
+ST-Net~\cite{he2020stnet} (NBE'20)            & $0.286$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.237$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running \\
+Gene-DML~\cite{song2026genedml} (WACV'26)      & \running \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & \running \\
+MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 \midrule
 \morph{}$^\dagger$ (ours)                   & $0.440$ \\
 \bottomrule
