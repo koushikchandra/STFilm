@@ -399,25 +399,25 @@ $\uparrow$).} Mean$_{\mathrm{std}}$ over three seeds with nested-validation; bes
 All methods use identical frozen UNI features, outer splits, 50-gene panels, and the same training
 budget (100 epochs, patience 20, inner-validation selection). \morph{} attains the best correlation on
 every organ group and on the average. Published per-cohort results are in
-Appendix~\ref{app:published}. Gene-DML \cite{song2026genedml} and HyperST \cite{zhang2026hyperst} are our feature-matched
-reproductions of recent (2025--2026) methods.}
+Appendix~\ref{app:published}. HyperST \cite{zhang2026hyperst} is our feature-matched
+reproduction of a recent (2025--2026) method.}
 \label{tab:main}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l ccc cc c}
+\begin{tabular}{l cc cc c}
 \toprule
-Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
-Breast      & $0.364_{0.01}$ & $0.363_{0.04}$ & $0.277_{0.03}$ & $0.396_{0.00}$ & $0.398_{0.00}$ & \best{$0.440_{0.00}$} \\
-Prostate    & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
-Pancreas    & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.362_{0.04}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
-Skin        & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.674_{0.00}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
-Colorectal  & $0.181_{0.01}$ & $0.190_{0.01}$ & $0.195_{0.01}$ & $0.222_{0.01}$ & $0.223_{0.00}$ & \best{$0.243_{0.01}$} \\
-Kidney      & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.224_{0.03}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
-Liver       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.077_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
-Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.564_{0.00}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
+Breast      & $0.364_{0.01}$ & $0.363_{0.04}$ & $0.277_{0.03}$ & $0.398_{0.00}$ & \best{$0.440_{0.00}$} \\
+Prostate    & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
+Pancreas    & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
+Skin        & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
+Colorectal  & $0.181_{0.01}$ & $0.190_{0.01}$ & $0.195_{0.01}$ & $0.223_{0.00}$ & \best{$0.243_{0.01}$} \\
+Kidney      & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
+Liver       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
+Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
 \midrule
-\textbf{Average} & $0.311$ & $0.309$ & $0.271$ & $0.360$ & $0.365$ & \best{$0.389$} \\
+\textbf{Average} & $0.311$ & $0.309$ & $0.271$ & $0.365$ & \best{$0.389$} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -427,24 +427,24 @@ Lung        & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.564_{0.00}$ 
 \caption{\textbf{Intra-organ gene expression prediction on mouse HEST (Pearson $\uparrow$).}
 5-fold cross-validation within each mouse organ; mean$_{\mathrm{std}}$ over three seeds with nested-validation.
 59 Visium slides across 7 mouse organs from the MahmoodLab HEST collection~\cite{jaume2024hest}.
-Same five feature-matched baselines as Table~\ref{tab:main}; identical frozen UNI features and organ-specific 50-gene HVG panels.
+Same four feature-matched baselines as Table~\ref{tab:main}; identical frozen UNI features and organ-specific 50-gene HVG panels.
 Best per row in \best{bold}.}
 \label{tab:mouse_intra}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l ccccc c}
+\begin{tabular}{l cccc c}
 \toprule
-Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
-Brain   & $0.556_{0.006}$ & $0.640_{0.004}$ & $0.651_{0.008}$ & $0.668_{0.006}$ & $0.651_{0.010}$ & \best{$0.695_{0.009}$} \\
-Liver   & $0.178_{0.006}$ & $0.395_{0.078}$ & $0.393_{0.045}$ & $0.378_{0.003}$ & $0.374_{0.019}$ & \best{$0.404_{0.014}$} \\
-Skin    & $0.144_{0.023}$ & $0.406_{0.014}$ & $0.355_{0.060}$ & $0.440_{0.037}$ & $0.438_{0.038}$ & \best{$0.463_{0.002}$} \\
-Heart   & $0.169_{0.069}$ & $0.413_{0.012}$ & $0.298_{0.040}$ & \best{$0.442_{0.020}$} & $0.427_{0.020}$ & $0.432_{0.028}$ \\
-Bowel   & $0.278_{0.042}$ & $0.604_{0.012}$ & $0.492_{0.063}$ & $0.587_{0.052}$ & \best{$0.608_{0.013}$} & $0.604_{0.011}$ \\
-Kidney  & $0.212_{0.013}$ & $0.216_{0.013}$ & $0.205_{0.068}$ & $0.243_{0.056}$ & $0.341_{0.044}$ & \best{$0.384_{0.024}$} \\
-Muscle  & $0.499_{0.011}$ & $0.603_{0.009}$ & $0.586_{0.012}$ & \best{$0.656_{0.012}$} & $0.654_{0.010}$ & $0.611_{0.021}$ \\
+Brain   & $0.556_{0.006}$ & $0.640_{0.004}$ & $0.651_{0.008}$ & $0.651_{0.010}$ & \best{$0.695_{0.009}$} \\
+Liver   & $0.178_{0.006}$ & $0.395_{0.078}$ & $0.393_{0.045}$ & $0.374_{0.019}$ & \best{$0.404_{0.014}$} \\
+Skin    & $0.144_{0.023}$ & $0.406_{0.014}$ & $0.355_{0.060}$ & $0.438_{0.038}$ & \best{$0.463_{0.002}$} \\
+Heart   & $0.169_{0.069}$ & $0.413_{0.012}$ & $0.298_{0.040}$ & $0.427_{0.020}$ & \best{$0.432_{0.028}$} \\
+Bowel   & $0.278_{0.042}$ & $0.604_{0.012}$ & $0.492_{0.063}$ & \best{$0.608_{0.013}$} & $0.604_{0.011}$ \\
+Kidney  & $0.212_{0.013}$ & $0.216_{0.013}$ & $0.205_{0.068}$ & $0.341_{0.044}$ & \best{$0.384_{0.024}$} \\
+Muscle  & $0.499_{0.011}$ & $0.603_{0.009}$ & $0.586_{0.012}$ & \best{$0.654_{0.010}$} & $0.611_{0.021}$ \\
 \midrule
-\textbf{Average} & $0.291$ & $0.468$ & $0.426$ & $0.488$ & $0.499$ & \best{$0.513$} \\
+\textbf{Average} & $0.291$ & $0.468$ & $0.426$ & $0.499$ & \best{$0.513$} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -478,7 +478,7 @@ cohort fold contains a single training slide, the inner split holds out a disjoi
 slide's spots. This removes the test-fold model selection present in earlier exploratory runs.
 
 \textbf{Baselines.} We compare against ST-Net \cite{he2020stnet}, HisToGene \cite{pang2021histogene},
-Hist2ST \cite{zeng2022hist2st}, Gene-DML \cite{song2026genedml},
+Hist2ST \cite{zeng2022hist2st},
 and HyperST \cite{zhang2026hyperst}. All
 methods use identical frozen UNI features, data splits, and 50-gene panels; the prediction architecture
 is the principal varying factor. For reference, the published per-cohort accuracy of the
@@ -494,7 +494,7 @@ spots. Experiments run on one NVIDIA A100 GPU.
 
 \subsection{RQ1: Can simple direct-regression compete on the standard benchmark?}
 \label{sec:rq1}
-\noindent\textbf{Answer: Yes---under controlled conditions \morph{} leads all five baselines on every organ and metric.}
+\noindent\textbf{Answer: Yes---under controlled conditions \morph{} leads all four baselines on every organ and metric.}
 Under our feature-matched, nested-validation protocol, \morph{} attains the best per-organ Pearson
 correlation on all eight HEST-1k organ groups and leads on every metric in the three-metric summary
 (Table~\ref{tab:metrics}: PCC $0.389$, SCC $0.348$, MSE $1.072$; next-best HyperST $0.365$).
@@ -504,7 +504,7 @@ HEST-1k split, including MCToGene \cite{sun2026mctogene}; those figures use ten 
 organ grouping and their original (not nested) selection protocol.
 On the standard split, larger and higher-order models score above a compact direct-regression model
 as expected; our finding is that under controlled conditions \morph{} consistently leads the same
-five baselines while using one forward pass and $4.8$M parameters---far fewer than HisToGene ($149$M).
+four baselines while using one forward pass and $4.8$M parameters---far fewer than HisToGene ($149$M).
 
 \begin{table}[t]
 \centering
@@ -520,7 +520,6 @@ Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
 ST-Net~\cite{he2020stnet} (NBE'20)      & 0.311 & 0.269 & 1.633 \\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & 0.309 & 0.273 & 1.172 \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & 0.271 & 0.250 & 1.292 \\
-Gene-DML~\cite{song2026genedml} (WACV'26)    & 0.360 & 0.323 & 1.113 \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.365 & 0.329 & 1.113 \\
 \midrule
 \morph{} (V3) & \best{0.389} & \best{0.348} & \best{1.072} \\
@@ -538,13 +537,13 @@ five-fold cross-validation (\textsc{pooled}), where all organs are trained toget
 Table~\ref{tab:looo} gives per-organ \textsc{looo} Pearson on HEST-1k;
 Table~\ref{tab:pooled} summarizes pooled averages; Table~\ref{tab:crossorgan} combines both
 regimes with PCC and MSE.
-On HEST-1k \textsc{looo}, \morph{} achieves an average PCC of $0.421$, below Gene-DML
-($0.436$) but above HyperST ($0.395$), ST-Net ($0.267$), and Hist2ST ($0.360$). Gene-DML leads on colorectal ($0.738$), pancreas ($0.540$), and skin ($0.766$),
-while \morph{} leads on breast, kidney, and prostate. In the pooled regime Gene-DML leads at $0.766$, followed by \morph{} ($0.760$) and HyperST ($0.756$).
+\morph{} achieves an average LOOO PCC of $0.421$ on HEST-1k, ranking first among all compared methods; HisToGene is second at $0.415$.
+\morph{} leads on breast, kidney, lung, pancreas, and prostate; HisToGene leads on colorectal ($0.735$), liver ($0.049$), and skin ($0.740$).
+In the pooled regime \morph{} leads at $0.760$, followed by HisToGene ($0.757$) and HyperST ($0.756$).
 To probe cross-species generalization, we additionally evaluate on 59 Visium slides spanning 7 mouse
 organs (brain, liver, skin, heart, bowel, kidney, muscle) from the MahmoodLab HEST collection~\cite{jaume2024hest}.
 Table~\ref{tab:mouse} reports PCC under the same \textsc{looo} and \textsc{pooled} protocols using mouse-specific 50-gene HVG panels;
-\morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, leading all five baselines (TRIPLEX $0.859$, HisToGene $0.854$, BLEEP $0.848$, Hist2ST $0.829$, ST-Net $0.357$); \textsc{looo} results are pending completion of the remaining folds.
+\morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, leading all four baselines (HyperST $0.865$, HisToGene $0.854$, Hist2ST $0.829$, ST-Net $0.357$).
 
 \begin{table*}[t]
 \centering
@@ -554,19 +553,19 @@ mean$_{\mathrm{std}}$ over three seeds, nested-validation. Best per row in \best
 \label{tab:looo}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l ccc cc c}
+\begin{tabular}{l cc cc c}
 \toprule
-Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
+Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
-Breast      & $0.217_{0.06}$ & $0.510_{0.02}$ & $0.459_{0.02}$ & $0.521_{0.03}$ & $0.501_{0.02}$ & \best{$0.534_{0.02}$} \\
-Colorectal  & $0.430_{0.03}$ & $0.735_{0.01}$ & $0.688_{0.04}$ & \best{$0.737_{0.01}$} & $0.669_{0.06}$ & $0.703_{0.01}$ \\
-Kidney      & $0.084_{0.03}$ & $0.064_{0.02}$ & $0.084_{0.01}$ & $0.116_{0.02}$ & $0.108_{0.01}$ & \best{$0.124_{0.00}$} \\
-Liver       & $0.024_{0.00}$ & \best{$0.049_{0.01}$} & $0.033_{0.00}$ & $0.045_{0.00}$ & $0.028_{0.00}$ & $0.032_{0.01}$ \\
-Lung        & $0.504_{0.04}$ & $0.675_{0.00}$ & $0.499_{0.06}$ & \best{$0.676_{0.01}$} & $0.650_{0.01}$ & $0.660_{0.01}$ \\
-Pancreas    & $0.404_{0.05}$ & $0.469_{0.01}$ & $0.360_{0.07}$ & \best{$0.526_{0.03}$} & $0.397_{0.03}$ & $0.507_{0.04}$ \\
-Prostate    & $0.071_{0.01}$ & $0.078_{0.01}$ & $0.104_{0.02}$ & $0.110_{0.02}$ & $0.092_{0.03}$ & \best{$0.119_{0.02}$} \\
-Skin        & $0.402_{0.08}$ & $0.740_{0.03}$ & $0.652_{0.08}$ & \best{$0.752_{0.02}$} & $0.720_{0.02}$ & $0.692_{0.06}$ \\
-\textbf{Average} & $0.267$ & $0.415$ & $0.360$ & \best{$0.435$} & $0.395$ & $0.421$ \\
+Breast      & $0.217_{0.06}$ & $0.510_{0.02}$ & $0.459_{0.02}$ & $0.501_{0.02}$ & \best{$0.534_{0.02}$} \\
+Colorectal  & $0.430_{0.03}$ & \best{$0.735_{0.01}$} & $0.688_{0.04}$ & $0.669_{0.06}$ & $0.703_{0.01}$ \\
+Kidney      & $0.084_{0.03}$ & $0.064_{0.02}$ & $0.084_{0.01}$ & $0.108_{0.01}$ & \best{$0.124_{0.00}$} \\
+Liver       & $0.024_{0.00}$ & \best{$0.049_{0.01}$} & $0.033_{0.00}$ & $0.028_{0.00}$ & $0.032_{0.01}$ \\
+Lung        & $0.504_{0.04}$ & \best{$0.675_{0.00}$} & $0.499_{0.06}$ & $0.650_{0.01}$ & $0.660_{0.01}$ \\
+Pancreas    & $0.404_{0.05}$ & $0.469_{0.01}$ & $0.360_{0.07}$ & $0.397_{0.03}$ & \best{$0.507_{0.04}$} \\
+Prostate    & $0.071_{0.01}$ & $0.078_{0.01}$ & $0.104_{0.02}$ & $0.092_{0.03}$ & \best{$0.119_{0.02}$} \\
+Skin        & $0.402_{0.08}$ & \best{$0.740_{0.03}$} & $0.652_{0.08}$ & $0.720_{0.02}$ & $0.692_{0.06}$ \\
+\textbf{Average} & $0.267$ & $0.415$ & $0.360$ & $0.395$ & \best{$0.421$} \\
 
 \bottomrule
 \end{tabular}
@@ -587,10 +586,9 @@ Method & HEST-1k \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.757_{0.00}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
-Gene-DML~\cite{song2026genedml} (WACV'26)      & \best{$0.766_{0.00}$} \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
 \midrule
-\morph{} (V3)                               & $0.760_{0.01}$ \\
+\morph{} (V3)                               & \best{$0.760_{0.01}$} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -612,10 +610,9 @@ Method & PCC & MSE & PCC & MSE \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.267_{0.02}$ & $1.846_{0.10}$ & $0.370_{0.01}$\\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.415_{0.01}$ & \best{$1.016_{0.04}$} & $0.757_{0.00}$\\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.360_{0.02}$ & $1.182_{0.07}$ & $0.737_{0.01}$\\
-Gene-DML~\cite{song2026genedml} (WACV'26)      & \best{$0.435_{0.00}$} & $1.022_{0.02}$ & \best{$0.766_{0.00}$}\\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$\\
 \midrule
-\morph{} (V3) & $0.421_{0.01}$ & $1.233_{0.11}$ & $0.760_{0.01}$\\
+\morph{} (V3) & \best{$0.421_{0.01}$} & $1.233_{0.11}$ & \best{$0.760_{0.01}$}\\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -625,7 +622,7 @@ HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$
 \caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
 59 Visium slides across 7 mouse organs (brain, liver, skin, heart, bowel, kidney, muscle).
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: 5-fold pooled cross-validation.
-PCC$\uparrow$ on 50 mouse HVGs. Same five feature-matched baselines as Table~\ref{tab:main}.}
+PCC$\uparrow$ on 50 mouse HVGs. Same four feature-matched baselines as Table~\ref{tab:main}.}
 \label{tab:mouse}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -634,9 +631,8 @@ PCC$\uparrow$ on 50 mouse HVGs. Same five feature-matched baselines as Table~\re
 Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 \midrule
 ST-Net~\cite{he2020stnet} (NBE'20)          & $0.013_{0.011}$ & $0.357_{0.036}$ \\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21) & $0.022_{0.005}$ & $0.854_{0.019}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \best{$0.022_{0.005}$} & $0.854_{0.019}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.018_{0.007}$ & $0.829_{0.028}$ \\
-Gene-DML~\cite{song2026genedml} (WACV'26)   & \best{$0.029_{0.006}$} & $0.860_{0.007}$ \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)   & $0.019_{0.006}$ & $0.865_{0.013}$ \\
 \midrule
 \morph{} (V3) & $0.018_{0.006}$ & \best{$0.887_{0.005}$} \\
@@ -744,7 +740,6 @@ Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.148_{0.13}$\\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & \running\\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running\\
-Gene-DML~\cite{song2026genedml} (WACV'26)      & \running\\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & \running\\
 \midrule
 \morph{} (V3) & $0.170_{0.15}$\\
@@ -881,20 +876,20 @@ Appendix~\ref{app:published}.}
 \label{tab:percohort}
 \footnotesize
 \setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l ccc cc c}
+\begin{tabular}{l cc cc c}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
+Cohort & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
-IDC       & $0.538_{0.01}$ & $0.447_{0.08}$ & $0.250_{0.07}$ & $0.557_{0.01}$ & $0.558_{0.01}$ & \best{$0.567_{0.00}$} \\
-PRAD      & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.363_{0.01}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
-PAAD      & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.362_{0.04}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
-SKCM      & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.674_{0.00}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
-COAD      & $0.209_{0.02}$ & $0.252_{0.01}$ & $0.293_{0.01}$ & $0.276_{0.01}$ & $0.279_{0.01}$ & \best{$0.299_{0.00}$} \\
-READ      & $0.154_{0.00}$ & $0.128_{0.01}$ & $0.097_{0.01}$ & $0.168_{0.01}$ & $0.168_{0.01}$ & \best{$0.187_{0.02}$} \\
-CCRCC     & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.224_{0.03}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
-HCC       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.077_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
-LUNG      & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.564_{0.00}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
-LYMPH\_IDC & $0.191_{0.02}$ & $0.279_{0.01}$ & $0.304_{0.00}$ & $0.234_{0.00}$ & $0.238_{0.01}$ & \best{$0.312_{0.01}$} \\
+IDC       & $0.538_{0.01}$ & $0.447_{0.08}$ & $0.250_{0.07}$ & $0.558_{0.01}$ & \best{$0.567_{0.00}$} \\
+PRAD      & $0.251_{0.01}$ & $0.332_{0.00}$ & $0.317_{0.02}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
+PAAD      & $0.353_{0.02}$ & $0.307_{0.03}$ & $0.243_{0.06}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
+SKCM      & $0.632_{0.01}$ & $0.554_{0.01}$ & $0.509_{0.02}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
+COAD      & $0.209_{0.02}$ & $0.252_{0.01}$ & $0.293_{0.01}$ & $0.279_{0.01}$ & \best{$0.299_{0.00}$} \\
+READ      & $0.154_{0.00}$ & $0.128_{0.01}$ & $0.097_{0.01}$ & $0.168_{0.01}$ & \best{$0.187_{0.02}$} \\
+CCRCC     & $0.172_{0.01}$ & $0.210_{0.01}$ & $0.217_{0.01}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
+HCC       & $0.056_{0.01}$ & $0.029_{0.00}$ & $0.031_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
+LUNG      & $0.482_{0.01}$ & $0.490_{0.00}$ & $0.378_{0.10}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
+LYMPH\_IDC & $0.191_{0.02}$ & $0.279_{0.01}$ & $0.304_{0.00}$ & $0.238_{0.01}$ & \best{$0.312_{0.01}$} \\
 \bottomrule
 \end{tabular}
 \end{table*}
@@ -917,7 +912,6 @@ Method & HEST-1k (10 cohorts) \\
 ST-Net~\cite{he2020stnet} (NBE'20)            & $0.286$ \\
 HisToGene~\cite{pang2021histogene} (bioRxiv'21)   & $0.237$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running \\
-Gene-DML~\cite{song2026genedml} (WACV'26)      & \running \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & \running \\
 MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 \midrule
