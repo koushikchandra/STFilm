@@ -441,12 +441,11 @@ Liver   & $0.178_{0.006}$ & $0.395_{0.078}$ & $0.393_{0.045}$ & $0.378_{0.003}$ 
 Skin    & $0.144_{0.023}$ & $0.406_{0.014}$ & $0.355_{0.060}$ & $0.440_{0.037}$ & $0.438_{0.038}$ & \best{$0.463_{0.002}$} \\
 Heart   & $0.169_{0.069}$ & $0.413_{0.012}$ & $0.298_{0.040}$ & \best{$0.442_{0.020}$} & $0.427_{0.020}$ & $0.432_{0.028}$ \\
 Bowel   & $0.278_{0.042}$ & $0.604_{0.012}$ & $0.492_{0.063}$ & $0.587_{0.052}$ & \best{$0.608_{0.013}$} & $0.604_{0.011}$ \\
-Kidney$^\dag$  & $0.181_{0.012}$ & $0.212_{0.050}$ & $0.212_{0.074}$ & $0.252_{0.059}$ & $0.321_{0.019}$ & \best{$0.335_{0.028}$} \\
+Kidney  & $0.212_{0.013}$ & $0.216_{0.013}$ & $0.205_{0.068}$ & $0.243_{0.056}$ & $0.341_{0.044}$ & \best{$0.384_{0.024}$} \\
 Muscle  & $0.499_{0.011}$ & $0.603_{0.009}$ & $0.586_{0.012}$ & \best{$0.656_{0.012}$} & $0.654_{0.010}$ & $0.611_{0.021}$ \\
 \midrule
-\textbf{Average}$^\ddag$ & $0.304$ & $0.510$ & $0.463$ & $0.529$ & $0.525$ & \best{$0.535$} \\
+\textbf{Average} & $0.291$ & $0.468$ & $0.426$ & $0.488$ & $0.499$ & \best{$0.513$} \\
 \bottomrule
-\multicolumn{7}{l}{\scriptsize$^\dag$3/5 folds complete; partial values shown. $^\ddag$Average over 6/7 organs (kidney excluded).}\\
 \end{tabular}
 \end{table*}
 
@@ -634,19 +633,18 @@ PCC$\uparrow$ on 50 mouse HVGs. Same five feature-matched baselines as Table~\re
 \toprule
 Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)          & $0.015_{0.013}$ & $0.357_{0.036}$ \\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21) & $0.026_{0.009}$ & $0.854_{0.019}$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.021_{0.014}$ & $0.829_{0.028}$ \\
-Gene-DML~\cite{song2026genedml} (WACV'26)   & \best{$0.028_{0.003}$} & $0.860_{0.007}$ \\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)   & $0.021_{0.011}$ & $0.865_{0.013}$ \\
+ST-Net~\cite{he2020stnet} (NBE'20)          & $0.013_{0.011}$ & $0.357_{0.036}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21) & $0.022_{0.005}$ & $0.854_{0.019}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.018_{0.007}$ & $0.829_{0.028}$ \\
+Gene-DML~\cite{song2026genedml} (WACV'26)   & \best{$0.029_{0.006}$} & $0.860_{0.007}$ \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)   & $0.019_{0.006}$ & $0.865_{0.013}$ \\
 \midrule
-\morph{} (V3) & $0.014_{0.005}$ & \best{$0.887_{0.005}$} \\
+\morph{} (V3) & $0.018_{0.006}$ & \best{$0.887_{0.005}$} \\
 \bottomrule
 \end{tabular}
 \begin{minipage}{\linewidth}\vspace{2pt}
-\scriptsize $^\dag$Avg.\ over 5/7 organs (skin+muscle pending) for baselines;
-6/7 organs (muscle pending) for \morph{}. All \textsc{looo} values are near
-floor due to cross-organ gene-panel mismatch (see text).
+\scriptsize $^\dag$All \textsc{looo} values are near floor due to
+cross-organ gene-panel mismatch (see text).
 \end{minipage}
 \end{table}
 
