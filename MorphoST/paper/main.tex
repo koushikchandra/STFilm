@@ -436,17 +436,17 @@ Best per row in \best{bold}.}
 \toprule
 Organ & ST-Net~\tiny{NBE'20} & HisToGene~\tiny{bRxiv'21} & Hist2ST~\tiny{BIB'22} & Gene-DML~\tiny{WACV'26} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
 \midrule
-Brain   & \running & \running & \running & \running & \running & $0.695_{0.009}$ \\
-Liver   & \running & \running & \running & \running & \running & $0.404_{0.014}$ \\
-Skin    & \running & \running & \running & \running & \running & $0.463_{0.002}$ \\
-Heart   & \running & \running & \running & \running & \running & $0.432_{0.028}$ \\
-Bowel   & \running & \running & \running & \running & \running & $0.604_{0.011}$ \\
-Kidney  & \running & \running & \running & \running & \running & \running \\
-Muscle  & \running & \running & \running & \running & \running & $0.611_{0.021}$ \\
+Brain   & $0.556_{0.006}$ & $0.640_{0.004}$ & $0.651_{0.008}$ & $0.668_{0.006}$ & $0.651_{0.010}$ & \best{$0.695_{0.009}$} \\
+Liver   & $0.178_{0.006}$ & $0.395_{0.078}$ & $0.393_{0.045}$ & $0.378_{0.003}$ & $0.374_{0.019}$ & \best{$0.404_{0.014}$} \\
+Skin    & $0.144_{0.023}$ & $0.406_{0.014}$ & $0.355_{0.060}$ & $0.440_{0.037}$ & $0.438_{0.038}$ & \best{$0.463_{0.002}$} \\
+Heart   & $0.169_{0.069}$ & $0.413_{0.012}$ & $0.298_{0.040}$ & \best{$0.442_{0.020}$} & $0.427_{0.020}$ & $0.432_{0.028}$ \\
+Bowel   & $0.278_{0.042}$ & $0.604_{0.012}$ & $0.492_{0.063}$ & $0.587_{0.052}$ & \best{$0.608_{0.013}$} & $0.604_{0.011}$ \\
+Kidney$^\dag$  & $0.181_{0.012}$ & $0.212_{0.050}$ & $0.212_{0.074}$ & $0.252_{0.059}$ & $0.321_{0.019}$ & \best{$0.335_{0.028}$} \\
+Muscle  & $0.499_{0.011}$ & $0.603_{0.009}$ & $0.586_{0.012}$ & \best{$0.656_{0.012}$} & $0.654_{0.010}$ & $0.611_{0.021}$ \\
 \midrule
-\textbf{Average} & \running & \running & \running & \running & \running & $0.535^\dag$ \\
+\textbf{Average}$^\ddag$ & $0.304$ & $0.510$ & $0.463$ & $0.529$ & $0.525$ & \best{$0.535$} \\
 \bottomrule
-\multicolumn{7}{l}{\scriptsize$^\dag$6/7 organs (kidney pending); baselines rerunning after exp-code fix.}\\
+\multicolumn{7}{l}{\scriptsize$^\dag$3/5 folds complete; partial values shown. $^\ddag$Average over 6/7 organs (kidney excluded).}\\
 \end{tabular}
 \end{table*}
 
@@ -635,10 +635,10 @@ PCC$\uparrow$ on 50 mouse HVGs. Same five feature-matched baselines as Table~\re
 Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 \midrule
 ST-Net~\cite{he2020stnet} (NBE'20)          & $0.015_{0.013}$ & $0.357_{0.036}$ \\
-HisToGene~\cite{pang2021histogene} (bioRxiv'21) & \best{$0.026_{0.009}$} & $0.854_{0.019}$ \\
+HisToGene~\cite{pang2021histogene} (bioRxiv'21) & $0.026_{0.009}$ & $0.854_{0.019}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.021_{0.014}$ & $0.829_{0.028}$ \\
-Gene-DML~\cite{song2026genedml} (WACV'26)   & \running & \running \\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)   & \running & \running \\
+Gene-DML~\cite{song2026genedml} (WACV'26)   & \best{$0.028_{0.003}$} & $0.860_{0.007}$ \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)   & $0.021_{0.011}$ & $0.865_{0.013}$ \\
 \midrule
 \morph{} (V3) & $0.014_{0.005}$ & \best{$0.887_{0.005}$} \\
 \bottomrule
