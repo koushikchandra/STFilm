@@ -25,6 +25,7 @@ Usage:
   PYTHONPATH=STFlow python baseline_spatial.py --model histogene --regime LOOO --seed 1 \
       --splits_root cross_organ_splits8 --save_root results_spatial_uni8 --device 0
 """
+import math
 import os
 import glob
 import json
@@ -552,7 +553,7 @@ def build_model(args, n_genes):
         return MLPProbeNet(args.feature_dim, args.dim, n_genes, args.depth, args.dropout)
     if args.model == "triplex":
         return TriplexNet(args.feature_dim, args.dim, args.heads, args.depth, n_genes, args.dropout)
-    raise ValueError(f"unknown model {args.model}")
+    raise ValueError(f"unknown model {args.model}")   # egn/stem handled in run() before build_model
 
 
 # ----------------------------- train / eval -----------------------------
@@ -697,6 +698,281 @@ def bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list, dev
                       os.path.join(fold_dir, "test_predictions.npz") if fold_dir else None)
 
 
+# ----------------------------- EGN (exemplar-guided retrieval) -----------------------------
+class EGNNet(nn.Module):
+    """EGN (Yang et al., WACV 2023): exemplar-guided gene prediction. The Exemplar Bridging (EB)
+    block soft-attends over k nearest training-spot projections to modulate the query embedding.
+    We replace EGN's ResNet-50+ViT front-end with frozen UNI features."""
+    def __init__(self, fdim, dim, n_genes, k_ex, dropout):
+        super().__init__()
+        self.k = k_ex
+        self.proj = nn.Linear(fdim, dim)
+        self.eb_v = nn.Linear(dim, dim)
+        self.gate = nn.Sequential(nn.Linear(dim * 2, dim), nn.Sigmoid())
+        self.head = nn.Sequential(
+            nn.LayerNorm(dim), nn.Linear(dim, dim), nn.GELU(),
+            nn.Dropout(dropout), nn.Linear(dim, n_genes))
+
+    def _bridge(self, z, bank_z):
+        k = min(self.k, bank_z.shape[0])
+        zn = F.normalize(z.detach(), dim=-1)
+        bzn = F.normalize(bank_z.detach(), dim=-1)
+        top_idx_parts = []
+        for start in range(0, z.shape[0], 512):      # chunked to avoid OOM on large banks
+            sim = zn[start:start + 512] @ bzn.t()
+            top_idx_parts.append(sim.topk(k, dim=-1).indices)
+        top_idx = torch.cat(top_idx_parts, 0)          # [N, k]
+        ex_z = bank_z[top_idx]                         # [N, k, dim]
+        q = F.normalize(z, dim=-1).unsqueeze(1)        # [N, 1, dim]
+        attn = torch.softmax((q * F.normalize(ex_z, dim=-1)).sum(-1), dim=-1)  # [N, k]
+        ctx = (attn.unsqueeze(-1) * self.eb_v(ex_z)).sum(1)   # [N, dim]
+        gate = self.gate(torch.cat([z, ctx], -1))
+        return z + gate * ctx
+
+    def forward(self, feat, gxy=None, adj=None, bank_z=None):
+        z = self.proj(feat)
+        if bank_z is not None:
+            z = self._bridge(z, bank_z)
+        return self.head(z)
+
+
+@torch.no_grad()
+def _egn_bank(model, slides, device):
+    """Project all slides into dim-space on CPU for the cross-slide exemplar bank."""
+    model.eval()
+    parts = [model.proj(s["feat"].to(device)).cpu() for s in slides]
+    return torch.cat(parts, 0)    # [M_total, dim]
+
+
+@torch.no_grad()
+def egn_eval(model, bank_z, slides, gene_list, device, prediction_path=None):
+    model.eval()
+    bz = bank_z.to(device)
+    preds, gts, coords, slide_ids = [], [], [], []
+    for s in slides:
+        pred = model(s["feat"].to(device), bank_z=bz).cpu().numpy()
+        preds.append(pred); gts.append(s["labels"].numpy())
+        coords.append(s["coords"].numpy()); slide_ids.extend([s["slide_id"]] * len(pred))
+    pred = np.concatenate(preds, 0); target = np.concatenate(gts, 0)
+    coords = np.concatenate(coords, 0); slide_ids = np.asarray(slide_ids)
+    res = expression_metrics(pred, target, gene_list, slide_ids)
+    if prediction_path:
+        save_predictions(prediction_path, pred, target, coords, slide_ids, gene_list)
+    return res
+
+
+def egn_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir=None):
+    model = EGNNet(args.feature_dim, args.dim, len(gene_list), args.k_exemplar, args.dropout).to(device)
+    opt = torch.optim.Adam(model.parameters(), lr=args.lr)
+    best_pearson, best_state, early = -1, None, 0
+    order = list(range(len(train_slides)))
+    sizes = [s["feat"].shape[0] for s in train_slides]
+    ends = list(np.cumsum(sizes)); starts = [0] + ends[:-1]
+    for epoch in range(1, args.epochs + 1):
+        full_bz = _egn_bank(model, train_slides, device)   # [M, dim] CPU, rebuilt each epoch
+        model.train()
+        np.random.shuffle(order)
+        for i in order:
+            s = train_slides[i]
+            feat, lab = s["feat"], s["labels"]
+            if feat.shape[0] > args.max_spots:
+                sel = torch.randperm(feat.shape[0])[:args.max_spots]
+                feat, lab = feat[sel], lab[sel]
+            feat = feat.to(device); lab = lab.to(device)
+            bz = torch.cat([full_bz[:starts[i]], full_bz[ends[i]:]], 0).to(device)
+            pred = model(feat, bank_z=bz)
+            loss = regression_loss(pred, lab, args.corr_weight)
+            opt.zero_grad(); loss.backward(); opt.step()
+        full_bz = _egn_bank(model, train_slides, device)
+        res = egn_eval(model, full_bz, val_slides, gene_list, device)
+        if res["pearson_mean"] > best_pearson:
+            best_pearson = res["pearson_mean"]
+            best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+            early = 0
+        else:
+            early += 1
+            if early >= 20:
+                break
+    if best_state is None:
+        raise RuntimeError("No validation checkpoint was selected")
+    model.load_state_dict(best_state)
+    full_bz = _egn_bank(model, train_slides, device)
+    if fold_dir:
+        os.makedirs(fold_dir, exist_ok=True)
+        torch.save({"model": best_state, "args": vars(args), "genes": gene_list},
+                   os.path.join(fold_dir, "best_model.pt"))
+    return egn_eval(model, full_bz, test_slides, gene_list, device,
+                    os.path.join(fold_dir, "test_predictions.npz") if fold_dir else None)
+
+
+# ----------------------------- STEM (DiT conditional DDPM, Zhu et al. ICLR 2025) ----
+def _sinusoidal_emb(t, dim, device):
+    half = dim // 2
+    freqs = torch.exp(-math.log(10000) * torch.arange(half, dtype=torch.float32, device=device) / half)
+    x = t.float()[:, None] * freqs[None]
+    return torch.cat([x.sin(), x.cos()], dim=-1)   # [N, dim]
+
+
+class _GeneJointEmbedding(nn.Module):
+    """Trainable gene-identity embedding + per-gene count MLP (matches original GeneJointEmbedding)."""
+    def __init__(self, n_genes, hidden):
+        super().__init__()
+        self.name_emb = nn.Parameter(torch.empty(n_genes, hidden))
+        nn.init.kaiming_uniform_(self.name_emb, a=math.sqrt(5))
+        self.count_emb = nn.Sequential(
+            nn.Linear(1, hidden), nn.SiLU(), nn.Linear(hidden, hidden))
+
+    def forward(self, x):          # x: [N, G] → [N, G, H]
+        return self.count_emb(x.unsqueeze(-1)) + self.name_emb
+
+
+class _DiTBlock(nn.Module):
+    """DiT block with adaLN-Zero (matches original DiTBlock, depth=12/hidden=384/heads=6)."""
+    def __init__(self, hidden, heads):
+        super().__init__()
+        self.norm1 = nn.LayerNorm(hidden, elementwise_affine=False, eps=1e-6)
+        self.attn  = nn.MultiheadAttention(hidden, heads, batch_first=True, bias=True)
+        self.norm2 = nn.LayerNorm(hidden, elementwise_affine=False, eps=1e-6)
+        self.mlp   = nn.Sequential(
+            nn.Linear(hidden, hidden * 4), nn.GELU(approximate='tanh'),
+            nn.Linear(hidden * 4, hidden))
+        self.adaLN = nn.Sequential(nn.SiLU(), nn.Linear(hidden, 6 * hidden))
+        nn.init.zeros_(self.adaLN[-1].weight)
+        nn.init.zeros_(self.adaLN[-1].bias)
+
+    def forward(self, x, c):       # x: [N, G, H]; c: [N, H]
+        s1, b1, g1, s2, b2, g2 = self.adaLN(c).chunk(6, dim=1)
+        h = self.norm1(x) * (1 + s1[:, None]) + b1[:, None]
+        x = x + g1[:, None] * self.attn(h, h, h)[0]
+        h = self.norm2(x) * (1 + s2[:, None]) + b2[:, None]
+        x = x + g2[:, None] * self.mlp(h)
+        return x
+
+
+class _StemFinalLayer(nn.Module):
+    def __init__(self, hidden, n_genes):
+        super().__init__()
+        self.norm  = nn.LayerNorm(hidden, elementwise_affine=False, eps=1e-6)
+        self.adaLN = nn.Sequential(nn.SiLU(), nn.Linear(hidden, 2 * hidden))
+        self.proj  = nn.Linear(hidden, 1)
+        nn.init.zeros_(self.proj.weight)
+        nn.init.zeros_(self.proj.bias)
+
+    def forward(self, x, c):       # [N, G, H] + [N, H] → [N, G]
+        s, b = self.adaLN(c).chunk(2, dim=1)
+        x = self.norm(x) * (1 + s[:, None]) + b[:, None]
+        return self.proj(x).squeeze(-1)
+
+
+class STEMNet(nn.Module):
+    """Faithful DiT-based STEM (Zhu et al., ICLR 2025) with UNI as sole condition.
+    Architecture matches original: GeneJointEmbedding + 12-layer DiT (hidden=384, heads=6).
+    T=1000 linear DDPM schedule; DDIM-50 at inference."""
+    def __init__(self, fdim, n_genes, n_steps=1000, hidden=384, depth=12, heads=6):
+        super().__init__()
+        self.n_genes = n_genes
+        self.T = n_steps
+        self.gene_embed = _GeneJointEmbedding(n_genes, hidden)
+        # Timestep: sinusoidal → MLP (matches original TimestepEmbedder)
+        self.t_proj = nn.Sequential(
+            nn.Linear(hidden, hidden * 4), nn.SiLU(), nn.Linear(hidden * 4, hidden))
+        # Label (UNI features): linear → hidden (matches original LabelEmbedder)
+        self.feat_proj = nn.Linear(fdim, hidden)
+        self.blocks = nn.ModuleList([_DiTBlock(hidden, heads) for _ in range(depth)])
+        self.final  = _StemFinalLayer(hidden, n_genes)
+        # Standard DDPM linear schedule; T=1000 → alpha_bar[999]≈0 (proper prior)
+        betas     = torch.linspace(1e-4, 0.02, n_steps)
+        alphas    = 1.0 - betas
+        alpha_bar = torch.cumprod(alphas, 0)
+        self.register_buffer("betas",     betas)
+        self.register_buffer("alphas",    alphas)
+        self.register_buffer("alpha_bar", alpha_bar)
+        self.register_buffer("sqrt_ab",   alpha_bar.sqrt())
+        self.register_buffer("sqrt_1mab", (1.0 - alpha_bar).sqrt())
+
+    def _cond(self, feat, t):
+        t_emb = _sinusoidal_emb(t, self.t_proj[0].in_features, feat.device)
+        return self.t_proj(t_emb) + self.feat_proj(feat)   # [N, H]
+
+    def _eps(self, x_t, t, feat):
+        c   = self._cond(feat, t)
+        tok = self.gene_embed(x_t)
+        for blk in self.blocks:
+            tok = blk(tok, c)
+        return self.final(tok, c)                           # [N, G]
+
+    @torch.no_grad()
+    def forward(self, feat, gxy=None, adj=None):
+        N  = feat.shape[0]
+        x  = torch.randn(N, self.n_genes, device=feat.device)
+        # DDIM inference (deterministic, eta=0) with 50 evenly-spaced steps
+        n_inf = 50
+        ts = torch.linspace(self.T - 1, 0, n_inf).long().tolist()
+        for i, t_now in enumerate(ts):
+            t    = torch.full((N,), t_now, device=feat.device, dtype=torch.long)
+            eps  = self._eps(x, t, feat)
+            x0   = (x - self.sqrt_1mab[t_now] * eps) / self.sqrt_ab[t_now]
+            x0   = x0.clamp(-10, 10)
+            t_next = ts[i + 1] if i + 1 < n_inf else -1
+            if t_next >= 0:
+                x = self.alpha_bar[t_next].sqrt() * x0 + (1 - self.alpha_bar[t_next]).sqrt() * eps
+            else:
+                x = x0
+        return x
+
+
+def stem_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir=None):
+    """Mini-batch global training matching original STEM (AdamW, batch=256, pooled spots)."""
+    model = STEMNet(args.feature_dim, len(gene_list), n_steps=args.n_steps).to(device)
+    opt   = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=0.0)
+
+    # Pool all training spots (original uses global batch across all slides)
+    all_feat = torch.cat([s["feat"]   for s in train_slides], 0)
+    all_lab  = torch.cat([s["labels"] for s in train_slides], 0)
+    # Cap to avoid excessive LOOO training time
+    if len(all_feat) > 80000:
+        sel = torch.randperm(len(all_feat))[:80000]
+        all_feat, all_lab = all_feat[sel], all_lab[sel]
+
+    best_val, best_state, no_improve = -1.0, None, 0
+    batch_sz = min(256, len(all_feat))
+    eval_every = 5   # evaluate val every N epochs (DDIM-50 inference is expensive)
+
+    for epoch in range(1, args.epochs + 1):
+        model.train()
+        perm = torch.randperm(len(all_feat))
+        for start in range(0, len(all_feat), batch_sz):
+            idx  = perm[start:start + batch_sz]
+            feat = all_feat[idx].to(device)
+            lab  = all_lab[idx].to(device)
+            t    = torch.randint(0, model.T, (len(feat),), device=device)
+            eps  = torch.randn_like(lab)
+            y_t  = model.sqrt_ab[t, None] * lab + model.sqrt_1mab[t, None] * eps
+            loss = F.mse_loss(model._eps(y_t, t, feat), eps)
+            opt.zero_grad(); loss.backward(); opt.step()
+
+        if epoch % eval_every == 0 or epoch == args.epochs:
+            val_res = evaluate(model, val_slides, gene_list, device)
+            if val_res["pearson_mean"] > best_val:
+                best_val   = val_res["pearson_mean"]
+                best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+                no_improve = 0
+            else:
+                no_improve += 1
+                if no_improve >= 30:   # patience in eval cycles (30×5 = 150 epochs)
+                    break
+
+    if best_state is None:
+        best_state = {k: v.detach().cpu().clone() for k, v in model.state_dict().items()}
+    model.load_state_dict(best_state)
+    if fold_dir:
+        os.makedirs(fold_dir, exist_ok=True)
+        torch.save({"model": best_state, "args": vars(args), "genes": gene_list},
+                   os.path.join(fold_dir, "best_model.pt"))
+    return evaluate(model, test_slides, gene_list, device,
+                    os.path.join(fold_dir, "test_predictions.npz") if fold_dir else None)
+
+
 def run(args):
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     set_random_seed(args.seed)
@@ -730,6 +1006,10 @@ def run(args):
         fold_dir = os.path.join(save_dir, f"fold_{fold}")
         if args.model == "bleep":
             res = bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
+        elif args.model == "egn":
+            res = egn_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
+        elif args.model == "stem":
+            res = stem_train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
         else:
             res = train_fold(args, train_slides, val_slides, test_slides, gene_list, device, fold_dir)
         res["fold"] = fold
@@ -749,7 +1029,7 @@ if __name__ == "__main__":
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
                    choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
-                            "mctogene", "hist", "histogpa", "genedml", "hyperst"])
+                            "mctogene", "hist", "histogpa", "genedml", "hyperst", "m2ost", "egn", "stem"])
     p.add_argument("--regime", required=True, choices=["POOLED", "LOOO", "INTRA"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--splits_root", default="cross_organ_splits8")
@@ -778,6 +1058,10 @@ if __name__ == "__main__":
     p.add_argument("--bleep_batch", type=int, default=512)   # InfoNCE contrastive batch
     p.add_argument("--k_retrieval", type=int, default=50)    # neighbours averaged at inference
     p.add_argument("--max_ref", type=int, default=30000)     # retrieval reference-pool cap
+    # egn-specific
+    p.add_argument("--k_exemplar", type=int, default=8)      # exemplar bank neighbours (EGN EB block)
+    # stem-specific
+    p.add_argument("--n_steps", type=int, default=50)        # DDPM diffusion steps
     p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--corr_weight", type=float, default=0.0)
     args = p.parse_args()

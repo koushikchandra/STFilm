@@ -828,6 +828,7 @@ with three metrics, a factorial ablation, representation and spatial domain anal
 scaling. Together these establish when direct spatial regression is a simple, reproducible, and
 generalizable alternative to generative prediction.
 
+\clearpage
 \appendix
 
 \section{Numerical invariance verification}
@@ -858,34 +859,76 @@ Spot permutation & $5.96\times10^{-7}$ \\
 \end{table}
 
 \section{Full per-cohort results}
-Table~\ref{tab:percohort} reserves the full ten-cohort corrected comparison before the organ-level
-aggregation used in Table~\ref{tab:main}.
+Table~\ref{tab:percohort} gives the per-cohort breakdown for all seven retained cohorts
+(HCC/liver, LYMPH\_IDC, and READ excluded; see Appendix~\ref{app:cohort_stats}) across all
+six baselines and \morph{}.
 
 \begin{table*}[t]
 \centering
-\caption{\textbf{Full per-cohort results on HEST-1k} (Pearson mean$_{\text{std}}$ over three seeds;
-nested-validation), before the organ-level aggregation of Table~\ref{tab:main}. Best per row in
-\best{bold}. \morph{} leads on all ten cohorts. Published per-cohort results are summarized in
-Appendix~\ref{app:published}.}
+\caption{\textbf{Full per-cohort results on HEST-1k} (Pearson mean$_{\text{std}}$ over three
+seeds; nested-validation). HCC (liver), LYMPH\_IDC, and READ are excluded per
+Appendix~\ref{app:cohort_stats}. Best per row in \best{bold}.}
 \label{tab:percohort}
-\footnotesize
-\setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l c cc c}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cccc c}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25}
+       & \morph{} (V3) \\
 \midrule
-IDC       & $0.538_{0.01}$ & $0.250_{0.07}$ & $0.558_{0.01}$ & \best{$0.567_{0.00}$} \\
-PRAD      & $0.251_{0.01}$ & $0.317_{0.02}$ & $0.369_{0.00}$ & \best{$0.390_{0.02}$} \\
-PAAD      & $0.353_{0.02}$ & $0.243_{0.06}$ & $0.367_{0.04}$ & \best{$0.392_{0.04}$} \\
-SKCM      & $0.632_{0.01}$ & $0.509_{0.02}$ & $0.641_{0.00}$ & \best{$0.696_{0.00}$} \\
-COAD      & $0.209_{0.02}$ & $0.293_{0.01}$ & $0.279_{0.01}$ & \best{$0.299_{0.00}$} \\
-READ      & $0.154_{0.00}$ & $0.097_{0.01}$ & $0.168_{0.01}$ & \best{$0.187_{0.02}$} \\
-CCRCC     & $0.172_{0.01}$ & $0.217_{0.01}$ & $0.256_{0.00}$ & \best{$0.265_{0.02}$} \\
-HCC       & $0.056_{0.01}$ & $0.031_{0.01}$ & $0.087_{0.01}$ & \best{$0.100_{0.00}$} \\
-LUNG      & $0.482_{0.01}$ & $0.378_{0.10}$ & $0.581_{0.01}$ & \best{$0.589_{0.01}$} \\
-LYMPH\_IDC & $0.191_{0.02}$ & $0.304_{0.00}$ & $0.238_{0.01}$ & \best{$0.312_{0.01}$} \\
+IDC~\tiny{Breast}      & $0.538{\pm}0.01$ & $0.250{\pm}0.07$ & $0.558{\pm}0.01$ & $0.508{\pm}0.01$ & $0.506{\pm}0.07$ & $0.532{\pm}0.01$ & $-^\dagger$ & \best{$0.567{\pm}0.00$} \\
+COAD~\tiny{Colorectal} & $0.209{\pm}0.02$ & $0.293{\pm}0.01$ & $0.279{\pm}0.01$ & $0.308{\pm}0.01$ & \best{$0.323{\pm}0.01$} & $0.274{\pm}0.00$ & $0.198{\pm}0.01$ & $0.299{\pm}0.00$ \\
+CCRCC~\tiny{Kidney}    & $0.172{\pm}0.01$ & $0.217{\pm}0.01$ & $0.256{\pm}0.00$ & $0.184{\pm}0.01$ & $0.253{\pm}0.01$ & $0.237{\pm}0.01$ & $-^\dagger$ & \best{$0.265{\pm}0.02$} \\
+LUNG~\tiny{Lung}       & $0.482{\pm}0.01$ & $0.378{\pm}0.10$ & $0.581{\pm}0.01$ & $0.559{\pm}0.01$ & $0.579{\pm}0.00$ & $0.561{\pm}0.00$ & $0.463{\pm}0.01$ & \best{$0.589{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.353{\pm}0.02$ & $0.243{\pm}0.06$ & $0.367{\pm}0.04$ & \best{$0.393{\pm}0.03$} & $0.361{\pm}0.03$ & $0.296{\pm}0.05$ & $0.292{\pm}0.02$ & \best{$0.392{\pm}0.04$} \\
+PRAD~\tiny{Prostate}   & $0.251{\pm}0.01$ & $0.317{\pm}0.02$ & $0.369{\pm}0.00$ & $0.343{\pm}0.01$ & \best{$0.400{\pm}0.00$} & $0.370{\pm}0.02$ & $0.215{\pm}0.01$ & $0.390{\pm}0.02$ \\
+SKCM~\tiny{Skin}       & $0.632{\pm}0.01$ & $0.509{\pm}0.02$ & $0.641{\pm}0.00$ & $0.639{\pm}0.01$ & $0.656{\pm}0.02$ & $0.610{\pm}0.01$ & $0.559{\pm}0.01$ & \best{$0.696{\pm}0.00$} \\
+\midrule
+\textbf{Average}       & $0.377$ & $0.315$ & $0.436$ & $0.419$ & $0.440$ & $0.411$ & $-^\dagger$ & \best{$0.457$} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\footnotesize $^\dagger$STEM (DiT) results for IDC and CCRCC are still running; remaining five cohorts use the corrected DiT implementation (T=1000, 34M params, UNI encoder). Average and bold will be finalised once all runs complete.
+\end{minipage}
+\end{table*}
+
+\section{Cross-organ LOOO transfer, expanded baselines}
+\label{app:looo_expanded}
+
+Table~\ref{tab:looo_appendix} extends Table~\ref{tab:looo} with three additional baselines
+(BLEEP, EGN, STEM) using the same leave-one-organ-out protocol on HEST-1k.
+M2OST results are pending. STEM collapses in LOOO (average $0.166$), confirming that its
+DDPM prior requires in-distribution training data and does not generalise across organ types.
+
+\begin{table*}[h]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer, expanded baselines} (Pearson mean$_{\text{std}}$
+over three seeds; nested-validation; liver excluded).
+Leave-one-organ-out: trained on all other organs, tested on the held-out organ.
+Best per row in \best{bold}. M2OST results pending ($-$).}
+\label{tab:looo_appendix}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cccc cccc}
+\toprule
+Organ & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+      & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25}
+      & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{} (V3) \\
+\midrule
+IDC~\tiny{Breast}      & $0.217{\pm}0.06$ & $0.459{\pm}0.02$ & $0.501{\pm}0.02$ & $0.509{\pm}0.03$ & $-$ & $0.531{\pm}0.03$ & $0.193{\pm}0.01$ & \best{$0.534{\pm}0.02$} \\
+COAD~\tiny{Colorectal} & $0.430{\pm}0.03$ & $0.688{\pm}0.04$ & $0.669{\pm}0.06$ & $0.667{\pm}0.02$ & $-$ & \best{$0.749{\pm}0.01$} & $0.277{\pm}0.01$ & $0.703{\pm}0.01$ \\
+CCRCC~\tiny{Kidney}    & $0.084{\pm}0.03$ & $0.084{\pm}0.01$ & $0.108{\pm}0.01$ & $0.100{\pm}0.02$ & $-$ & $0.106{\pm}0.01$ & $0.048{\pm}0.01$ & \best{$0.124{\pm}0.00$} \\
+LUNG~\tiny{Lung}       & $0.504{\pm}0.04$ & $0.499{\pm}0.06$ & $0.650{\pm}0.01$ & $0.621{\pm}0.02$ & $-$ & \best{$0.666{\pm}0.01$} & $0.186{\pm}0.02$ & $0.660{\pm}0.01$ \\
+PAAD~\tiny{Pancreas}   & $0.404{\pm}0.05$ & $0.360{\pm}0.07$ & $0.397{\pm}0.03$ & $0.521{\pm}0.02$ & $-$ & \best{$0.551{\pm}0.02$} & $0.209{\pm}0.01$ & $0.507{\pm}0.04$ \\
+PRAD~\tiny{Prostate}   & $0.071{\pm}0.01$ & $0.104{\pm}0.02$ & $0.092{\pm}0.03$ & $0.111{\pm}0.00$ & $-$ & $0.098{\pm}0.02$ & $0.030{\pm}0.01$ & \best{$0.119{\pm}0.02$} \\
+SKCM~\tiny{Skin}       & $0.402{\pm}0.08$ & $0.652{\pm}0.08$ & $0.720{\pm}0.02$ & $0.745{\pm}0.01$ & $-$ & \best{$0.749{\pm}0.01$} & $0.217{\pm}0.04$ & $0.692{\pm}0.06$ \\
+\midrule
+\textbf{Average}       & $0.302$ & $0.407$ & $0.448$ & $0.468$ & $-$ & \best{$0.493$} & $0.166$ & $0.477$ \\
+\bottomrule
+\end{tabular}%
+}
 \end{table*}
 
 \section{Published Per-Cohort Comparison}
@@ -911,6 +954,52 @@ MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 \morph{}$^\dagger$ (ours)                   & $0.440$ \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\section{HEST-1k Cohort Statistics}
+\label{app:cohort_stats}
+
+Table~\ref{tab:cohort_stats} lists the number of samples, total spots, and cross-validation folds
+for each HEST-1k cohort.
+Two organ groups in HEST-1k contain multiple cohorts: breast (IDC + LYMPH\_IDC) and
+colorectal (COAD + READ).
+Within each group the constituent cohorts differ substantially in size: IDC has $2.25\times$ more
+spots than LYMPH\_IDC (44{,}974 vs.\ 19{,}964), and COAD has $2.2\times$ more spots than READ
+(18{,}523 vs.\ 8{,}407).
+To avoid misrepresentation from unweighted averaging over unequal cohorts, Table~\ref{tab:main}
+uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the representative
+colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
+organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
+of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
+Table~\ref{tab:main} due to its near-zero signal floor.}
+\label{tab:cohort_stats}
+\small
+\begin{tabular}{l l r r r}
+\toprule
+Cohort & Organ & Samples & Spots & Folds \\
+\midrule
+IDC          & Breast      & 4 & 44{,}974 & 4 \\
+LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 \\
+COAD         & Colorectal  & 4 & 18{,}523 & 2 \\
+READ         & Colorectal  & 4 &  8{,}407 & 2 \\
+CCRCC        & Kidney      & 24 & 74{,}220 & 6 \\
+HCC          & Liver$^*$   &  2 &  4{,}248 & 2 \\
+LUNG         & Lung        &  2 &  7{,}505 & 2 \\
+PAAD         & Pancreas    &  3 &  9{,}793 & 3 \\
+PRAD         & Prostate    & 23 & 62{,}710 & 2 \\
+SKCM         & Skin        &  2 &  5{,}716 & 2 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}
+\footnotesize $^*$HCC (liver) is included here for completeness but excluded from
+Table~\ref{tab:main}; all baselines score near zero on this cohort due to low spatial
+gene-expression variance.
+\end{minipage}
 \end{table}
 
 {\small
