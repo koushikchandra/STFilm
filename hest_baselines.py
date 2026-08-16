@@ -44,6 +44,12 @@ def run_cohort(args, cohort, device, nm):
         if args.model == "bleep":
             res = B.bleep_train_fold(args, train_slides, val_slides, test_slides, gene_list,
                                      device, fold_dir)
+        elif args.model == "egn":
+            res = B.egn_train_fold(args, train_slides, val_slides, test_slides, gene_list,
+                                   device, fold_dir)
+        elif args.model == "stem":
+            res = B.stem_train_fold(args, train_slides, val_slides, test_slides, gene_list,
+                                    device, fold_dir)
         else:
             res = B.train_fold(args, train_slides, val_slides, test_slides, gene_list,
                                device, fold_dir)
@@ -64,7 +70,7 @@ def main():
     p = argparse.ArgumentParser()
     p.add_argument("--model", required=True,
                    choices=["histogene", "hist2st", "stnet", "deepspace", "mlpprobe", "triplex", "bleep",
-                            "mctogene", "hist", "histogpa", "hyperst", "genedml", "m2ost"])
+                            "mctogene", "hist", "histogpa", "hyperst", "genedml", "m2ost", "egn", "stem"])
     p.add_argument("--seed", type=int, default=1)
     p.add_argument("--cohort", default="all")
     p.add_argument("--source_dataroot", default="dataset")
@@ -88,6 +94,8 @@ def main():
     p.add_argument("--bleep_batch", type=int, default=512)
     p.add_argument("--k_retrieval", type=int, default=50)
     p.add_argument("--max_ref", type=int, default=30000)
+    p.add_argument("--k_exemplar", type=int, default=8)
+    p.add_argument("--n_steps", type=int, default=50)
     p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--corr_weight", type=float, default=0.0)
     # recent baselines (feature-matched)
@@ -98,7 +106,8 @@ def main():
     import torch
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     set_random_seed(args.seed)
-    args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024}[args.feature_encoder]
+    args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024,
+                        "uni_conch": 1536}[args.feature_encoder]
     nm = get_normalize_method(args.normalize_method)
     cohorts = HEST_COHORTS if args.cohort == "all" else [args.cohort]
     for c in cohorts:

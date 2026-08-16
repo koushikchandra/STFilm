@@ -895,6 +895,49 @@ $^\dagger$STEM (DiT) results for IDC and CCRCC are still running; remaining five
 \end{minipage}
 \end{table*}
 
+\section{Dual-encoder per-cohort results (UNI\,+\,CONCH)}
+\label{app:percohort_uniconch}
+
+Table~\ref{tab:percohort_uniconch} repeats the intra-cohort evaluation of
+Table~\ref{tab:percohort} but with \emph{all} methods conditioned on the same
+dual encoder (UNI\,+\,CONCH, 1536-dim), providing a fully feature-matched
+comparison at the higher capacity point. Baseline runs are in progress
+($-^\dagger$); \morph{}+CONCH values are carried over from Table~\ref{tab:percohort}.
+
+\begin{table*}[h]
+\centering
+\caption{\textbf{Per-cohort results — all methods with UNI+CONCH (1536-dim)} (Pearson
+mean$_{\text{std}}$ over three seeds; nested-validation).
+Same protocol as Table~\ref{tab:percohort}; encoder is UNI\,+\,CONCH for every method.
+HCC, LYMPH\_IDC, and READ excluded. Best per row in \best{bold}.}
+\label{tab:percohort_uniconch}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cccc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25}
+       & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast}      & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & \best{$0.581{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.318{\pm}0.01$ \\
+CCRCC~\tiny{Kidney}    & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.252{\pm}0.01$ \\
+LUNG~\tiny{Lung}       & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.589{\pm}0.01$ \\
+PAAD~\tiny{Pancreas}   & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.437{\pm}0.03$ \\
+PRAD~\tiny{Prostate}   & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.410{\pm}0.01$ \\
+SKCM~\tiny{Skin}       & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $0.707{\pm}0.01$ \\
+\midrule
+\textbf{Average}       & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & $-^\dagger$ & \best{$0.470$} \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+$^\dagger$Baseline runs with UNI+CONCH features are in progress (jobs 12029073, 12029074).
+All values will be filled once complete.
+\end{minipage}
+\end{table*}
+
 \section{Cross-organ LOOO transfer, expanded baselines}
 \label{app:looo_expanded}
 
