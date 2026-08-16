@@ -46,22 +46,22 @@ Spatial transcriptomics measures gene expression while preserving its location i
 assay remains expensive. Predicting spatial gene expression directly from routinely collected
 hematoxylin-and-eosin (H\&E) images could provide a lower-cost alternative; however, most existing
 methods are trained and tested within the same tissue cohort, leaving their ability to generalize to
-new organs unclear. We introduce \morph{}, a compact transformer that directly predicts gene
-expression at every measured tissue location, or spot, in a slide. The model represents spatial
-relationships using only distances between spots rather than absolute coordinates; therefore, with
-the histology features held fixed, its spatial computations remain unchanged when the coordinate
-system is translated, rotated, or reflected. \morph{} combines nearby tissue information through
-distance-aware local attention, slide-wide information through global attention, and an
-attention-pooled summary of the entire slide, predicting all target genes in a single forward pass
-without generative sampling. We evaluate \morph{} using frozen UNI histology features and matched
-data splits, gene panels, training budgets, and validation procedures in three settings: within-organ
-prediction using an intra-cohort protocol, pooled cross-validation on new samples from known organs,
-and leave-one-organ-out transfer to an unseen organ. On HEST-1k, \morph{} achieves the best average
-within-organ performance among five feature-matched baselines, providing a $6.6\%$ relative
-improvement in Pearson correlation over the strongest baseline, while remaining competitive under
-pooled and leave-one-organ-out evaluation. With $4.75$M parameters and single-pass inference,
-\morph{} provides a simple and efficient approach to spatial gene-expression prediction across
-diverse tissue types.
+new organs unclear. We introduce \morph{}, a coordinate-invariant graph transformer that directly
+predicts gene expression at every measured tissue location, or spot, in a slide. The model treats
+spots as graph nodes connected by spatial $k$-nearest-neighbour edges, and encodes edge geometry
+using only pairwise distances rather than absolute coordinates; therefore, its predictions are
+invariant to translation, rotation, and reflection of the coordinate system. \morph{} combines
+nearby tissue information through distance-biased local graph attention, slide-wide context through
+global self-attention over all nodes, and an attention-pooled slide summary token, predicting all
+target genes in a single forward pass without generative sampling. We evaluate \morph{} using frozen
+UNI histology features and matched data splits, gene panels, training budgets, and validation
+procedures in three settings: within-organ prediction using an intra-cohort protocol, pooled
+cross-validation on new samples from known organs, and leave-one-organ-out transfer to an unseen
+organ. On HEST-1k, \morph{} achieves the best average within-organ performance among five
+feature-matched baselines, providing a $6.6\%$ relative improvement in Pearson correlation over the
+strongest baseline, while remaining competitive under pooled and leave-one-organ-out evaluation.
+With $4.75$M parameters and single-pass inference, \morph{} provides a simple and efficient
+approach to spatial gene-expression prediction across diverse tissue types.
 \end{abstract}
 
 \section{Introduction}
