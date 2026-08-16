@@ -50,7 +50,9 @@ def evaluate(model, test_rows, args, gene_list, cohort, prediction_path=None):
 
 
 def train_fold(args, train_df, val_df, test_df, gene_list, cohort, fold_dir):
-    model = MorphoST(feat_dim=1024, dim=args.dim, n_genes=len(gene_list), n_layers=args.n_layers,
+    feat_dim = {"uni_v1_official": 1024, "gigapath": 1536, "ciga": 512,
+                "resnet50_trunc": 1024, "uni_conch": 1536}.get(args.feature_encoder, 1024)
+    model = MorphoST(feat_dim=feat_dim, dim=args.dim, n_genes=len(gene_list), n_layers=args.n_layers,
                      n_heads=args.n_heads, k=args.k, dropout=args.dropout,
                      num_rbf=args.num_rbf,
                      attn_dropout=args.dropout, version=args.version,

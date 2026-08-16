@@ -167,7 +167,7 @@ def evaluate(args, diffusier, model, test_samples, gene_list, use_meta, force_nu
 def train_fold(args, train_samples, test_samples, gene_list, force_null_test):
     args.n_genes = len(gene_list)
     args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "ciga": 512,
-                        "resnet50_trunc": 1024}[args.feature_encoder]
+                        "resnet50_trunc": 1024, "uni_conch": 1536}[args.feature_encoder]
     use_meta = args.film == "meta"
     args.meta_categories = {"organ": N_ORGANS} if use_meta else None
 

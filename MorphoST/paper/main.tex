@@ -871,26 +871,28 @@ Appendix~\ref{app:cohort_stats}. Best per row in \best{bold}.}
 \label{tab:percohort}
 \setlength{\tabcolsep}{3pt}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cccc c}
+\begin{tabular}{l ccc cccc c c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
        & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25}
-       & \morph{} (V3) \\
+       & \morph{} (V3) & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast}      & $0.538{\pm}0.01$ & $0.250{\pm}0.07$ & $0.558{\pm}0.01$ & $0.508{\pm}0.01$ & $0.506{\pm}0.07$ & $0.532{\pm}0.01$ & $-^\dagger$ & \best{$0.567{\pm}0.00$} \\
-COAD~\tiny{Colorectal} & $0.209{\pm}0.02$ & $0.293{\pm}0.01$ & $0.279{\pm}0.01$ & $0.308{\pm}0.01$ & \best{$0.323{\pm}0.01$} & $0.274{\pm}0.00$ & $0.198{\pm}0.01$ & $0.299{\pm}0.00$ \\
-CCRCC~\tiny{Kidney}    & $0.172{\pm}0.01$ & $0.217{\pm}0.01$ & $0.256{\pm}0.00$ & $0.184{\pm}0.01$ & $0.253{\pm}0.01$ & $0.237{\pm}0.01$ & $-^\dagger$ & \best{$0.265{\pm}0.02$} \\
-LUNG~\tiny{Lung}       & $0.482{\pm}0.01$ & $0.378{\pm}0.10$ & $0.581{\pm}0.01$ & $0.559{\pm}0.01$ & $0.579{\pm}0.00$ & $0.561{\pm}0.00$ & $0.463{\pm}0.01$ & \best{$0.589{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}   & $0.353{\pm}0.02$ & $0.243{\pm}0.06$ & $0.367{\pm}0.04$ & \best{$0.393{\pm}0.03$} & $0.361{\pm}0.03$ & $0.296{\pm}0.05$ & $0.292{\pm}0.02$ & \best{$0.392{\pm}0.04$} \\
-PRAD~\tiny{Prostate}   & $0.251{\pm}0.01$ & $0.317{\pm}0.02$ & $0.369{\pm}0.00$ & $0.343{\pm}0.01$ & \best{$0.400{\pm}0.00$} & $0.370{\pm}0.02$ & $0.215{\pm}0.01$ & $0.390{\pm}0.02$ \\
-SKCM~\tiny{Skin}       & $0.632{\pm}0.01$ & $0.509{\pm}0.02$ & $0.641{\pm}0.00$ & $0.639{\pm}0.01$ & $0.656{\pm}0.02$ & $0.610{\pm}0.01$ & $0.559{\pm}0.01$ & \best{$0.696{\pm}0.00$} \\
+IDC~\tiny{Breast}      & $0.538{\pm}0.01$ & $0.250{\pm}0.07$ & $0.558{\pm}0.01$ & $0.508{\pm}0.01$ & $0.506{\pm}0.07$ & $0.532{\pm}0.01$ & $-^\dagger$ & \best{$0.567{\pm}0.00$} & $-^\ddagger$ \\
+COAD~\tiny{Colorectal} & $0.209{\pm}0.02$ & $0.293{\pm}0.01$ & $0.279{\pm}0.01$ & $0.308{\pm}0.01$ & \best{$0.323{\pm}0.01$} & $0.274{\pm}0.00$ & $0.198{\pm}0.01$ & $0.299{\pm}0.00$ & $-^\ddagger$ \\
+CCRCC~\tiny{Kidney}    & $0.172{\pm}0.01$ & $0.217{\pm}0.01$ & $0.256{\pm}0.00$ & $0.184{\pm}0.01$ & $0.253{\pm}0.01$ & $0.237{\pm}0.01$ & $-^\dagger$ & \best{$0.265{\pm}0.02$} & $-^\ddagger$ \\
+LUNG~\tiny{Lung}       & $0.482{\pm}0.01$ & $0.378{\pm}0.10$ & $0.581{\pm}0.01$ & $0.559{\pm}0.01$ & $0.579{\pm}0.00$ & $0.561{\pm}0.00$ & $0.463{\pm}0.01$ & \best{$0.589{\pm}0.01$} & $-^\ddagger$ \\
+PAAD~\tiny{Pancreas}   & $0.353{\pm}0.02$ & $0.243{\pm}0.06$ & $0.367{\pm}0.04$ & \best{$0.393{\pm}0.03$} & $0.361{\pm}0.03$ & $0.296{\pm}0.05$ & $0.292{\pm}0.02$ & \best{$0.392{\pm}0.04$} & $-^\ddagger$ \\
+PRAD~\tiny{Prostate}   & $0.251{\pm}0.01$ & $0.317{\pm}0.02$ & $0.369{\pm}0.00$ & $0.343{\pm}0.01$ & \best{$0.400{\pm}0.00$} & $0.370{\pm}0.02$ & $0.215{\pm}0.01$ & $0.390{\pm}0.02$ & $-^\ddagger$ \\
+SKCM~\tiny{Skin}       & $0.632{\pm}0.01$ & $0.509{\pm}0.02$ & $0.641{\pm}0.00$ & $0.639{\pm}0.01$ & $0.656{\pm}0.02$ & $0.610{\pm}0.01$ & $0.559{\pm}0.01$ & \best{$0.696{\pm}0.00$} & $-^\ddagger$ \\
 \midrule
-\textbf{Average}       & $0.377$ & $0.315$ & $0.436$ & $0.419$ & $0.440$ & $0.411$ & $-^\dagger$ & \best{$0.457$} \\
+\textbf{Average}       & $0.377$ & $0.315$ & $0.436$ & $0.419$ & $0.440$ & $0.411$ & $-^\dagger$ & \best{$0.457$} & $-^\ddagger$ \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
-\footnotesize $^\dagger$STEM (DiT) results for IDC and CCRCC are still running; remaining five cohorts use the corrected DiT implementation (T=1000, 34M params, UNI encoder). Average and bold will be finalised once all runs complete.
+\footnotesize
+$^\dagger$STEM (DiT) results for IDC and CCRCC are still running; remaining five cohorts use the corrected DiT implementation (T=1000, 34M params, UNI encoder). \\
+$^\ddagger$\morph{}+CONCH uses the same V3 architecture conditioned on UNI+CONCH (1536-dim) features; runs pending CONCH weight access approval on HuggingFace.
 \end{minipage}
 \end{table*}
 
