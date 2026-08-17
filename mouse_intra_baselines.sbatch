@@ -9,9 +9,9 @@
 #SBATCH --mem=64G
 #SBATCH --time=8:00:00
 #SBATCH --output=mouse_intra_bl_%a_%j.log
-#SBATCH --array=0-104
+#SBATCH --array=0-146
 
-# Mouse INTRA: 5 baselines x 7 organs x 3 seeds = 105 tasks.
+# Mouse INTRA: 7 baselines x 7 organs x 3 seeds = 147 tasks.
 # Each task runs one organ's 5-fold cross-validation (intra-organ).
 
 set -u
@@ -20,15 +20,16 @@ export PATH=/lustre/hdd/LAS/weile-lab/howlader/miniconda3/bin:$PATH
 
 echo "[mouse_intra_bl] node=$(hostname) task=$SLURM_ARRAY_TASK_ID"
 
-MODELS=(stnet histogene hist2st genedml hyperst)
+MODELS=(stnet histogene hist2st genedml hyperst egn stem)
 ORGANS=(brain liver skin heart bowel kidney muscle)
 SEEDS=(1 2 3)
 
+N_ORGANS=${#ORGANS[@]}; N_SEEDS=${#SEEDS[@]}
 IDX=$SLURM_ARRAY_TASK_ID
-MODEL=${MODELS[$((IDX / 21))]}
-REM=$((IDX % 21))
-ORGAN=${ORGANS[$((REM / 3))]}
-SEED=${SEEDS[$((REM % 3))]}
+MODEL=${MODELS[$((IDX / (N_ORGANS * N_SEEDS)))]}
+REM=$((IDX % (N_ORGANS * N_SEEDS)))
+ORGAN=${ORGANS[$((REM / N_SEEDS))]}
+SEED=${SEEDS[$((REM % N_SEEDS))]}
 
 SPLITS_DIR="mouse_cross_organ_splits/INTRA/${ORGAN}"
 TAG="INTRA_${ORGAN}_${MODEL}_seed${SEED}"

@@ -9,9 +9,9 @@
 #SBATCH --mem=64G
 #SBATCH --time=8:00:00
 #SBATCH --output=hest_cx_bl_%a_%j.log
-#SBATCH --array=0-35
+#SBATCH --array=0-47
 
-# 2 regimes x 6 models x 3 seeds = 36 tasks.
+# 2 regimes x 8 models x 3 seeds = 48 tasks.
 # LOOO: 8 organ folds (need=8); POOLED: 5 folds (need=5).
 # Nested inner-val (val_fraction=0.15), same protocol as HEST intra-cohort Table 1.
 # Writes to results_corrected_crossorgan_baselines/.
@@ -24,7 +24,7 @@ echo "[hcx] node=$(hostname) job=$SLURM_JOB_ID task=$SLURM_ARRAY_TASK_ID gpu=$CU
 python -c "import torch; print('[hcx] cuda:', torch.cuda.is_available())"
 
 REGIMES=(LOOO POOLED)
-MODELS=(stnet histogene hist2st triplex genedml hyperst)
+MODELS=(stnet histogene hist2st triplex genedml hyperst egn stem)
 SEEDS=(1 2 3)
 N_REGIMES=${#REGIMES[@]}; N_MODELS=${#MODELS[@]}; N_SEEDS=${#SEEDS[@]}
 

@@ -9,10 +9,10 @@
 #SBATCH --mem=64G
 #SBATCH --time=8:00:00
 #SBATCH --output=mouse_bl_%a_%j.log
-#SBATCH --array=0-29
+#SBATCH --array=0-41
 
-# Feature-matched baselines on mouse HEST: LOOO + POOLED, 5 models, 3 seeds.
-# 2 regimes x 5 models x 3 seeds = 30 array tasks.
+# Feature-matched baselines on mouse HEST: LOOO + POOLED, 7 models, 3 seeds.
+# 2 regimes x 7 models x 3 seeds = 42 array tasks.
 # Fold names auto-discovered from CSV; idempotent at fold level -> requeue-safe.
 
 set -u
@@ -23,12 +23,13 @@ echo "[mouse_bl] node=$(hostname) job=$SLURM_JOB_ID task=$SLURM_ARRAY_TASK_ID"
 python -c "import torch; print('[mouse_bl] cuda:', torch.cuda.is_available())"
 
 REGIMES=(LOOO POOLED)
-MODELS=(stnet histogene hist2st genedml hyperst)
+MODELS=(stnet histogene hist2st genedml hyperst egn stem)
 SEEDS=(1 2 3)
 
+N_MODELS=${#MODELS[@]}
 IDX=$SLURM_ARRAY_TASK_ID
-REGIME=${REGIMES[$((IDX / 15))]}
-REM=$((IDX % 15))
+REGIME=${REGIMES[$((IDX / (N_MODELS * 3)))]}
+REM=$((IDX % (N_MODELS * 3)))
 MODEL=${MODELS[$((REM / 3))]}
 SEED=${SEEDS[$((REM % 3))]}
 

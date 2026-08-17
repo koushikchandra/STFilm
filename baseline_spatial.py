@@ -936,7 +936,8 @@ def stem_train_fold(args, train_slides, val_slides, test_slides, gene_list, devi
 
     best_val, best_state, no_improve = -1.0, None, 0
     batch_sz = min(256, len(all_feat))
-    eval_every = 5   # evaluate val every N epochs (DDIM-50 inference is expensive)
+    eval_every = 5   # evaluate val every N epochs (DDPM inference is expensive)
+    patience_cycles = max(1, getattr(args, "patience", 20) // eval_every)
 
     for epoch in range(1, args.epochs + 1):
         model.train()
@@ -959,7 +960,7 @@ def stem_train_fold(args, train_slides, val_slides, test_slides, gene_list, devi
                 no_improve = 0
             else:
                 no_improve += 1
-                if no_improve >= 30:   # patience in eval cycles (30×5 = 150 epochs)
+                if no_improve >= patience_cycles:
                     break
 
     if best_state is None:

@@ -96,6 +96,7 @@ def main():
     p.add_argument("--max_ref", type=int, default=30000)
     p.add_argument("--k_exemplar", type=int, default=8)
     p.add_argument("--n_steps", type=int, default=50)
+    p.add_argument("--patience", type=int, default=20)
     p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--corr_weight", type=float, default=0.0)
     # recent baselines (feature-matched)
