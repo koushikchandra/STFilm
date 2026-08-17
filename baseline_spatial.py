@@ -977,7 +977,8 @@ def stem_train_fold(args, train_slides, val_slides, test_slides, gene_list, devi
 def run(args):
     device = f"cuda:{args.device}" if torch.cuda.is_available() else "cpu"
     set_random_seed(args.seed)
-    args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024}[args.feature_encoder]
+    args.feature_dim = {"uni_v1_official": 1024, "gigapath": 1536, "resnet50_trunc": 1024,
+                        "uni_conch": 1536, "ciga": 512}.get(args.feature_encoder, 1024)
     regime_dir = args.splits_dir if args.splits_dir else os.path.join(args.splits_root, args.regime)
     split_dir = os.path.join(regime_dir, "splits")
     # derive fold names from the split CSVs so this works for both HEST and STImage organ sets
@@ -1063,6 +1064,7 @@ if __name__ == "__main__":
     p.add_argument("--k_exemplar", type=int, default=8)      # exemplar bank neighbours (EGN EB block)
     # stem-specific
     p.add_argument("--n_steps", type=int, default=50)        # DDPM diffusion steps
+    p.add_argument("--patience", type=int, default=20)
     p.add_argument("--val_fraction", type=float, default=0.15)
     p.add_argument("--corr_weight", type=float, default=0.0)
     args = p.parse_args()

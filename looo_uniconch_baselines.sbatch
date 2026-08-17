@@ -7,7 +7,7 @@
 #SBATCH --gres=gpu:a100:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
-#SBATCH --time=20:00:00
+#SBATCH --time=14:00:00
 #SBATCH --output=looo_uc_bl_%a_%j.log
 #SBATCH --array=0-17
 
