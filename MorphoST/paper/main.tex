@@ -658,22 +658,24 @@ benchmark (pooled PCC $0.652$).
 
 \begin{table}[t]
 \centering
-\caption{\textbf{Factorial context ablation} (\textsc{looo}, Pearson mean$_{\text{std}}$ over three
-seeds). L, G, and S denote local attention, global attention, and slide representation.}
+\caption{\textbf{Factorial context ablation} (intra-cohort, Pearson mean$_{\text{std}}$ over three
+seeds on SKCM and LUNG). L, G, and S denote local attention, global attention, and slide
+representation. Local attention is the dominant contributor within an organ.}
 \label{tab:ablation}
 \small
-\begin{tabular}{l ccc c}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l ccc cc c}
 \toprule
-Variant & L & G & S & Pearson \\
+Variant & L & G & S & SKCM & LUNG & Avg \\
 \midrule
-C000 & & & & $0.417_{0.01}$ \\
-C001 & & & $\bullet$ & $0.423_{0.01}$ \\
-C010 & & $\bullet$ & & $0.420_{0.01}$ \\
-C011 & & $\bullet$ & $\bullet$ & \best{$0.433_{0.00}$} \\
-C100 & $\bullet$ & & & $0.396_{0.01}$ \\
-C101 & $\bullet$ & & $\bullet$ & $0.427_{0.00}$ \\
-C110 & $\bullet$ & $\bullet$ & & $0.416_{0.02}$ \\
-C111 & $\bullet$ & $\bullet$ & $\bullet$ & $0.421_{0.01}$ \\
+C000 & & & & $0.639_{0.00}$ & $0.577_{0.01}$ & $0.608$ \\
+C001 & & & $\bullet$ & $0.633_{0.01}$ & $0.578_{0.00}$ & $0.605$ \\
+C010 & & $\bullet$ & & $0.641_{0.01}$ & $0.577_{0.00}$ & $0.609$ \\
+C011 & & $\bullet$ & $\bullet$ & $0.639_{0.02}$ & $0.583_{0.00}$ & $0.611$ \\
+C100 & $\bullet$ & & & $0.693_{0.01}$ & $0.587_{0.00}$ & $0.640$ \\
+C101 & $\bullet$ & & $\bullet$ & $0.695_{0.01}$ & $0.585_{0.01}$ & $0.640$ \\
+C110 & $\bullet$ & $\bullet$ & & $0.693_{0.01}$ & $0.584_{0.00}$ & $0.638$ \\
+C111 & $\bullet$ & $\bullet$ & $\bullet$ & \best{$0.696_{0.00}$} & \best{$0.589_{0.01}$} & \best{$0.643$} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -919,13 +921,13 @@ Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
        & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25}
        & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.571{\pm}0.01$ & $0.551{\pm}0.01$ & $-^\dagger$ & \best{$0.581{\pm}0.01$} \\
-COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & \best{$0.328{\pm}0.01$} & $0.293{\pm}0.01$ & $-^\dagger$ & $0.318{\pm}0.01$ \\
+IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.571{\pm}0.01$ & $0.551{\pm}0.01$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & \best{$0.328{\pm}0.01$} & $0.293{\pm}0.01$ & $0.177{\pm}0.01$ & $0.318{\pm}0.01$ \\
 CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.210{\pm}0.02$ & $0.223{\pm}0.02$ & $-^\dagger$ & $0.252{\pm}0.01$ \\
-LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & \best{$0.598{\pm}0.00$} & $0.584{\pm}0.01$ & $-^\dagger$ & $0.589{\pm}0.01$ \\
-PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.413{\pm}0.04$ & $0.415{\pm}0.03$ & $-^\dagger$ & \best{$0.437{\pm}0.03$} \\
-PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & \best{$0.413{\pm}0.01$} & $0.377{\pm}0.03$ & $-^\dagger$ & $0.410{\pm}0.01$ \\
-SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.654{\pm}0.01$ & $0.631{\pm}0.01$ & $-^\dagger$ & \best{$0.707{\pm}0.01$} \\
+LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & \best{$0.598{\pm}0.00$} & $0.584{\pm}0.01$ & $0.423{\pm}0.03$ & $0.589{\pm}0.01$ \\
+PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.413{\pm}0.04$ & $0.415{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & \best{$0.413{\pm}0.01$} & $0.377{\pm}0.03$ & $0.207{\pm}0.02$ & $0.410{\pm}0.01$ \\
+SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.654{\pm}0.01$ & $0.631{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
 \midrule
 \textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.455$ & $0.439$ & $-^\dagger$ & \best{$0.470$} \\
 \bottomrule
