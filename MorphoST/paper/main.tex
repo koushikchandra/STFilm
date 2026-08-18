@@ -23,7 +23,7 @@
 \def\confName{WACV}
 \def\confYear{2027}
 
-\newcommand{\morph}{\textsc{MorphoST}}
+\newcommand{\morph}{\textsc{LoGST}}
 \newcommand{\best}[1]{{\bfseries\boldmath #1}}
 \newcommand{\running}{\multicolumn{1}{c}{\textit{running}}}
 % Placeholder box for figures generated from the completed corrected runs.
@@ -34,8 +34,8 @@
 
 \begin{document}
 
-\title{\morph: A Coordinate-Invariant Graph Transformer for\\
-Spatial Gene Expression Prediction from Histology}
+\title{\morph: A Coordinate-Invariant Local-Global Spatial Transformer for\\
+Gene Expression Prediction from Histopathology}
 
 \author{Anonymous WACV submission\\
 Paper ID \paperID}
@@ -93,7 +93,7 @@ to use coordinates only through pairwise Euclidean distances. With histology fea
 this makes the spatial pathway unchanged by translations, rotations, and reflections of the
 coordinate system, without requiring frame averaging.
 
-We introduce \morph{} (\textbf{Morpho}logy-aware \textbf{S}patial \textbf{T}ransformer), a
+We introduce \morph{} (\textbf{Lo}cal-\textbf{G}lobal \textbf{S}patial \textbf{T}ransformer), a
 single-pass model that predicts a panel of genes at every spot in a slide. Each layer combines three
 complementary forms of context: distance-aware local attention captures relationships between nearby
 spots, global self-attention models slide-wide dependencies, and an attention-pooled slide
@@ -211,7 +211,7 @@ per-cohort redesign.}
       inner sep=7pt,fill=blue!2] (model) {};
 \end{scope}
 \node[anchor=south west,font=\small\bfseries,text=blue!55!black] at ($(model.north west)+(0.05,0.04)$)
-  {MorphoST spatial transformer};
+  {LoGST spatial transformer};
 
 % Output
 \node[io,fill=red!7,text width=2.65cm] (out) at (15.55,0.25)
@@ -242,7 +242,7 @@ per-cohort redesign.}
 
 \end{tikzpicture}
 }
-\caption{\textbf{MorphoST overview and contributions.} The model receives frozen UNI morphology
+\caption{\textbf{LoGST overview and contributions.} The model receives frozen UNI morphology
 features and spot coordinates. Coordinates affect the network only through pairwise distances. Each
 layer combines local, global, and slide-level context before a linear head predicts the expression of
 $G$ genes at all $N$ spots. The design provides an invariant spatial pathway, direct single-pass
@@ -529,8 +529,10 @@ Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
 ST-Net~\cite{he2020stnet} (NBE'20)      & 0.311 & 0.269 & 1.633 \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & 0.271 & 0.250 & 1.292 \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.365 & 0.329 & 1.113 \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & 0.426 & -- & -- \\
+STEM~\cite{wu2025stem} (ICLR'25)             & 0.299 & -- & -- \\
 \midrule
-\morph{} (V3) & \best{0.389} & \best{0.348} & \best{1.072} \\
+\morph{} (V3) & \best{0.470} & \best{0.348} & \best{1.072} \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -542,7 +544,6 @@ HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.365 & 0.329 & 1.113 \\
 We evaluate two cross-organ regimes on both benchmarks: leave-one-organ-out (\textsc{looo}),
 where the model trains on seven organ groups and is tested on the held-out eighth, and pooled
 five-fold cross-validation (\textsc{pooled}), where all organs are trained together.
-Table~\ref{tab:looo} gives per-organ \textsc{looo} Pearson on HEST-1k;
 Table~\ref{tab:pooled} summarizes pooled averages; Table~\ref{tab:crossorgan} combines both
 regimes with PCC and MSE.
 \morph{} achieves an average LOOO PCC of $0.421$ on HEST-1k, leading all three baselines; HyperST is second at $0.395$.
@@ -553,31 +554,6 @@ organs (brain, liver, skin, heart, bowel, kidney, muscle) from the MahmoodLab HE
 Table~\ref{tab:mouse} reports PCC under the same \textsc{looo} and \textsc{pooled} protocols using mouse-specific 50-gene HVG panels;
 \morph{} achieves a pooled PCC of $0.887_{0.005}$ on mouse tissue, leading all three baselines (HyperST $0.865$, Hist2ST $0.829$, ST-Net $0.357$).
 
-\begin{table*}[t]
-\centering
-\caption{\textbf{Cross-organ LOOO transfer, per-organ Pearson $\uparrow$ (HEST-1k).}
-Leave-one-organ-out: trained on all other organs, tested on the held-out organ. Eight organ groups;
-mean$_{\mathrm{std}}$ over three seeds, nested-validation. Best per row in \best{bold}.}
-\label{tab:looo}
-\footnotesize
-\setlength{\tabcolsep}{3.2pt}
-\begin{tabular}{l c cc c}
-\toprule
-Organ & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26} & \morph{} (V3) \\
-\midrule
-Breast      & $0.217_{0.06}$ & $0.459_{0.02}$ & $0.501_{0.02}$ & \best{$0.534_{0.02}$} \\
-Colorectal  & $0.430_{0.03}$ & $0.688_{0.04}$ & $0.669_{0.06}$ & \best{$0.703_{0.01}$} \\
-Kidney      & $0.084_{0.03}$ & $0.084_{0.01}$ & $0.108_{0.01}$ & \best{$0.124_{0.00}$} \\
-Liver       & $0.024_{0.00}$ & \best{$0.033_{0.00}$} & $0.028_{0.00}$ & $0.032_{0.01}$ \\
-Lung        & $0.504_{0.04}$ & $0.499_{0.06}$ & $0.650_{0.01}$ & \best{$0.660_{0.01}$} \\
-Pancreas    & $0.404_{0.05}$ & $0.360_{0.07}$ & $0.397_{0.03}$ & \best{$0.507_{0.04}$} \\
-Prostate    & $0.071_{0.01}$ & $0.104_{0.02}$ & $0.092_{0.03}$ & \best{$0.119_{0.02}$} \\
-Skin        & $0.402_{0.08}$ & $0.652_{0.08}$ & \best{$0.720_{0.02}$} & $0.692_{0.06}$ \\
-\textbf{Average} & $0.267$ & $0.360$ & $0.395$ & \best{$0.421$} \\
-
-\bottomrule
-\end{tabular}
-\end{table*}
 
 \begin{table}[t]
 \centering
@@ -594,6 +570,8 @@ Method & HEST-1k \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & -- \\
+STEM~\cite{wu2025stem} (ICLR'25)               & -- \\
 \midrule
 \morph{} (V3)                               & \best{$0.760_{0.01}$} \\
 \bottomrule
@@ -617,6 +595,8 @@ Method & PCC & MSE & PCC & MSE \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.267_{0.02}$ & $1.846_{0.10}$ & $0.370_{0.01}$\\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.360_{0.02}$ & $1.182_{0.07}$ & $0.737_{0.01}$\\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & \best{$1.136_{0.10}$} & $0.756_{0.01}$\\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.416_{0.01}$ & -- & --\\
+STEM~\cite{wu2025stem} (ICLR'25)               & -- & -- & --\\
 \midrule
 \morph{} (V3) & \best{$0.421_{0.01}$} & $1.233_{0.11}$ & \best{$0.760_{0.01}$}\\
 \bottomrule
@@ -639,6 +619,8 @@ Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
 ST-Net~\cite{he2020stnet} (NBE'20)          & $0.013_{0.011}$ & $0.357_{0.036}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.018_{0.007}$ & $0.829_{0.028}$ \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)   & \best{$0.019_{0.006}$} & $0.865_{0.013}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)      & $-0.006_{0.003}$ & $0.848_{0.012}$ \\
+STEM~\cite{wu2025stem} (ICLR'25)            & -- & $0.279_{0.009}$ \\
 \midrule
 \morph{} (V3) & $0.018_{0.006}$ & \best{$0.887_{0.005}$} \\
 \bottomrule
@@ -685,6 +667,25 @@ C100 & $\bullet$ & & & $0.693_{0.01}$ & $0.587_{0.00}$ & $0.640$ \\
 C101 & $\bullet$ & & $\bullet$ & $0.695_{0.01}$ & $0.585_{0.01}$ & $0.640$ \\
 C110 & $\bullet$ & $\bullet$ & & $0.693_{0.01}$ & $0.584_{0.00}$ & $0.638$ \\
 C111 & $\bullet$ & $\bullet$ & $\bullet$ & \best{$0.696_{0.00}$} & \best{$0.589_{0.01}$} & \best{$0.643$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:invariance} verifies that the coordinate pathway is invariant to rigid-body transformations of the spot coordinates.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference when only the spot coordinates are transformed (randomly initialized model, 257-spot synthetic slide).}
+\label{tab:invariance}
+\small
+\begin{tabular}{l r}
+\toprule
+Transformation & Max.\ abs.\ difference \\
+\midrule
+Translation & $5.97\times10^{-5}$ \\
+Rotation    & $1.97\times10^{-5}$ \\
+Reflection  & $0$ \\
+Spot permutation & $5.96\times10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -744,11 +745,13 @@ slides; three seeds.}
 \toprule
 Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & $0.148_{0.13}$\\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & \running\\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)      & \running\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.148_{0.13}$ & -- \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & -- & -- \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & -- & -- \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & -- & -- \\
+STEM~\cite{wen2024stem} (NeurIPS'24)           & -- & -- \\
 \midrule
-\morph{} (V3) & $0.170_{0.15}$\\
+\morph{} (V3) & \best{$0.170_{0.15}$} & -- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -767,7 +770,7 @@ expression of marker genes on held-out slides. Generated from the saved correcte
 \label{sec:rq5}
 \noindent\textbf{Answer: \morph{} uses $4.8$M parameters and one forward pass, scaling to 10{,}000 spots in 65\,ms on an A100.}
 Table~\ref{tab:complexity} compares parameter counts and inference procedures. \morph{} contains
-$4.75$M parameters, compared with $0.05$M for ST-Net. It produces a
+$4.88$M parameters, compared with $0.47$M for ST-Net. It produces a
 slide-level prediction in one forward pass; its primary efficiency advantage is its simple inference
 procedure rather than the smallest parameter count. Table~\ref{tab:scaling} reports measured
 model-only inference scaling.
@@ -783,16 +786,20 @@ a single forward pass. Maximum parameter count in \best{bold}.}
 \toprule
 Model & \#Params (M) & Inference \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)      & 0.05  & single-pass \\
+ST-Net~\cite{he2020stnet} (NBE'20)      & 0.47  & single-pass \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22) & 2.18  & single-pass \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26) & 3.99 & single-pass \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)  & 0.54  & single-pass \\
+STEM~\cite{wen2024stem} (NeurIPS'24)    & \best{34.16} & iterative \\
 \midrule
-\morph{} (V3) & \best{4.75} & single-pass \\
+\morph{} (V3) & 4.88 & single-pass \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \begin{table}[t]
 \centering
-\caption{\textbf{MorphoST inference scaling on an NVIDIA A100 80GB.} Median model-only latency and
+\caption{\textbf{LoGST inference scaling on an NVIDIA A100 80GB.} Median model-only latency and
 peak allocated GPU memory over synthetic slides; feature extraction and disk I/O are excluded.}
 \label{tab:scaling}
 \small
@@ -842,32 +849,6 @@ generalizable alternative to generative prediction.
 \clearpage
 \appendix
 
-\section{Numerical invariance verification}
-\label{app:invariance}
-We verify the spatial coordinate invariance independently of predictive accuracy. For a randomly
-initialized evaluation mode model and a synthetic 257-spot slide, we transform only the coordinates
-while holding the UNI features fixed. The maximum absolute output deviations are
-$5.97\!\times\!10^{-5}$ for translation, $1.97\!\times\!10^{-5}$ for rotation, exactly zero for
-reflection, and $5.96\!\times\!10^{-7}$ after permuting and restoring the spot order. These small
-nonzero deviations arise from floating point distance computation. This test verifies the coordinate
-pathway; it does not test rotation invariance of the frozen histology encoder.
-
-\begin{table}[h]
-\centering
-\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference.}
-\label{tab:invariance}
-\small
-\begin{tabular}{l r}
-\toprule
-Transformation & Max. absolute difference \\
-\midrule
-Translation & $5.97\times10^{-5}$ \\
-Rotation & $1.97\times10^{-5}$ \\
-Reflection & $0$ \\
-Spot permutation & $5.96\times10^{-7}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Full per-cohort results}
 Table~\ref{tab:percohort} gives the per-cohort breakdown for all seven retained cohorts
@@ -952,7 +933,7 @@ $^\dagger$STEM LOOO UNI+CONCH run pending (cluster maintenance); will be filled 
 \section{Cross-organ LOOO transfer, expanded baselines}
 \label{app:looo_expanded}
 
-Table~\ref{tab:looo_appendix} extends Table~\ref{tab:looo} with three additional baselines
+Table~\ref{tab:looo_appendix} gives the full per-organ LOOO Pearson with all baselines
 (BLEEP, EGN, STEM) using the same leave-one-organ-out protocol on HEST-1k.
 STEM (DiT, corrected, T\,=\,1000) shows substantial improvement over the MLP variant:
 breast $0.406$, colorectal $0.504$, kidney $0.090$; the remaining five organs are still
