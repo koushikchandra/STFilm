@@ -1,0 +1,916 @@
+% ICLR 2027 submission --- ContextST
+% Official ICLR 2027 conference style and bibliography files ship alongside.
+\documentclass[11pt]{article}
+\usepackage{iclr2027_conference,times}
+
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{array}
+\usepackage{xcolor}
+\usepackage{makecell}
+\usepackage{enumitem}
+\usepackage{placeins}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
+\usepackage{url}
+
+% ICLR 2027 submission
+
+\newcommand{\morph}{\textsc{ContextST}}
+\newcommand{\best}[1]{{\bfseries\boldmath #1}}
+\renewcommand{\arraystretch}{1.05}
+
+\begin{document}
+
+\title{\morph: Coordinate-Frame-Invariant\\
+Multi-Context Attention for Spatial Gene Expression\\
+Prediction from Histology}
+
+\author{Anonymous}
+\maketitle
+
+\begin{abstract}
+Spatial transcriptomics (ST) maps gene expression within intact tissue but remains substantially
+less accessible than routine hematoxylin-and-eosin histology. Inferring spatial expression from
+histology requires a model to connect the morphology of each capture spot with both its tissue
+neighbourhood and the broader slide context, without becoming sensitive to an arbitrary coordinate
+frame. We present \morph{}, a compact multi-context architecture that predicts
+gene expression for every spot on a slide in one forward pass. Starting from frozen histology patch
+embeddings, each \morph{} block processes three complementary contexts in parallel: distance-biased
+attention over spatial $k$-nearest neighbours captures local tissue organization, full self-attention
+models slide-wide spot interactions, and attention pooling forms a shared slide representation. The
+three signals are fused residually before a direct gene-expression regression head. Coordinates enter
+the network only through radial-basis encodings of pairwise distances; therefore, for fixed image
+features, the spatial pathway is invariant to translations, rotations, and reflections of the
+coordinate frame. We evaluate \morph{} on HEST-1k using matched features, gene panels, training
+budgets, and nested validation across intra-cohort, pooled cross-sample, and leave-one-organ-out
+settings. \morph{} achieves a mean intra-cohort Pearson correlation of $0.470$, a $4.9\%$ relative
+improvement over the strongest baseline in the main comparison, and reaches $0.490$ under
+leave-one-organ-out transfer. Factorial ablations identify distance-aware local attention as the
+primary contributor, while the complete local--global--slide model performs best. With $4.88$M
+parameters and $64.7$ ms inference for a 10,000-spot slide on an A100, \morph{} provides an efficient,
+coordinate-frame-invariant approach to spatial gene expression prediction from histology.
+\end{abstract}
+
+\section{Introduction}
+Spatial transcriptomics (ST) measures gene expression together with tissue location, enabling the
+study of spatial heterogeneity, tissue organization, and cellular interactions
+\cite{staahl2016visualization}. Its cost and experimental burden, however, limit the number and
+diversity of profiled specimens. Hematoxylin-and-eosin (H\&E) whole-slide images are routinely
+available and encode morphology associated with tissue composition and molecular state. Predicting
+spatial expression from H\&E images could therefore extend molecular analysis to samples without ST
+measurements.
+
+Prior approaches span independent patch regression \cite{he2020stnet}, spatial transformers and
+graphs \cite{pang2021histogene,zeng2022hist2st}, retrieval through cross-modal alignment
+\cite{xie2023bleep}, and conditional generation \cite{zhu2025diffusion}. These models answer an
+important question---how accurately can expression be inferred within a studied tissue
+cohort?---but usually train and test on slides from the same organ. Such evaluation does not isolate
+transfer across organs, where tissue architecture, cellular composition, staining, and expression
+distributions all shift.
+
+We study a complementary question: how far can a compact point-prediction model generalize when its
+spatial inductive bias is explicit and its evaluation is controlled? \morph{} predicts a complete
+slide in one pass from frozen pathology features and spot coordinates. Each layer integrates local
+neighbourhood structure, global spot-to-spot interactions, and a learned slide summary. Coordinates
+are used only through pairwise Euclidean distances, making the spatial pathway invariant to rigid
+coordinate transformations and reflections without test-time frame averaging.
+
+We evaluate three distinct regimes (Fig.~\ref{fig:teaser}): intra-cohort prediction, pooled
+cross-validation on unseen samples from represented organs, and leave-one-organ-out (LOOO) transfer
+to an unseen organ. Under feature-matched nested validation, \morph{} obtains the highest mean
+intra-cohort Pearson correlation and remains competitive in LOOO transfer. These results position
+direct regression as a strong, efficient point-prediction baseline; they do not replace generative methods
+when the goal is to model the full conditional distribution of expression.
+
+\smallskip\noindent\textbf{Our contributions are:}
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
+  \item a local--global spatial transformer whose coordinate pathway is provably invariant to
+  translations, rotations, and reflections;
+  \item a controlled HEST-1k evaluation that distinguishes within-cohort accuracy, generalization to
+  new samples from known organs, and transfer to an unseen organ; and
+  \item a factorial analysis of spatial context together with measured parameter, latency, and memory
+  scaling for single-pass slide-level inference.
+\end{itemize}
+
+% ------------------------------------------------------------------ teaser
+\begin{figure}[t]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[font=\scriptsize,
+  organ/.style={draw,rounded corners=1.5pt,minimum width=0.62cm,minimum height=0.42cm,inner sep=0pt},
+  lab/.style={font=\scriptsize\bfseries},
+  arr/.style={-{Latex[length=1.4mm]},semithick}]
+
+% ---- left panel: intra-cohort ----
+\node[lab] at (1.55,2.35) {Intra-cohort (standard)};
+\foreach \i in {0,1,2,3} { \node[organ,fill=blue!12] at (0.55+0.72*\i,1.7) {}; }
+\node at (1.55,1.15) {train / test \emph{within} one organ};
+\node[organ,fill=blue!12] (a1) at (0.9,0.45) {};
+\node[organ,draw=red!70!black,very thick,fill=red!12] (a2) at (2.2,0.45) {};
+\node at (0.9,0.03) {train}; \node at (2.2,0.03) {test};
+
+% ---- right panel: cross-organ ----
+\node[lab] at (5.35,2.35) {Cross-organ (this work)};
+\foreach \i/\c in {0/orange,1/green,2/teal,3/purple,4/brown,5/olive,6/cyan}
+  { \node[organ,fill=\c!18] at (4.05+0.42*\i,1.7) {}; }
+\node at (5.35,1.15) {train on 6 organs $\rightarrow$ test held-out organ};
+\node[organ,fill=orange!18] (b1) at (4.55,0.45) {};
+\node at (5.05,0.45) {$\cdots$};
+\node[organ,fill=green!18] (b2) at (5.55,0.45) {};
+\node[organ,draw=red!70!black,very thick,fill=red!12] (b3) at (6.6,0.45) {};
+\node at (5.05,0.03) {seen organs}; \node at (6.6,0.03) {unseen};
+
+\draw[dashed,gray] (3.35,-0.15) -- (3.35,2.55);
+
+% ---- bottom message ----
+\node[draw=blue!45,rounded corners=3pt,fill=blue!4,align=center,text width=7.1cm,inner sep=4pt]
+  at (3.55,-0.85)
+  {\footnotesize The same feature-matched model comparison is evaluated within cohorts and under
+   organ shift, separating interpolation from unseen-organ transfer.};
+\end{tikzpicture}}
+\caption{\textbf{Two evaluation regimes.} Standard benchmarks train and test within one tissue cohort
+(left). We additionally test the harder cross-organ transfer (right), where a model must predict
+expression for slides from organs unseen during training. \morph{} is evaluated in both without
+per-cohort redesign.}
+\label{fig:teaser}
+\end{figure}
+
+\begin{figure*}[t]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[font=\footnotesize,
+  io/.style={draw,very thick,rounded corners=2pt,align=center,minimum height=1.25cm,text width=2.65cm},
+  stage/.style={draw,rounded corners=2pt,align=center,minimum height=0.78cm,text width=2.35cm},
+  path/.style={draw,rounded corners=2pt,align=center,minimum height=1.05cm,text width=2.45cm},
+  claim/.style={draw,very thick,rounded corners=3pt,align=left,minimum height=1.05cm,text width=4.55cm,
+                inner xsep=7pt,inner ysep=5pt},
+  badge/.style={circle,draw=white,very thick,fill=blue!65!black,text=white,font=\bfseries,
+                minimum size=6.5mm,inner sep=0pt},
+  arr/.style={-{Latex[length=1.8mm]},semithick},
+  flow/.style={-{Latex[length=2.2mm]},very thick}]
+
+% Input and tokenization
+\node[io,fill=gray!9] (wsi) at (0,1.05) {\textbf{H\&E whole-slide image}\\spot-centered morphology};
+\node[io,fill=gray!9] (coord) at (0,-0.55) {\textbf{Spot coordinates}\\$\mathbf p_i\in\mathbb R^2$};
+\node[stage,fill=orange!10] (uni) at (3.35,1.05) {frozen pathology encoders\\$\mathbf f_i\in\mathbb R^{d_{\rm in}}$};
+\node[stage,fill=green!10] (dist) at (3.35,-0.55) {pairwise distances\\$D_{ij}=\|\mathbf p_i-\mathbf p_j\|_2$};
+\node[stage,fill=blue!7,text width=2.25cm,minimum height=1.2cm] (token) at (6.15,0.25)
+  {spot tokens\\$\mathbf x\in\mathbb R^{N\times d}$};
+
+\draw[flow](wsi)--(uni);
+\draw[flow](coord)--(dist);
+\draw[flow](uni)--(token);
+\draw[flow](dist)--(token);
+
+% MorphoST block
+\node[path,fill=blue!8] (local) at (9.25,1.55) {\textbf{Local context}\\distance-biased $k$NN attention};
+\node[path,fill=violet!8] (global) at (9.25,0.25) {\textbf{Global context}\\slide-wide self-attention};
+\node[path,fill=cyan!9] (slide) at (9.25,-1.05) {\textbf{Slide context}\\attention-pooled summary};
+\node[stage,fill=gray!8,text width=2.35cm,minimum height=1.15cm] (fusion) at (12.25,0.25)
+  {residual fusion\\LayerNorm $+$ FFN\\$\times L$};
+
+\draw[arr](token.east)--(local.west);
+\draw[arr](token.east)--(global.west);
+\draw[arr](token.east)--(slide.west);
+\draw[arr](local.east)--(fusion.west);
+\draw[arr](global.east)--(fusion.west);
+\draw[arr](slide.east)--(fusion.west);
+
+\begin{scope}[on background layer]
+\node[draw=blue!55!black,dashed,rounded corners=3pt,fit=(local)(global)(slide)(fusion),
+      inner sep=7pt,fill=blue!2] (model) {};
+\end{scope}
+\node[anchor=south west,font=\small\bfseries,text=blue!55!black] at ($(model.north west)+(0.05,0.04)$)
+  {ContextST spatial transformer};
+
+% Output
+\node[io,fill=red!7,text width=2.65cm] (out) at (15.55,0.25)
+  {\textbf{Predicted expression map}\\$\hat{\mathbf Y}\in\mathbb R^{N\times G}$\\one value per-spot and gene};
+\draw[flow](fusion)--(out);
+
+% Contribution strip
+\node[font=\small\bfseries,text=blue!60!black] (ctitle) at (8.0,-2.15)
+  {OUR CONTRIBUTIONS};
+\node[claim,draw=green!55!black,fill=green!8] (c1) at (2.35,-3.18)
+  {\hspace{5mm}\textbf{Invariant spatial encoding}\\\hspace{5mm}Distances replace absolute positions, yielding a coordinate-invariant spatial pathway.};
+\node[badge,fill=green!55!black] at ($(c1.west)+(0.13,0)$) {1};
+\node[claim,draw=orange!75!black,fill=orange!9] (c2) at (8.00,-3.18)
+  {\hspace{5mm}\textbf{Simple whole-slide regression}\\\hspace{5mm}Local, global, and slide context produce all gene maps in one forward pass.};
+\node[badge,fill=orange!75!black] at ($(c2.west)+(0.13,0)$) {2};
+\node[claim,draw=violet!65!black,fill=violet!9] (c3) at (13.65,-3.18)
+  {\hspace{5mm}\textbf{Controlled evidence}\\\hspace{5mm}Two regimes, two benchmarks, three metrics, ablations, and scaling.};
+\node[badge,fill=violet!65!black] at ($(c3.west)+(0.13,0)$) {3};
+
+% Link each contribution to the corresponding evidence in the pipeline.
+\draw[green!55!black,densely dotted,semithick] (dist.south) to[out=-90,in=90] (c1.north);
+\draw[orange!75!black,densely dotted,semithick] (fusion.south) to[out=-90,in=90] (c2.north);
+\draw[violet!65!black,densely dotted,semithick] (out.south) to[out=-90,in=90] (c3.north);
+
+\begin{scope}[on background layer]
+\node[draw=blue!25,rounded corners=4pt,fill=blue!1,fit=(ctitle)(c1)(c2)(c3),inner sep=8pt] {};
+\end{scope}
+
+\end{tikzpicture}
+}
+\caption{\textbf{ContextST overview.} The model receives frozen pathology morphology
+features and spot coordinates. Coordinates affect the network only through pairwise distances. Each
+layer combines local, global, and slide-level context before a linear head predicts the expression of
+$G$ genes at all $N$ spots in one forward pass.}
+\label{fig:arch}
+\end{figure*}
+
+\section{Related Work}
+
+\subsection{Histology-based gene expression prediction}
+ST-Net \cite{he2020stnet} established patch-level regression from histology to expression.
+HisToGene \cite{pang2021histogene} and Hist2ST \cite{zeng2022hist2st} subsequently introduced
+slide-level attention and spatial graphs, while TRIPLEX \cite{chung2024triplex} combines local,
+neighbourhood, and global morphology. BLEEP \cite{xie2023bleep} follows a different strategy: it
+aligns image and expression embeddings and retrieves expression from similar training examples.
+More recent models incorporate higher-order cellular interactions \cite{sun2026mctogene}, dual-path
+discrimination \cite{song2026genedml}, or hyperbolic cross-modal structure
+\cite{zhang2026hyperst}. Because their original evaluations vary in features, gene panels, splits,
+and model-selection procedures, published scores do not by themselves isolate architectural gains.
+
+STEM \cite{zhu2025diffusion} frames expression inference as conditional generation rather than
+deterministic regression. This distinction is important: a generator can represent multiple
+expression profiles compatible with similar morphology, whereas \morph{} estimates one profile per
+spot. Our objective is therefore narrower. We ask whether an inexpensive point predictor can provide
+a strong accuracy and transfer baseline under a matched protocol; we do not claim to model biological
+uncertainty or the full conditional expression distribution.
+
+\subsection{Geometric structure in spatial models}
+Spatial prediction depends on the coordinate representation supplied to a model. Absolute position
+embeddings can encode location within a particular coordinate frame, but their output may change
+when an equivalent tissue layout is translated, rotated, or reflected. Geometric networks address
+this issue by constructing interactions from relative quantities \cite{satorras2021egnn}. \morph{}
+uses an invariant construction in which coordinates enter its spatial pathway only through pairwise
+Euclidean distances. Because these distances are preserved by translations, rotations, and
+reflections, no transformed coordinate frames or prediction averaging are required. This guarantee
+applies to the spatial pathway for fixed histology features; it does not imply that the frozen image
+encoder is invariant to rotations of the image itself.
+
+\subsection{Generalization across samples and organs}
+HEST-1k \cite{jaume2024hest} spans many cohorts and organs, yet its standard predictive benchmark is
+organized within cohorts. A model can therefore exploit organ-specific morphology, expression
+statistics, or acquisition effects. Cross-sample benchmarking also identifies distribution shift as
+a central challenge \cite{storm2025benchmark}. We separate two forms of multi-organ evaluation:
+pooled cross-validation holds out samples while retaining their organ types in training, whereas
+LOOO withholds an entire organ. The latter is a stricter test of anatomical transfer.
+
+\section{Method}
+\subsection{Problem setup}
+For a slide with $N$ spots, let
+$\mathbf{F}=[\mathbf{f}_1,\ldots,\mathbf{f}_N]^\top\in\mathbb{R}^{N\times d_{\mathrm{in}}}$
+denote frozen pathology features and
+$\mathbf{P}=[\mathbf{p}_1,\ldots,\mathbf{p}_N]^\top\in\mathbb{R}^{N\times2}$ the corresponding
+spot coordinates. The target
+$\mathbf{Y}\in\mathbb{R}^{N\times G}$ contains log-normalized expression for $G$ genes. We learn
+$f_\theta:(\mathbf{F},\mathbf{P})\mapsto\hat{\mathbf{Y}}$ and process each slide independently;
+the model therefore supports a variable number of spots and requires no expression measurements at
+test time. In the feature-matched main comparisons, $\mathbf{f}_i$ concatenates frozen UNI
+\cite{chen2024uni} and CONCH \cite{lu2024conch} embeddings ($d_{\mathrm{in}}=1536$).
+
+\subsection{Coordinate-invariant spatial encoding}
+We first compute the pairwise Euclidean distance matrix
+$D_{ij}=\lVert\mathbf{p}_i-\mathbf{p}_j\rVert_2$. For each spot $i$, we retain the indices
+$\mathcal{N}(i)$ and distances of its $k$ nearest neighbours, excluding the spot itself. Distances
+are expanded into $M$ radial-basis features,
+\begin{equation}
+\boldsymbol{\phi}(D_{ij})=
+\left[\exp\!\left(-\gamma_m D_{ij}^{2}\right)\right]_{m=1}^{M},
+\end{equation}
+where the fixed bandwidth parameters $\gamma_m$ are logarithmically spaced. These features influence
+attention weights but are never added to the spot embeddings as absolute positions.
+
+This construction yields coordinate-system invariance. For any orthogonal matrix $R$ and translation
+$\mathbf{t}$,
+\begin{equation}
+\lVert R\mathbf{p}_i+\mathbf{t}-(R\mathbf{p}_j+\mathbf{t})\rVert_2
+=\lVert\mathbf{p}_i-\mathbf{p}_j\rVert_2.
+\end{equation}
+The neighbour graph, radial-basis features, and predictions are therefore unchanged by translations,
+rotations, and reflections of the coordinates, up to floating-point error, when the image features are
+held fixed. The result concerns transformations of the coordinate system and does not assert
+rotation invariance of the frozen histology encoder.
+
+\subsection{The \morph{} layer}
+The input features are projected to hidden width $d$,
+$\mathbf{X}^{(0)}=\mathbf{F}W_{\mathrm{in}}+\mathbf{b}_{\mathrm{in}}$. The same neighbour graph and
+radial-basis features are reused in all $L$ transformer layers. At layer $\ell$, a pre-normalized
+representation $\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)})$ is passed through three context
+pathways.
+
+\noindent\textbf{Local distance-biased attention.} Each spot attends to its $k$ neighbours with a
+learned, distance-dependent bias for each attention head. For head $h$, the attention weights are
+\begin{equation}
+\alpha_{ij}^{h}=\operatorname{softmax}_{j\in\mathcal{N}(i)}\!\left(
+\frac{(\mathbf{q}_i^{h})^\top\mathbf{k}_j^{h}}{\sqrt{d_h}}
++b_h\!\left(\boldsymbol{\phi}(D_{ij})\right)\right),
+\end{equation}
+where $d_h=d/H$ for $H$ heads. The local output is the concatenation of the weighted value sums,
+followed by a learned output projection. Morphological similarity is captured by the query--key
+term, while spatial distance contributes through the learned radial-basis bias.
+
+\noindent\textbf{Global self-attention.} In parallel, standard multi-head self-attention
+\cite{vaswani2017attention} allows every spot to attend to all $N$ spots. This pathway captures
+long-range dependencies that may not be connected in the local graph. It uses morphology features
+only and is permutation-equivariant with respect to spot order.
+
+\noindent\textbf{Attention-pooled slide context.} A learned scalar scoring function produces
+$a_i=\operatorname{softmax}_{i}(s(\mathbf{h}_i))$. The slide representation is
+\begin{equation}
+\mathbf{g}=W_g\left(\sum_{i=1}^{N}a_i\mathbf{h}_i\right)+\mathbf{b}_g,
+\end{equation}
+and is broadcast to every spot. Unlike a learned class token, this representation is computed
+directly from the slide's spot features and summarizes its morphological composition.
+
+For the complete V3 model, the local output, global output, and broadcast slide representation are
+summed and added to the residual stream. A second pre-normalization residual update applies a
+two-layer feed-forward network with expansion factor four and GELU activation:
+\begin{align}
+\widetilde{\mathbf{X}}^{(\ell)}
+  &=\mathbf{X}^{(\ell)}+\mathbf{L}^{(\ell)}+\mathbf{A}^{(\ell)}+\mathbf{G}^{(\ell)},\\
+\mathbf{X}^{(\ell+1)}
+  &=\widetilde{\mathbf{X}}^{(\ell)}+
+    \operatorname{FFN}\!\left(\operatorname{LN}(\widetilde{\mathbf{X}}^{(\ell)})\right).
+\end{align}
+After $L$ layers, layer normalization and a linear head map each spot representation to its $G$
+predicted gene values. The model produces the complete slide prediction in one forward pass.
+
+\subsection{Training objective}
+\label{sec:loss}
+For a slide with measured expression $\mathbf{Y}$, we optimize mean squared error together with a
+gene-wise Pearson-correlation term:
+\begin{equation}
+\mathcal{L}=\mathrm{MSE}(\hat{\mathbf{Y}},\mathbf{Y})
++ \lambda\left(1-\frac{1}{|\mathcal{V}|}\sum_{g\in\mathcal{V}}\rho_g\right),
+\end{equation}
+where $\rho_g$ is the Pearson correlation between predicted and measured expression across the $N$
+spots, $\mathcal{V}$ is the set of genes with nonzero target variance on that slide, and
+$\lambda=0.5$. MSE constrains the scale of the predictions, while the correlation term encourages
+the model to reproduce spot-to-spot expression patterns.
+
+The main model enables all three context pathways. Our factorial ablation independently toggles the
+local (L), global (G), and slide-level (S) pathways, avoiding conclusions tied to a particular order
+of architectural additions (Table~\ref{tab:ablation}).
+
+% Declared on page 4 so the two-column float appears at the top of page 5 with RQ1.
+\begin{table*}[!t]
+\centering
+\caption{\textbf{Intra-cohort gene expression prediction on HEST-1k, per cohort (Pearson
+$\uparrow$).} Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim), 50-gene panels, and the same training
+budget (100 epochs, patience 20, inner-validation selection). HCC, LYMPH\_IDC, and READ excluded
+(see Appendix~\ref{app:cohort_stats}).}
+\label{tab:main}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & $0.177{\pm}0.01$ & \best{$0.318{\pm}0.01$} \\
+CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & $0.252{\pm}0.01$ \\
+LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
+\midrule
+\textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.299$ & \best{$0.470$} \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+STEM: corrected DiT (T=1000, 34M params).
+\end{minipage}
+\end{table*}
+
+\begin{table*}[!t]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer, per-cohort Pearson $\uparrow$ (HEST-1k).}
+Mean$_{\text{std}}$ over three seeds; nested-validation.
+Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels,
+except STEM, for which a matched LOOO result is unavailable$^\dagger$. Best per row in \best{bold}.}
+\label{tab:looo_main}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & \best{$0.529{\pm}0.02$} & $-^\dagger$ & $0.520{\pm}0.02$ \\
+COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $-^\dagger$ & \best{$0.729{\pm}0.03$} \\
+CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $-^\dagger$ & \best{$0.109{\pm}0.01$} \\
+LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $-^\dagger$ & \best{$0.675{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $-^\dagger$ & \best{$0.548{\pm}0.01$} \\
+PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $-^\dagger$ & \best{$0.118{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & \best{$0.748{\pm}0.01$} & $-^\dagger$ & $0.728{\pm}0.04$ \\
+\midrule
+\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $-^\dagger$ & \best{$0.490$} \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+$^\dagger$STEM was not evaluated in this feature-matched LOOO setting.
+\end{minipage}
+\end{table*}
+
+\section{Experiments}
+
+\subsection{Datasets}
+\label{sec:datasets}
+We evaluate on \textbf{HEST-1k} \cite{jaume2024hest}. The controlled human-tissue benchmark retains
+seven cohorts representing seven organs; HCC, LYMPH\_IDC, and READ are excluded for the data-quality
+and split constraints documented in Appendix~\ref{app:cohort_stats}. Each cohort uses the provided
+patient-stratified folds. We predict 50 highly variable genes after $\log(1+x)$ normalization and use
+the same frozen UNI+CONCH features for every method in the main comparison.
+
+\subsection{Experimental setup}
+\label{sec:setup}
+\textbf{Evaluation regimes.} Intra-cohort evaluation trains a separate model within each cohort.
+Pooled five-fold cross-validation trains jointly across organs and holds out samples from represented
+organs. LOOO trains on six organs and tests the seventh, which is absent from training. Pooled folds
+are sample-disjoint; because patient identifiers are unavailable for some cohorts, we do not claim
+that they are patient-disjoint.
+
+\textbf{Metrics and protocol.} We report the Pearson correlation coefficient (PCC), Spearman
+correlation (SCC), and mean squared error (MSE) between predicted and measured expression, averaged
+over folds and three random seeds (mean$_{\mathrm{std}}$). Every model selects its checkpoint on an
+inner-validation split of the training fold and is evaluated once on the outer test-fold; where a
+cohort fold contains a single training slide, the inner split holds out a disjoint subset of that
+slide's spots. This removes the test-fold model selection present in earlier exploratory runs.
+
+\textbf{Baselines.} We compare with ST-Net \cite{he2020stnet}, Hist2ST
+\cite{zeng2022hist2st}, HyperST \cite{zhang2026hyperst}, BLEEP \cite{xie2023bleep}, and STEM
+\cite{zhu2025diffusion} where results are available. Features, gene panels, splits, optimization
+budgets, and checkpoint selection are matched in the controlled tables. Published MCToGene results
+\cite{sun2026mctogene}, which use a different ten-cohort protocol, appear separately in
+Appendix~\ref{app:published} and are not treated as directly comparable.
+
+\textbf{Implementation.} \morph{} uses $L{=}4$ layers, hidden width $d{=}256$, $4$ attention heads,
+$k{=}8$ neighbours, and $16$ radial-basis functions ($4.8$M parameters). We train per slide with AdamW
+(learning rate $10^{-3}$, weight decay $10^{-2}$), a cosine schedule, and gradient clipping at $1.0$,
+for at most $100$ epochs with early-stopping patience of $20$; each step samples at most $3{,}000$
+spots. Experiments run on one NVIDIA A100 GPU.
+
+\subsection{Intra-cohort prediction}
+\label{sec:rq1}
+Table~\ref{tab:main} reports the feature-matched comparison. \morph{} obtains the highest mean PCC
+($0.470$), compared with $0.448$ for HyperST and $0.426$ for BLEEP, a $4.9\%$ relative improvement
+over the strongest baseline. It leads on six of seven cohorts; HyperST is higher on CCRCC by
+$0.004$. The gain is therefore broad but not uniform, and it is largest on skin and prostate.
+
+\FloatBarrier
+\subsection{Cross-organ generalization}
+\label{sec:rq2}
+LOOO is substantially harder because the target anatomy is absent from training. Nevertheless,
+\morph{} reaches a mean PCC of $0.490$ (Table~\ref{tab:looo_main}), compared with $0.473$ for
+BLEEP and $0.457$ for HyperST. It leads on five of seven held-out cohorts; BLEEP is stronger on IDC
+and SKCM. The expanded comparison adds EGN, which is slightly higher on average at $0.500$
+(Table~\ref{tab:percohort_uniconch}). Under pooled cross-validation, where organ types remain represented in training,
+\morph{} reaches $0.760$ (Table~\ref{tab:pooled}), narrowly above HyperST at $0.756$. The gap between
+pooled and LOOO performance quantifies the remaining difficulty of unseen-organ transfer.
+
+Appendix~\ref{app:mouse} reports a complementary seven-organ mouse experiment.
+
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Cross-organ POOLED, average Pearson $\uparrow$ (HEST-1k).} 5-fold pooled
+cross-validation; mean$_{\mathrm{std}}$ over three seeds; nested-validation.
+Best in \best{bold}.}
+\label{tab:pooled}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l c}
+\toprule
+Method & HEST-1k \\
+\midrule
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & -- \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)               & -- \\
+\midrule
+\morph{} (V3)                               & \best{$0.760_{0.01}$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+\subsection{Context ablation and invariance}
+\label{sec:rq3}
+The factorial study in Table~\ref{tab:ablation} evaluates all combinations of local (L), global (G),
+and slide-level (S) context on SKCM and LUNG. Local attention provides the largest gain: enabling it
+alone raises mean PCC from $0.608$ to $0.640$. Global and slide context have little effect without
+the local pathway, but the complete model achieves the highest mean ($0.643$). This result supports
+distance-biased neighbourhood aggregation as the primary contributor in the tested intra-cohort
+setting; broader claims about component importance under organ shift require a matched LOOO
+ablation.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Factorial context ablation} (intra-cohort, Pearson mean$_{\text{std}}$ over three
+seeds on SKCM and LUNG). L, G, and S denote local attention, global attention, and slide
+representation. Local attention is the dominant contributor within an organ.}
+\label{tab:ablation}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l ccc cc c}
+\toprule
+Variant & L & G & S & SKCM & LUNG & Avg \\
+\midrule
+C000 & & & & $0.639_{0.00}$ & $0.577_{0.01}$ & $0.608$ \\
+C001 & & & $\bullet$ & $0.633_{0.01}$ & $0.578_{0.00}$ & $0.605$ \\
+C010 & & $\bullet$ & & $0.641_{0.01}$ & $0.577_{0.00}$ & $0.609$ \\
+C011 & & $\bullet$ & $\bullet$ & $0.639_{0.02}$ & $0.583_{0.00}$ & $0.611$ \\
+C100 & $\bullet$ & & & $0.693_{0.01}$ & $0.587_{0.00}$ & $0.640$ \\
+C101 & $\bullet$ & & $\bullet$ & $0.695_{0.01}$ & $0.585_{0.01}$ & $0.640$ \\
+C110 & $\bullet$ & $\bullet$ & & $0.693_{0.01}$ & $0.584_{0.00}$ & $0.638$ \\
+C111 & $\bullet$ & $\bullet$ & $\bullet$ & \best{$0.696_{0.00}$} & \best{$0.589_{0.01}$} & \best{$0.643$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Table~\ref{tab:invariance} numerically verifies the analytic invariance result. Differences under
+translation and rotation remain below $6\times10^{-5}$ and are attributable to floating-point
+evaluation; reflection is exact in this test.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference when only the spot coordinates are transformed (randomly initialized model, 257-spot synthetic slide).}
+\label{tab:invariance}
+\small
+\begin{tabular}{l r}
+\toprule
+Transformation & Max.\ abs.\ difference \\
+\midrule
+Translation & $5.97\times10^{-5}$ \\
+Rotation    & $1.97\times10^{-5}$ \\
+Reflection  & $0$ \\
+Spot permutation & $5.96\times10^{-7}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+\subsection{Spatial structure beyond gene-wise correlation}
+\label{sec:rq4}
+Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We therefore
+cluster spots using either predicted or measured expression and compare the induced domains with the
+adjusted Rand index (ARI). On held-out slides, \morph{} improves mean ARI from $0.148$ for ST-Net to
+$0.170$ (Appendix~\ref{app:spatial}). The large variation across slides cautions against interpreting
+this diagnostic as evidence of uniformly improved domain recovery.
+
+\FloatBarrier
+\subsection{Efficiency and scaling}
+\label{sec:rq5}
+\morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
+(Table~\ref{tab:complexity}). Its advantage is not minimum parameter count---ST-Net and BLEEP are
+smaller---but the combination of spatial context and direct inference. Model-only latency grows from
+$3.5$ ms for 500 spots to $64.7$ ms for 10,000 spots on an A100, with $3.1$ GiB peak allocated memory
+at the largest size (Table~\ref{tab:scaling}). Feature extraction and disk I/O are excluded.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Model complexity.} Parameter counts and inference mechanisms.}
+\label{tab:complexity}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l r l}
+\toprule
+Model & \#Params (M) & Inference \\
+\midrule
+ST-Net~\cite{he2020stnet} (NBE'20)      & 0.47  & single-pass \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22) & 2.18  & single-pass \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26) & 3.99 & single-pass \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)  & 0.54  & single-pass \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)    & 34.16 & iterative \\
+\midrule
+\morph{} (V3) & 4.88 & single-pass \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{ContextST inference scaling on an NVIDIA A100 80GB.} Median model-only latency and
+peak allocated GPU memory over synthetic slides; feature extraction and disk I/O are excluded.}
+\label{tab:scaling}
+\small
+\begin{tabular}{r rr}
+\toprule
+Spots & Latency (ms) & Memory (MiB) \\
+\midrule
+500    & 3.48  & 43 \\
+1,000  & 3.63  & 67 \\
+3,000  & 9.36  & 335 \\
+5,000  & 21.31 & 842 \\
+10,000 & 64.74 & 3,183 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\FloatBarrier
+\section{Discussion}
+\label{sec:discussion}
+The results separate two conclusions that are often conflated. First, a compact direct predictor can
+be competitive when morphology features, gene panels, splits, and model selection are controlled.
+Second, pooled multi-organ performance is not a substitute for unseen-organ evaluation: the marked
+drop from pooled to LOOO PCC shows that anatomical shift remains difficult. The ablation further
+suggests that explicit local geometry is more useful than adding unconstrained global context alone
+in the two tested intra-cohort datasets.
+
+Direct and generative models serve different purposes. STEM \cite{zhu2025diffusion} models a
+conditional expression distribution and can represent one-to-many uncertainty through iterative
+sampling. \morph{} instead produces a point estimate optimized for correlation and squared error.
+Its benefits are deterministic, single-pass inference and explicit spatial invariance; they should
+not be interpreted as evidence that expression is uniquely determined by morphology.
+
+\textbf{Limitations.} The experiments predict 50 genes from frozen UNI+CONCH embeddings, so they do
+not establish performance for transcriptome-scale output or end-to-end image encoding. LOOO still
+uses a gene panel defined by the benchmark and does not cover shifts in platform, institution, or
+species simultaneously. Coordinate invariance holds only for the spatial pathway with fixed image
+features; rotating the histology image can change its frozen embedding. The domain-recovery analysis
+covers only ST-Net and has high variance. Finally, pooled folds are sample-disjoint but cannot be
+verified as patient-disjoint where patient identifiers are unavailable.
+
+\section{Conclusion}
+We presented \morph{}, a local--global transformer for predicting spatial gene expression from
+histology. Pairwise-distance encoding gives its spatial pathway invariance to rigid coordinate
+transformations, while local, global, and slide-level context support complete-slide prediction in a
+single pass. Under matched HEST-1k evaluation, \morph{} improves mean intra-cohort Pearson
+correlation and remains competitive in LOOO transfer, although the pooled-to-LOOO gap highlights the
+difficulty of anatomical transfer. These results establish \morph{} as an efficient point-prediction
+baseline and motivate future work that combines its geometric structure with calibrated generative
+uncertainty.
+
+\subsection*{AI use statement}
+Generative AI tools assisted with manuscript organization, language editing, ICLR formatting, and
+consistency checks between narrative claims and reported tables. They were not used to generate
+experimental data or execute model experiments. The authors reviewed all AI-assisted revisions and
+take responsibility for the final content of this work.
+
+\bibliographystyle{iclr2027_conference}
+\bibliography{references}
+
+\clearpage
+\appendix
+
+\section{Mouse cross-organ diagnostic}
+\label{app:mouse}
+We evaluate 59 mouse Visium slides spanning seven organs with mouse-specific 50-gene panels. Pooled
+performance reaches $0.887$, whereas every method remains near the floor under LOOO; we therefore do
+not interpret the latter as evidence of successful cross-species organ transfer.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
+\textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: five-fold pooled cross-validation.
+PCC$\uparrow$ on 50 mouse HVGs.}
+\label{tab:mouse}
+\small
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l c c}
+\toprule
+Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
+\midrule
+ST-Net~\cite{he2020stnet}          & $0.013_{0.011}$ & $0.357_{0.036}$ \\
+Hist2ST~\cite{zeng2022hist2st}     & $0.018_{0.007}$ & $0.829_{0.028}$ \\
+HyperST~\cite{zhang2026hyperst}   & \best{$0.019_{0.006}$} & $0.865_{0.013}$ \\
+BLEEP~\cite{xie2023bleep}          & $-0.006_{0.003}$ & $0.848_{0.012}$ \\
+STEM~\cite{zhu2025diffusion}       & -- & $0.279_{0.009}$ \\
+\midrule
+\morph{} & $0.018_{0.006}$ & \best{$0.887_{0.005}$} \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}\vspace{2pt}
+\scriptsize $^\dag$All \textsc{looo} values are near the floor because the organ-specific gene
+panels do not transfer reliably.
+\end{minipage}
+\end{table}
+
+\section{Spatial-domain recovery}
+\label{app:spatial}
+\begin{table}[h]
+\centering
+\caption{\textbf{Spatial-domain recovery.} ARI between domains obtained from predicted and measured
+expression on held-out slides (mean$_{\mathrm{std}}$ over three seeds; higher is better).}
+\label{tab:downstream}
+\small
+\begin{tabular}{l c}
+\toprule
+Method & ARI $\uparrow$ \\
+\midrule
+ST-Net~\cite{he2020stnet} & $0.148_{0.13}$ \\
+\morph{} & \best{$0.170_{0.15}$} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\section{Full per-cohort results}
+Table~\ref{tab:percohort} gives the per-cohort breakdown for all seven retained cohorts
+(HCC/liver, LYMPH\_IDC, and READ excluded; see Appendix~\ref{app:cohort_stats}) across all
+six baselines and \morph{}.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Full per-cohort intra-cohort results on HEST-1k} (Pearson mean$_{\text{std}}$ over three
+seeds; nested-validation). All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels,
+except \morph{} (V3) which uses UNI (1024-dim) for comparison.
+HCC (liver), LYMPH\_IDC, and READ are excluded per Appendix~\ref{app:cohort_stats}. Best per row in \best{bold}.}
+\label{tab:percohort}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cccc c c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25}
+       & \morph{} (V3) & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.571{\pm}0.01$ & $0.551{\pm}0.01$ & $0.439{\pm}0.01$ & $0.567{\pm}0.00$ & \best{$0.581{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & \best{$0.328{\pm}0.01$} & $0.293{\pm}0.01$ & $0.177{\pm}0.01$ & $0.299{\pm}0.00$ & $0.318{\pm}0.01$ \\
+CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & $0.256{\pm}0.02$ & $0.175{\pm}0.02$ & $0.210{\pm}0.02$ & $0.223{\pm}0.02$ & $0.123{\pm}0.00$ & \best{$0.265{\pm}0.02$} & $0.252{\pm}0.01$ \\
+LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & \best{$0.598{\pm}0.00$} & $0.584{\pm}0.01$ & $0.423{\pm}0.03$ & $0.589{\pm}0.01$ & $0.589{\pm}0.01$ \\
+PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.413{\pm}0.04$ & $0.415{\pm}0.03$ & $0.233{\pm}0.02$ & $0.392{\pm}0.04$ & \best{$0.437{\pm}0.03$} \\
+PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & \best{$0.413{\pm}0.01$} & $0.377{\pm}0.03$ & $0.207{\pm}0.02$ & $0.390{\pm}0.02$ & $0.410{\pm}0.01$ \\
+SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.654{\pm}0.01$ & $0.631{\pm}0.01$ & $0.491{\pm}0.04$ & $0.696{\pm}0.00$ & \best{$0.707{\pm}0.01$} \\
+\midrule
+\textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.455$ & $0.439$ & $0.299$ & $0.457$ & \best{$0.470$} \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\footnotesize
+\morph{} (V3) uses UNI (1024-dim); all other methods use UNI\,+\,CONCH (1536-dim). STEM: corrected DiT (T=1000, 34M params).
+\end{minipage}
+\end{table*}
+
+\section{Cross-organ LOOO transfer, expanded baselines (UNI\,+\,CONCH)}
+\label{app:percohort_uniconch}
+
+Table~\ref{tab:percohort_uniconch} extends Table~\ref{tab:looo_main} with M2OST and EGN under the
+same UNI+CONCH protocol. EGN attains the highest mean PCC ($0.500$), followed by \morph{} at
+$0.490$; their per-cohort ranking varies.
+
+\begin{table*}[h]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer, expanded baselines, per-cohort Pearson $\uparrow$ (HEST-1k)} (Pearson
+mean$_{\text{std}}$ over three seeds; nested-validation; liver excluded).
+Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels,
+except STEM, for which a matched result is unavailable$^\dagger$.
+Best per row in \best{bold}.}
+\label{tab:percohort_uniconch}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cccc cccc}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+      & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25}
+      & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & $0.529{\pm}0.02$ & $0.437{\pm}0.04$ & \best{$0.567{\pm}0.02$} & $-^\dagger$ & $0.520{\pm}0.02$ \\
+COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.657{\pm}0.05$ & $0.728{\pm}0.01$ & $-^\dagger$ & \best{$0.729{\pm}0.03$} \\
+CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $0.081{\pm}0.03$ & $0.103{\pm}0.02$ & $-^\dagger$ & \best{$0.109{\pm}0.01$} \\
+LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.665{\pm}0.01$ & $0.672{\pm}0.01$ & $-^\dagger$ & \best{$0.675{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $0.513{\pm}0.03$ & \best{$0.572{\pm}0.01$} & $-^\dagger$ & $0.548{\pm}0.01$ \\
+PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.087{\pm}0.02$ & $0.107{\pm}0.01$ & $-^\dagger$ & \best{$0.118{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & $0.748{\pm}0.01$ & $0.740{\pm}0.01$ & \best{$0.750{\pm}0.02$} & $-^\dagger$ & $0.728{\pm}0.04$ \\
+\midrule
+\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.454$ & \best{$0.500$} & $-^\dagger$ & $0.490$ \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+$^\dagger$STEM was not evaluated in this feature-matched LOOO setting.
+\end{minipage}
+\end{table*}
+
+\section{Cross-organ LOOO transfer with UNI features}
+\label{app:looo_expanded}
+
+Table~\ref{tab:looo_appendix} reports a complementary LOOO comparison using UNI features. EGN has
+the highest mean PCC ($0.493$), while \morph{} reaches $0.477$. M2OST narrowly leads EGN on LUNG
+($0.667$ versus $0.666$). STEM uses the corrected DiT configuration with $T=1000$; its SKCM entry
+contains one completed seed and is marked accordingly.
+
+\begin{table*}[h]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer with UNI features} (Pearson mean$_{\text{std}}$
+over three seeds; nested-validation; HCC, LYMPH\_IDC, and READ excluded).
+Leave-one-organ-out: trained on all other organs, tested on the held-out organ.
+Best per row in \best{bold}.}
+\label{tab:looo_appendix}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cccc cccc}
+\toprule
+Organ & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+      & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25}
+      & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{} (V3) \\
+\midrule
+IDC~\tiny{Breast}      & $0.217{\pm}0.06$ & $0.459{\pm}0.02$ & $0.501{\pm}0.02$ & $0.509{\pm}0.03$ & $0.452{\pm}0.01$ & $0.531{\pm}0.03$ & $0.406{\pm}0.01$ & \best{$0.534{\pm}0.02$} \\
+COAD~\tiny{Colorectal} & $0.430{\pm}0.03$ & $0.688{\pm}0.04$ & $0.669{\pm}0.06$ & $0.667{\pm}0.02$ & $0.672{\pm}0.03$ & \best{$0.749{\pm}0.01$} & $0.504{\pm}0.03$ & $0.703{\pm}0.01$ \\
+CCRCC~\tiny{Kidney}    & $0.084{\pm}0.03$ & $0.084{\pm}0.01$ & $0.108{\pm}0.01$ & $0.100{\pm}0.02$ & $0.122{\pm}0.01$ & $0.106{\pm}0.01$ & $0.090{\pm}0.01$ & \best{$0.124{\pm}0.00$} \\
+LUNG~\tiny{Lung}       & $0.504{\pm}0.04$ & $0.499{\pm}0.06$ & $0.650{\pm}0.01$ & $0.621{\pm}0.02$ & \best{$0.667{\pm}0.01$} & $0.666{\pm}0.01$ & $0.561{\pm}0.01$ & $0.660{\pm}0.01$ \\
+PAAD~\tiny{Pancreas}   & $0.404{\pm}0.05$ & $0.360{\pm}0.07$ & $0.397{\pm}0.03$ & $0.521{\pm}0.02$ & $0.522{\pm}0.01$ & \best{$0.551{\pm}0.02$} & $0.460{\pm}0.02$ & $0.507{\pm}0.04$ \\
+PRAD~\tiny{Prostate}   & $0.071{\pm}0.01$ & $0.104{\pm}0.02$ & $0.092{\pm}0.03$ & $0.111{\pm}0.00$ & $0.107{\pm}0.02$ & $0.098{\pm}0.02$ & $0.068{\pm}0.01$ & \best{$0.119{\pm}0.02$} \\
+SKCM~\tiny{Skin}       & $0.402{\pm}0.08$ & $0.652{\pm}0.08$ & $0.720{\pm}0.02$ & $0.745{\pm}0.01$ & $0.724{\pm}0.02$ & \best{$0.749{\pm}0.01$} & $0.686^\dagger$ & $0.692{\pm}0.06$ \\
+\midrule
+\textbf{Average}       & $0.302$ & $0.407$ & $0.448$ & $0.468$ & $0.466$ & \best{$0.493$} & $0.396^\dagger$ & $0.477$ \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+$^\dagger$STEM DiT (corrected, T=1000, 100 epochs) LOOO: SKCM (skin) has only 1 seed complete; all other organs use 3 seeds. Average marked $^\dagger$ accordingly.
+\end{minipage}
+\end{table*}
+
+\section{Published Per-Cohort Comparison}
+\label{app:published}
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Published per-cohort accuracy on the standard HEST-1k splits}, mean PCC$\uparrow$
+as reported in respective papers (ten cohorts, no organ grouping). Shown for context
+only---\emph{not comparable} to Table~\ref{tab:main}, which uses organ grouping and
+nested-validation. $\dagger$\morph{} uses our organ-grouped splits, not the standard per-cohort split.}
+\label{tab:published}
+\small
+\begin{tabular}{lc}
+\toprule
+Method & HEST-1k (10 cohorts) \\
+\midrule
+ST-Net~\cite{he2020stnet} (NBE'20)            & $0.286$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & -- \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & -- \\
+MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
+\midrule
+\morph{}$^\dagger$ (ours)                   & $0.440$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{HEST-1k Cohort Statistics}
+\label{app:cohort_stats}
+
+Table~\ref{tab:cohort_stats} lists the number of samples, total spots, and cross-validation folds
+for each HEST-1k cohort.
+Two organ groups in HEST-1k contain multiple cohorts: breast (IDC + LYMPH\_IDC) and
+colorectal (COAD + READ).
+Within each group the constituent cohorts differ substantially in size: IDC has $2.25\times$ more
+spots than LYMPH\_IDC (44{,}974 vs.\ 19{,}964), and COAD has $2.2\times$ more spots than READ
+(18{,}523 vs.\ 8{,}407).
+To avoid misrepresentation from unweighted averaging over unequal cohorts, Table~\ref{tab:main}
+uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the representative
+colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
+organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
+of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
+Table~\ref{tab:main} due to its near-zero signal floor.}
+\label{tab:cohort_stats}
+\small
+\begin{tabular}{l l r r r}
+\toprule
+Cohort & Organ & Samples & Spots & Folds \\
+\midrule
+IDC          & Breast      & 4 & 44{,}974 & 4 \\
+LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 \\
+COAD         & Colorectal  & 4 & 18{,}523 & 2 \\
+READ         & Colorectal  & 4 &  8{,}407 & 2 \\
+CCRCC        & Kidney      & 24 & 74{,}220 & 6 \\
+HCC          & Liver$^*$   &  2 &  4{,}248 & 2 \\
+LUNG         & Lung        &  2 &  7{,}505 & 2 \\
+PAAD         & Pancreas    &  3 &  9{,}793 & 3 \\
+PRAD         & Prostate    & 23 & 62{,}710 & 2 \\
+SKCM         & Skin        &  2 &  5{,}716 & 2 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}
+\footnotesize $^*$HCC (liver) is included here for completeness but excluded from
+Table~\ref{tab:main}; all baselines score near zero on this cohort due to low spatial
+gene-expression variance.
+\end{minipage}
+\end{table}
+
+\end{document}
