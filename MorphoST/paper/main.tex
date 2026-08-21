@@ -507,8 +507,8 @@ spots. Experiments run on one NVIDIA A100 GPU.
 \label{sec:rq1}
 \noindent\textbf{Answer: Yes---under controlled conditions \morph{} leads all three baselines on every organ and metric.}
 Under our feature-matched, nested-validation protocol, \morph{} attains the best per-organ Pearson
-correlation on all eight HEST-1k organ groups and leads on every metric in the three-metric summary
-(Table~\ref{tab:metrics}: PCC $0.389$, SCC $0.348$, MSE $1.072$; next-best HyperST $0.365$).
+correlation on all seven retained HEST-1k organ groups and leads on every metric in the three-metric summary
+(Table~\ref{tab:metrics}: PCC $0.470$, SCC $0.430$, MSE $1.389$; next-best HyperST PCC $0.448$).
 The per-organ breakdown is in Table~\ref{tab:main}.
 For context, Appendix~\ref{app:published} reports published per-cohort numbers from the original
 HEST-1k split, including MCToGene \cite{sun2026mctogene}; those figures use ten cohorts without
@@ -519,8 +519,8 @@ three baselines while using one forward pass and $4.8$M parameters.
 
 \begin{table}[t]
 \centering
-\caption{\textbf{Intra-cohort three-metric summary} (HEST-1k, averaged over the eight organ groups;
-three seeds). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}.}
+\caption{\textbf{Intra-cohort three-metric summary} (HEST-1k, averaged over seven organ groups;
+three seeds; UNI\,+\,CONCH features). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}.}
 \label{tab:metrics}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -528,13 +528,13 @@ three seeds). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in 
 \toprule
 Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)      & 0.311 & 0.269 & 1.633 \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & 0.271 & 0.250 & 1.292 \\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.365 & 0.329 & 1.113 \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & 0.426 & -- & -- \\
-STEM~\cite{wu2025stem} (ICLR'25)             & 0.299 & -- & -- \\
+ST-Net~\cite{he2020stnet} (NBE'20)      & 0.399 & 0.356 & 2.043 \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & 0.337 & 0.321 & 1.616 \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)     & 0.448 & 0.411 & 1.439 \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & 0.426 & 0.388 & 1.464 \\
+STEM~\cite{wu2025stem} (ICLR'25)             & 0.299 & 0.274 & 1.855 \\
 \midrule
-\morph{} (V3) & \best{0.470} & \best{0.348} & \best{1.072} \\
+\morph{} (V3) & \best{0.470} & \best{0.430} & \best{1.389} \\
 \bottomrule
 \end{tabular}
 \end{table}
