@@ -721,8 +721,9 @@ checking whether the coordinate-invariant pathway yields organ-transferable feat
 Second, we cluster spots by predicted and by measured expression and compare the resulting spatial
 domains using ARI and NMI; high agreement means predictions recover tissue structure, not just
 per-gene trends (Table~\ref{tab:downstream}).
-All methods recover substantial structure (ARI well above chance), and \morph{} matches the
-strongest baseline, confirming its accuracy advantage does not come at the expense of spatial coherence.
+All methods recover substantial structure (ARI well above chance). \morph{} leads narrowly on ARI
+($0.184$ vs.\ $0.183$ for HyperST) while HyperST leads on NMI ($0.245$ vs.\ $0.239$); the two are
+effectively tied, confirming \morph{}'s accuracy advantage does not come at the expense of spatial coherence.
 Figure~\ref{fig:qual} gives a qualitative view: predicted expression maps for representative
 marker genes on held-out slides reproduce spatial gradients and tissue-structured patterns
 rather than a spatially uniform mean.
@@ -748,13 +749,13 @@ slides; three seeds.}
 \toprule
 Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & $0.148_{0.13}$ & -- \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & -- & -- \\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)      & -- & -- \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & -- & -- \\
-STEM~\cite{wen2024stem} (NeurIPS'24)           & -- & -- \\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.154_{0.14}$ & $0.212_{0.15}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.134_{0.11}$ & $0.180_{0.11}$ \\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.183_{0.15}$ & \best{$0.245_{0.15}$} \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.147_{0.12}$ & $0.186_{0.13}$ \\
+STEM~\cite{wen2024stem} (NeurIPS'24)           & $0.109_{0.12}$ & $0.131_{0.13}$ \\
 \midrule
-\morph{} (V3) & \best{$0.170_{0.15}$} & -- \\
+\morph{} (V3) & \best{$0.184_{0.16}$} & $0.239_{0.16}$ \\
 \bottomrule
 \end{tabular}
 \end{table}

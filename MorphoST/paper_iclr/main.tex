@@ -570,9 +570,10 @@ Spot permutation & $5.96\times10^{-7}$ \\
 \label{sec:rq4}
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We therefore
 cluster spots using either predicted or measured expression and compare the induced domains with the
-adjusted Rand index (ARI). On held-out slides, \morph{} improves mean ARI from $0.148$ for ST-Net to
-$0.170$ (Appendix~\ref{app:spatial}). The large variation across slides cautions against interpreting
-this diagnostic as evidence of uniformly improved domain recovery.
+adjusted Rand index (ARI) and NMI. On held-out slides, \morph{} leads on ARI ($0.184$) narrowly ahead
+of HyperST ($0.183$), while HyperST leads on NMI ($0.245$ vs.\ $0.239$; Appendix~\ref{app:spatial}).
+The two are effectively tied; the large variation across slides cautions against over-interpreting
+small differences as evidence of uniformly improved domain recovery.
 
 \FloatBarrier
 \subsection{Efficiency and scaling}
@@ -706,16 +707,22 @@ panels do not transfer reliably.
 \label{app:spatial}
 \begin{table}[h]
 \centering
-\caption{\textbf{Spatial-domain recovery.} ARI between domains obtained from predicted and measured
-expression on held-out slides (mean$_{\mathrm{std}}$ over three seeds; higher is better).}
+\caption{\textbf{Spatial-domain recovery.} ARI/NMI between domains clustered from predicted and
+measured expression on held-out slides (mean$_{\mathrm{std}}$ over three seeds; higher is better).}
 \label{tab:downstream}
 \small
-\begin{tabular}{l c}
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l cc}
 \toprule
-Method & ARI $\uparrow$ \\
+Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} & $0.148_{0.13}$ \\
-\morph{} & \best{$0.170_{0.15}$} \\
+ST-Net~\cite{he2020stnet}     & $0.154_{0.14}$ & $0.212_{0.15}$ \\
+Hist2ST~\cite{zeng2022hist2st} & $0.134_{0.11}$ & $0.180_{0.11}$ \\
+HyperST~\cite{zhang2026hyperst} & $0.183_{0.15}$ & \best{$0.245_{0.15}$} \\
+BLEEP~\cite{xie2023bleep}      & $0.147_{0.12}$ & $0.186_{0.13}$ \\
+STEM~\cite{wen2024stem}        & $0.109_{0.12}$ & $0.131_{0.13}$ \\
+\midrule
+\morph{}                       & \best{$0.184_{0.16}$} & $0.239_{0.16}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
