@@ -508,9 +508,15 @@ STEM: corrected DiT (T=1000, 34M params).
 We evaluate on \textbf{HEST-1k} \cite{jaume2024hest}, which provides ten tissue
 cohorts, each with a patient-stratified $k$-fold split; for presentation we aggregate the ten cohorts
 into eight organ groups (breast $=$ IDC $+$ LYMPH\_IDC, colorectal $=$ COAD $+$ READ, others one
-cohort each). For every slide we predict the 50 most highly
-variable genes after $\log(1+x)$ normalization, using identical frozen UNI \cite{chen2024uni}
-features across all methods.
+cohort each). For every slide we predict the 50 most \emph{highly variable genes}
+(\textbf{HVG}s)---genes ranked by cross-spot expression variance---after $\log(1+x)$
+normalization, using identical frozen UNI \cite{chen2024uni} features across all methods.
+HVGs are the HEST-1k default panel and capture broad tissue-level expression variation.
+By contrast, \emph{differentially expressed genes} (\textbf{DEG}s) are selected by
+statistical contrast between annotated tissue regions or cell types, and
+\emph{histology-morphology HVGs} (\textbf{HMHVG}s) additionally restrict HVGs to those
+with high correlation to H\&E morphological features; both alternatives require external
+annotations or a pre-trained morphology model to define and are not used in our evaluation.
 
 \subsection{Experimental setup}
 \label{sec:setup}

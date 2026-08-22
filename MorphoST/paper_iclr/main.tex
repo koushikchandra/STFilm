@@ -473,8 +473,16 @@ STEM: corrected DiT ($T=1000$, 34M params), three seeds.
 We evaluate on \textbf{HEST-1k} \cite{jaume2024hest}. The controlled human-tissue benchmark retains
 seven cohorts representing seven organs; HCC, LYMPH\_IDC, and READ are excluded for the data-quality
 and split constraints documented in Appendix~\ref{app:cohort_stats}. Each cohort uses the provided
-patient-stratified folds. We predict 50 highly variable genes after $\log(1+x)$ normalization and use
-the same frozen UNI+CONCH features for every method in the main comparison.
+patient-stratified folds. We predict the 50 most \emph{highly variable genes} (\textbf{HVG}s)---genes ranked by
+cross-spot expression variance---after $\log(1+x)$ normalization, using the same frozen
+UNI+CONCH features for every method in the main comparison.
+HVGs are the HEST-1k default panel and capture broad tissue-level expression variation.
+For completeness, two alternative panel strategies appear in prior work:
+\emph{differentially expressed genes} (\textbf{DEG}s), selected by statistical contrast
+between annotated cell types or tissue regions, and \emph{histology-morphology HVGs}
+(\textbf{HMHVG}s), which restrict HVGs to those with high correlation to H\&E morphological
+features; both require external annotations or a pre-trained morphology model and are not
+used here, as their construction would introduce circularity in a histology-based benchmark.
 
 \subsection{Experimental setup}
 \label{sec:setup}
@@ -817,8 +825,7 @@ $0.490$; their per-cohort ranking varies.
 \caption{\textbf{Cross-organ LOOO transfer, expanded baselines, per-cohort Pearson $\uparrow$ (HEST-1k)} (Pearson
 mean$_{\text{std}}$ over three seeds; nested-validation; liver excluded).
 Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
-All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels,
-except STEM, for which a matched result is unavailable$^\dagger$.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels.
 Best per row in \best{bold}.}
 \label{tab:percohort_uniconch}
 \setlength{\tabcolsep}{3pt}
@@ -829,21 +836,20 @@ Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
       & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25}
       & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & $0.529{\pm}0.02$ & $0.437{\pm}0.04$ & \best{$0.567{\pm}0.02$} & $-^\dagger$ & $0.520{\pm}0.02$ \\
-COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.657{\pm}0.05$ & $0.728{\pm}0.01$ & $-^\dagger$ & \best{$0.729{\pm}0.03$} \\
-CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $0.081{\pm}0.03$ & $0.103{\pm}0.02$ & $-^\dagger$ & \best{$0.109{\pm}0.01$} \\
-LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.665{\pm}0.01$ & $0.672{\pm}0.01$ & $-^\dagger$ & \best{$0.675{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $0.513{\pm}0.03$ & \best{$0.572{\pm}0.01$} & $-^\dagger$ & $0.548{\pm}0.01$ \\
-PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.087{\pm}0.02$ & $0.107{\pm}0.01$ & $-^\dagger$ & \best{$0.118{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & $0.748{\pm}0.01$ & $0.740{\pm}0.01$ & \best{$0.750{\pm}0.02$} & $-^\dagger$ & $0.728{\pm}0.04$ \\
+IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & $0.529{\pm}0.02$ & $0.437{\pm}0.04$ & \best{$0.567{\pm}0.02$} & $0.420{\pm}0.03$ & $0.520{\pm}0.02$ \\
+COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.657{\pm}0.05$ & $0.728{\pm}0.01$ & $0.452{\pm}0.02$ & \best{$0.729{\pm}0.03$} \\
+CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $0.081{\pm}0.03$ & $0.103{\pm}0.02$ & $0.090{\pm}0.01$ & \best{$0.109{\pm}0.01$} \\
+LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.665{\pm}0.01$ & $0.672{\pm}0.01$ & $0.512{\pm}0.03$ & \best{$0.675{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $0.513{\pm}0.03$ & \best{$0.572{\pm}0.01$} & $0.409{\pm}0.03$ & $0.548{\pm}0.01$ \\
+PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.087{\pm}0.02$ & $0.107{\pm}0.01$ & $0.046{\pm}0.00$ & \best{$0.118{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & $0.748{\pm}0.01$ & $0.740{\pm}0.01$ & \best{$0.750{\pm}0.02$} & $0.631{\pm}0.03$ & $0.728{\pm}0.04$ \\
 \midrule
-\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.454$ & \best{$0.500$} & $-^\dagger$ & $0.490$ \\
+\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.454$ & \best{$0.500$} & $0.366$ & $0.490$ \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-$^\dagger$STEM was not evaluated in this feature-matched LOOO setting.
 \end{minipage}
 \end{table*}
 
