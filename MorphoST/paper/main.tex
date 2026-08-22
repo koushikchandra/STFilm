@@ -171,75 +171,116 @@ per-cohort redesign.}
 \centering
 \resizebox{\textwidth}{!}{%
 \begin{tikzpicture}[font=\footnotesize,
-  io/.style={draw,very thick,rounded corners=2pt,align=center,minimum height=1.25cm,text width=2.65cm},
-  stage/.style={draw,rounded corners=2pt,align=center,minimum height=0.78cm,text width=2.35cm},
-  path/.style={draw,rounded corners=2pt,align=center,minimum height=1.05cm,text width=2.45cm},
-  claim/.style={draw,very thick,rounded corners=3pt,align=left,minimum height=1.05cm,text width=4.55cm,
-                inner xsep=7pt,inner ysep=5pt},
-  badge/.style={circle,draw=white,very thick,fill=blue!65!black,text=white,font=\bfseries,
-                minimum size=6.5mm,inner sep=0pt},
-  arr/.style={-{Latex[length=1.8mm]},semithick},
-  flow/.style={-{Latex[length=2.2mm]},very thick}]
+  io/.style={draw=black!75,very thick,rounded corners=3pt,align=center,
+             minimum height=1.25cm,text width=2.65cm,fill=gray!10},
+  stage/.style={draw=black!60,thick,rounded corners=3pt,align=center,
+                minimum height=0.82cm,text width=2.35cm},
+  path/.style={draw=black!60,thick,rounded corners=3pt,align=center,
+               minimum height=1.08cm,text width=2.45cm},
+  claim/.style={draw,very thick,rounded corners=4pt,align=left,
+                minimum height=1.1cm,text width=4.8cm,
+                inner xsep=16pt,inner ysep=6pt},
+  badge/.style={circle,draw=white,ultra thick,fill=blue!65!black,text=white,
+                font=\bfseries,minimum size=7mm,inner sep=0pt},
+  arr/.style={-{Latex[length=2mm,width=1.5mm]},thick},
+  flow/.style={-{Latex[length=2.4mm,width=1.8mm]},very thick}]
 
-% Input and tokenization
-\node[io,fill=gray!9] (wsi) at (0,1.05) {\textbf{H\&E whole-slide image}\\spot-centered morphology};
-\node[io,fill=gray!9] (coord) at (0,-0.55) {\textbf{Spot coordinates}\\$\mathbf p_i\in\mathbb R^2$};
-\node[stage,fill=orange!10] (uni) at (3.35,1.05) {frozen UNI encoder\\$\mathbf f_i\in\mathbb R^{1024}$};
-\node[stage,fill=green!10] (dist) at (3.35,-0.55) {pairwise distances\\$D_{ij}=\|\mathbf p_i-\mathbf p_j\|_2$};
-\node[stage,fill=blue!7,text width=2.25cm,minimum height=1.2cm] (token) at (6.15,0.25)
-  {spot tokens\\$\mathbf x\in\mathbb R^{N\times d}$};
+%% ── Inputs ────────────────────────────────────────────────────────────────
+\node[io] (wsi) at (0,1.05)
+  {\textbf{H\&E slide}\\patch morphology};
+\node[io] (coord) at (0,-0.55)
+  {\textbf{Spot coordinates}\\$\mathbf{p}_i\in\mathbb{R}^2$};
 
+%% ── Feature extraction ────────────────────────────────────────────────────
+\node[stage,fill=orange!14] (uni) at (3.35,1.05)
+  {frozen UNI encoder\\$\mathbf{f}_i\in\mathbb{R}^{1024}$};
+\node[stage,fill=green!14] (dist) at (3.35,-0.55)
+  {pairwise distances\\$D_{ij}=\|\mathbf{p}_i{-}\mathbf{p}_j\|_2$};
 \draw[flow](wsi)--(uni);
 \draw[flow](coord)--(dist);
+
+%% ── Spot tokens ───────────────────────────────────────────────────────────
+\node[stage,fill=blue!10,text width=2.25cm,minimum height=1.2cm] (token)
+  at (6.15,0.25) {spot tokens\\$\mathbf{x}\in\mathbb{R}^{N\times d}$};
 \draw[flow](uni)--(token);
 \draw[flow](dist)--(token);
 
-% MorphoST block
-\node[path,fill=blue!8] (local) at (9.25,1.55) {\textbf{Local context}\\distance-biased $k$NN attention};
-\node[path,fill=violet!8] (global) at (9.25,0.25) {\textbf{Global context}\\slide-wide self-attention};
-\node[path,fill=cyan!9] (slide) at (9.25,-1.05) {\textbf{Slide context}\\attention-pooled summary};
-\node[stage,fill=gray!8,text width=2.35cm,minimum height=1.15cm] (fusion) at (12.25,0.25)
-  {residual fusion\\LayerNorm $+$ FFN\\$\times L$};
+%% ── Context paths ─────────────────────────────────────────────────────────
+\node[path,fill=blue!12] (local) at (9.25,1.55)
+  {\textbf{Local context}\\$k$NN attention};
+\node[path,fill=violet!12] (global) at (9.25,0.25)
+  {\textbf{Global context}\\slide self-attention};
+\node[path,fill=cyan!12] (slide) at (9.25,-1.05)
+  {\textbf{Slide context}\\attention pool};
 
-\draw[arr](token.east)--(local.west);
-\draw[arr](token.east)--(global.west);
-\draw[arr](token.east)--(slide.west);
-\draw[arr](local.east)--(fusion.west);
-\draw[arr](global.east)--(fusion.west);
-\draw[arr](slide.east)--(fusion.west);
+%% ── Fusion ────────────────────────────────────────────────────────────────
+\node[stage,fill=gray!11,text width=2.35cm,minimum height=1.15cm] (fusion)
+  at (12.25,0.25) {residual fusion\\LayerNorm $+$ FFN\\$\times L$};
 
+%% ── Bus A: token distributes to context paths ─────────────────────────────
+%% A vertical bar at x=7.75 collects the trunk from token and fans out
+%% with individual arrows to each context — avoids spaghetti from one anchor.
+\coordinate (busA)  at (7.75,  0.25);
+\coordinate (busAT) at (7.75,  1.55);
+\coordinate (busAB) at (7.75, -1.05);
+\draw[very thick](token.east) -- (busA);
+\draw[very thick](busAT) -- (busAB);
+\draw[arr](busAT) -- (local.west);
+\draw[arr](busA)  -- (global.west);
+\draw[arr](busAB) -- (slide.west);
+
+%% ── Bus B: context paths collect into fusion ──────────────────────────────
+\coordinate (busB)  at (11.05,  0.25);
+\coordinate (busBT) at (11.05,  1.55);
+\coordinate (busBB) at (11.05, -1.05);
+\draw[very thick](local.east)  -- (busBT);
+\draw[very thick](global.east) -- (busB);
+\draw[very thick](slide.east)  -- (busBB);
+\draw[very thick](busBT) -- (busBB);
+\draw[flow](busB) -- (fusion.west);
+
+%% ── Model bounding box ────────────────────────────────────────────────────
 \begin{scope}[on background layer]
-\node[draw=blue!55!black,dashed,rounded corners=3pt,fit=(local)(global)(slide)(fusion),
-      inner sep=7pt,fill=blue!2] (model) {};
+\node[draw=blue!55!black,dashed,very thick,rounded corners=4pt,
+      fill=blue!2,fit=(local)(global)(slide)(fusion),inner sep=9pt] (model) {};
 \end{scope}
-\node[anchor=south west,font=\small\bfseries,text=blue!55!black] at ($(model.north west)+(0.05,0.04)$)
-  {LoGST spatial transformer};
+\node[anchor=south west,font=\small\bfseries,text=blue!55!black]
+  at ($(model.north west)+(0.06,0.05)$) {LoGST spatial transformer};
 
-% Output
-\node[io,fill=red!7,text width=2.65cm] (out) at (15.55,0.25)
-  {\textbf{Predicted expression map}\\$\hat{\mathbf Y}\in\mathbb R^{N\times G}$\\one value per-spot and gene};
+%% ── Output ────────────────────────────────────────────────────────────────
+\node[io,fill=red!9,text width=2.65cm] (out) at (15.55,0.25)
+  {\textbf{Expression map}\\$\hat{\mathbf{Y}}\in\mathbb{R}^{N\times G}$\\per-spot, per-gene};
 \draw[flow](fusion)--(out);
 
-% Contribution strip
-\node[font=\small\bfseries,text=blue!60!black] (ctitle) at (8.0,-2.15)
-  {OUR CONTRIBUTIONS};
-\node[claim,draw=green!55!black,fill=green!8] (c1) at (2.35,-3.18)
-  {\hspace{5mm}\textbf{Invariant spatial encoding}\\\hspace{5mm}Distances replace absolute positions, yielding a coordinate-invariant spatial pathway.};
-\node[badge,fill=green!55!black] at ($(c1.west)+(0.13,0)$) {1};
-\node[claim,draw=orange!75!black,fill=orange!9] (c2) at (8.00,-3.18)
-  {\hspace{5mm}\textbf{Simple whole-slide regression}\\\hspace{5mm}Local, global, and slide context produce all gene maps in one forward pass.};
-\node[badge,fill=orange!75!black] at ($(c2.west)+(0.13,0)$) {2};
-\node[claim,draw=violet!65!black,fill=violet!9] (c3) at (13.65,-3.18)
-  {\hspace{5mm}\textbf{Controlled evidence}\\\hspace{5mm}Two regimes, two benchmarks, three metrics, ablations, and scaling.};
-\node[badge,fill=violet!65!black] at ($(c3.west)+(0.13,0)$) {3};
+%% ── Contribution strip ────────────────────────────────────────────────────
+\node[font=\small\bfseries,text=blue!55!black] (ctitle)
+  at (8.0,-2.18) {OUR CONTRIBUTIONS};
 
-% Link each contribution to the corresponding evidence in the pipeline.
-\draw[green!55!black,densely dotted,semithick] (dist.south) to[out=-90,in=90] (c1.north);
-\draw[orange!75!black,densely dotted,semithick] (fusion.south) to[out=-90,in=90] (c2.north);
-\draw[violet!65!black,densely dotted,semithick] (out.south) to[out=-90,in=90] (c3.north);
+\node[claim,draw=green!55!black,fill=green!7] (c1) at (2.35,-3.22)
+  {\textbf{Invariant spatial encoding}\\
+   Distances replace absolute positions; the spatial pathway is coordinate-invariant.};
+\node[badge,fill=green!55!black] at ($(c1.west)+(0.15,0)$) {1};
+
+\node[claim,draw=orange!70!black,fill=orange!8] (c2) at (8.00,-3.22)
+  {\textbf{Whole-slide regression}\\
+   Local, global, and slide context jointly produce all gene maps in one forward pass.};
+\node[badge,fill=orange!70!black] at ($(c2.west)+(0.15,0)$) {2};
+
+\node[claim,draw=violet!60!black,fill=violet!8] (c3) at (13.65,-3.22)
+  {\textbf{Controlled evaluation}\\
+   Two regimes, two benchmarks, three metrics, ablations, and efficiency analysis.};
+\node[badge,fill=violet!60!black] at ($(c3.west)+(0.15,0)$) {3};
+
+\draw[green!55!black,densely dotted,semithick]
+  (dist.south) to[out=-90,in=90] (c1.north);
+\draw[orange!70!black,densely dotted,semithick]
+  (fusion.south) to[out=-90,in=90] (c2.north);
+\draw[violet!60!black,densely dotted,semithick]
+  (out.south) to[out=-90,in=90] (c3.north);
 
 \begin{scope}[on background layer]
-\node[draw=blue!25,rounded corners=4pt,fill=blue!1,fit=(ctitle)(c1)(c2)(c3),inner sep=8pt] {};
+\node[draw=blue!25,rounded corners=5pt,fill=blue!1,
+      fit=(ctitle)(c1)(c2)(c3),inner sep=9pt] {};
 \end{scope}
 
 \end{tikzpicture}
