@@ -586,7 +586,7 @@ STEM~\cite{wu2025stem} (ICLR'25)               & $0.643_{0.01}$ \\
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: pooled sample-level cross-validation.
 PCC$\uparrow$ / MSE$\downarrow$ on HEST-1k.}
 \label{tab:crossorgan}
-\scriptsize
+\resizebox{\columnwidth}{!}{%
 \setlength{\tabcolsep}{2pt}
 \begin{tabular}{l cc cc}
 \toprule
@@ -594,15 +594,16 @@ PCC$\uparrow$ / MSE$\downarrow$ on HEST-1k.}
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}
 Method & PCC & MSE & PCC & MSE \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & $0.267_{0.02}$ & $1.846_{0.10}$ & $0.370_{0.01}$\\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.360_{0.02}$ & $1.182_{0.07}$ & $0.737_{0.01}$\\
-HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & \best{$1.136_{0.10}$} & $0.756_{0.01}$\\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.416_{0.01}$ & -- & $0.758_{0.01}$\\
-STEM~\cite{wu2025stem} (ICLR'25)               & $0.322_{0.01}$ & $1.274_{0.00}$ & $0.643_{0.01}$\\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.267_{0.02}$ & $1.846_{0.10}$ & $0.370_{0.01}$ & $0.907_{0.05}$\\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.360_{0.02}$ & $1.182_{0.07}$ & $0.737_{0.01}$ & $0.488_{0.01}$\\
+HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.395_{0.01}$ & $1.136_{0.10}$ & $0.756_{0.01}$ & $0.465_{0.02}$\\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.416_{0.01}$ & \best{$1.010_{0.02}$} & $0.758_{0.01}$ & \best{$0.427_{0.02}$}\\
+STEM~\cite{wu2025stem} (ICLR'25)               & $0.322_{0.01}$ & $1.274_{0.00}$ & $0.643_{0.01}$ & $0.594_{0.01}$\\
 \midrule
-\morph{} (V3) & \best{$0.421_{0.01}$} & $1.233_{0.11}$ & \best{$0.760_{0.01}$}\\
+\morph{} (V3) & \best{$0.421_{0.01}$} & $1.233_{0.11}$ & \best{$0.760_{0.01}$} & $0.440_{0.02}$\\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 \begin{table}[t]
