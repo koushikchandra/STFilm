@@ -478,11 +478,12 @@ cross-spot expression variance---after $\log(1+x)$ normalization, using the same
 UNI+CONCH features for every method in the main comparison.
 HVGs are the HEST-1k default panel and capture broad tissue-level expression variation.
 For completeness, two alternative panel strategies appear in prior work:
-\emph{differentially expressed genes} (\textbf{DEG}s), selected by statistical contrast
-between annotated cell types or tissue regions, and \emph{histology-morphology HVGs}
-(\textbf{HMHVG}s), which restrict HVGs to those with high correlation to H\&E morphological
-features; both require external annotations or a pre-trained morphology model and are not
-used here, as their construction would introduce circularity in a histology-based benchmark.
+\emph{differentially expressed genes} (\textbf{DEG}s), selected via unsupervised Leiden
+clustering followed by Wilcoxon rank-sum tests across clusters, and \emph{histology-morphology
+HVGs} (\textbf{HMHVG}s), which select HVGs by maximum Pearson correlation with PCA components
+of the UNI+CONCH image features.
+A controlled comparison of all three panels across baselines and \morph{} is reported in
+Appendix~\ref{app:panel}.
 
 \subsection{Experimental setup}
 \label{sec:setup}
@@ -917,6 +918,47 @@ MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 \morph{}$^\dagger$ (ours)                   & $0.440$ \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\section{Gene Panel Comparison}
+\label{app:panel}
+
+Table~\ref{tab:panel} reports intra-cohort mean PCC averaged over seven cohorts and three seeds
+for three gene-panel strategies: highly variable genes (\textbf{HVG}, the HEST-1k default),
+unsupervised differentially expressed genes (\textbf{DEG}; Leiden clustering + Wilcoxon), and
+histology-morphology HVGs (\textbf{HMHVG}; genes with highest max Pearson correlation to
+UNI+CONCH PCA components).
+All methods use identical UNI+CONCH features, nested-validation, and the same training protocol.
+DEG and HMHVG panels consistently outperform HVG across all baselines, with HMHVG yielding the
+highest mean for every method tested.
+\morph{} results are pending.
+
+\begin{table}[h]
+\centering
+\caption{\textbf{Gene panel comparison: intra-cohort mean PCC$\uparrow$ (HEST-1k).}
+Mean$_{\mathrm{std}}$ over three seeds; per-seed value is the average over seven cohorts.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and nested-validation.
+\morph{} results pending ($\dag$).}
+\label{tab:panel}
+\small
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{l ccc}
+\toprule
+Method & HVG & DEG & HMHVG \\
+\midrule
+ST-Net~\cite{he2020stnet}          & $0.398_{0.004}$ & $0.523_{0.004}$ & $0.550_{0.008}$ \\
+Hist2ST~\cite{zeng2022hist2st}     & $0.330_{0.032}$ & $0.494_{0.014}$ & $0.544_{0.038}$ \\
+HyperST~\cite{zhang2026hyperst}    & $0.449_{0.003}$ & $0.621_{0.002}$ & \best{$0.649_{0.002}$} \\
+BLEEP~\cite{xie2023bleep}          & $0.427_{0.004}$ & $0.571_{0.005}$ & $0.595_{0.014}$ \\
+STEM~\cite{zhu2025diffusion}       & \multicolumn{3}{c}{\emph{running}} \\
+\midrule
+\morph{}$^\dag$ (ours)             & \multicolumn{3}{c}{\emph{pending}} \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}
+\footnotesize $^\dag$\morph{} experiments are in progress; table will be updated upon completion.
+\end{minipage}
 \end{table}
 
 \section{HEST-1k Cohort Statistics}
