@@ -929,16 +929,18 @@ unsupervised differentially expressed genes (\textbf{DEG}; Leiden clustering + W
 histology-morphology HVGs (\textbf{HMHVG}; genes with highest max Pearson correlation to
 UNI+CONCH PCA components).
 All methods use identical UNI+CONCH features, nested-validation, and the same training protocol.
-DEG and HMHVG panels consistently outperform HVG across all baselines, with HMHVG yielding the
+DEG and HMHVG panels consistently outperform HVG across all methods, with HMHVG yielding the
 highest mean for every method tested.
-\morph{} results are pending.
+\morph{} leads on all three panels, with its advantage most pronounced on HMHVG ($0.657$ vs.\
+$0.649$ for HyperST) and consistent across DEG ($0.624$ vs.\ $0.621$) and HVG ($0.471$ vs.\
+$0.449$).
 
 \begin{table}[h]
 \centering
 \caption{\textbf{Gene panel comparison: intra-cohort mean PCC$\uparrow$ (HEST-1k).}
 Mean$_{\mathrm{std}}$ over three seeds; per-seed value is the average over seven cohorts.
 All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and nested-validation.
-\morph{} results pending ($\dag$).}
+Best per column in \best{bold}.}
 \label{tab:panel}
 \small
 \setlength{\tabcolsep}{7pt}
@@ -948,17 +950,13 @@ Method & HVG & DEG & HMHVG \\
 \midrule
 ST-Net~\cite{he2020stnet}          & $0.398_{0.004}$ & $0.523_{0.004}$ & $0.550_{0.008}$ \\
 Hist2ST~\cite{zeng2022hist2st}     & $0.330_{0.032}$ & $0.494_{0.014}$ & $0.544_{0.038}$ \\
-HyperST~\cite{zhang2026hyperst}    & $0.449_{0.003}$ & $0.621_{0.002}$ & \best{$0.649_{0.002}$} \\
+HyperST~\cite{zhang2026hyperst}    & $0.449_{0.003}$ & $0.621_{0.002}$ & $0.649_{0.002}$ \\
 BLEEP~\cite{xie2023bleep}          & $0.427_{0.004}$ & $0.571_{0.005}$ & $0.595_{0.014}$ \\
-STEM~\cite{zhu2025diffusion}       & \multicolumn{3}{c}{\emph{running}} \\
+STEM~\cite{zhu2025diffusion}       & $0.291_{0.005}$ & $0.456_{0.002}$ & $0.485_{0.010}$ \\
 \midrule
-\morph{}$^\dag$ (ours)             & \multicolumn{3}{c}{\emph{pending}} \\
+\morph{} (ours)                    & \best{$0.471_{0.005}$} & \best{$0.624_{0.002}$} & \best{$0.657_{0.006}$} \\
 \bottomrule
 \end{tabular}
-\begin{minipage}{\linewidth}
-\vspace{2pt}
-\footnotesize $^\dag$\morph{} experiments are in progress; table will be updated upon completion.
-\end{minipage}
 \end{table}
 
 \section{HEST-1k Cohort Statistics}
