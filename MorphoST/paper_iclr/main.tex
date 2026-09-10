@@ -1332,6 +1332,48 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)     & 0.299 & 0.274 & 1.855 \\
 \end{tabular}
 \end{table}
 
+\section{Intra-Cohort Prediction with a 10-Gene Panel}
+\label{app:panel10}
+
+Table~\ref{tab:main_g10} repeats the intra-cohort comparison of Table~\ref{tab:main} with a smaller
+\textbf{10-gene} panel, holding everything else fixed: identical frozen UNI\,+\,CONCH features
+(1536-dim), the same patient-stratified folds, three seeds, nested-validation, and the same training
+budget (100 epochs, patience 20). The 10-gene panel for each cohort is the subset of its HEST
+50-gene HVG panel with the ten highest cross-spot variances (in $\log(1+x)$ space), so the gene
+universe is a strict subset of the one used in Table~\ref{tab:main}. Absolute correlations are higher
+than in the 50-gene setting because the retained genes are the most variable and hence the most
+predictable. \morph{} again attains the best average ($0.569$ vs.\ $0.563$ for HyperST) and leads on
+four of seven cohorts, mirroring the 50-gene result.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Intra-cohort prediction with a 10-gene panel (Pearson $\uparrow$).}
+Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
+Same models, cohorts, features (frozen UNI\,+\,CONCH, 1536-dim), splits, and training budget as
+Table~\ref{tab:main}; only the gene panel size differs (10 vs.\ 50). The 10-gene panel is the
+highest-variance subset of each cohort's HEST 50-HVG panel.}
+\label{tab:main_g10}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.679{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
+COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.368{\pm}0.00$ & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.382{\pm}0.02$ \\
+CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.301{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
+LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.758{\pm}0.00$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
+PAAD~\tiny{Pancreas} & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & \best{$0.566{\pm}0.04$} & $0.536{\pm}0.03$ & $0.393{\pm}0.04$ & $0.519{\pm}0.05$ \\
+PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & \best{$0.526{\pm}0.01$} & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & $0.524{\pm}0.02$ \\
+SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.741{\pm}0.02$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
+\midrule
+\textbf{Average} & $0.505$ & $0.455$ & $0.563$ & $0.526$ & $0.423$ & \best{$0.569$} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
 \section{Per-Cohort MSE and MAE (Intra-Cohort)}
 \label{app:mse_mae}
 
