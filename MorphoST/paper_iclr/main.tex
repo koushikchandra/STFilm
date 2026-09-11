@@ -631,6 +631,40 @@ SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.741{\pm}0.02$ & $0.6
 
 \begin{table*}[!t]
 \centering
+\caption{\textbf{Intra-cohort prediction with a 100-gene panel (Pearson $\uparrow$).}
+Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
+Same models, cohorts, features (frozen UNI\,+\,CONCH, 1536-dim), splits, and training budget as
+Table~\ref{tab:main}; only the gene panel size differs (100 vs.\ 50). The 100-gene panel extends
+each cohort's HEST 50-HVG panel with the next 50 highest-variance genes (a superset of the
+Table~\ref{tab:main} panel).}
+\label{tab:main_g100}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.499{\pm}0.01$ \\
+CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
+LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.685{\pm}0.00$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
+PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.404{\pm}0.02$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.435{\pm}0.03$} \\
+PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
+SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.724{\pm}0.01$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
+\midrule
+\textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+$^\dag$STEM CCRCC has two of three seeds; its average excludes the pending seed.
+\end{minipage}
+\end{table*}
+
+\begin{table*}[!t]
+\centering
 \caption{\textbf{Cross-organ LOOO transfer, per-cohort Pearson $\uparrow$ (HEST-1k).}
 Mean$_{\text{std}}$ over three seeds; nested-validation.
 Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
