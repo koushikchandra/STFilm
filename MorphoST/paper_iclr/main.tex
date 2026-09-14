@@ -669,22 +669,22 @@ Table~\ref{tab:main_g100} panel).}
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
        & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph~(ours) \\
 \midrule
-IDC~\tiny{Breast} & \running & \running & \running & \running & \running & $0.698{\pm}0.01$ \\
-COAD~\tiny{Colorectal} & \running & \running & \running & \running & \running & $0.522{\pm}0.02$ \\
-CCRCC~\tiny{Kidney} & \running & \running & \running & \running & \running & $0.340{\pm}0.01$ \\
-LUNG~\tiny{Lung} & \running & \running & \running & \running & \running & $0.673{\pm}0.00$ \\
-PAAD~\tiny{Pancreas} & \running & \running & \running & \running & \running & $0.308{\pm}0.02$ \\
-PRAD~\tiny{Prostate} & \running & \running & \running & \running & \running & $0.453{\pm}0.02$ \\
-SKCM~\tiny{Skin} & \running & \running & \running & \running & \running & $0.777{\pm}0.01$ \\
+IDC~\tiny{Breast} & $0.615{\pm}0.01$ & $0.527{\pm}0.01$ & $0.690{\pm}0.01$ & $0.637{\pm}0.02$ & \running & \best{$0.698{\pm}0.01$} \\
+COAD~\tiny{Colorectal} & $0.339{\pm}0.01$ & $0.394{\pm}0.03$ & \best{$0.527{\pm}0.02$} & $0.493{\pm}0.01$ & \running & $0.522{\pm}0.02$ \\
+CCRCC~\tiny{Kidney} & $0.236{\pm}0.01$ & $0.253{\pm}0.02$ & $0.328{\pm}0.02$ & $0.266{\pm}0.01$ & \running & \best{$0.340{\pm}0.01$} \\
+LUNG~\tiny{Lung} & $0.573{\pm}0.01$ & $0.431{\pm}0.02$ & $0.662{\pm}0.00$ & $0.637{\pm}0.01$ & \running & \best{$0.673{\pm}0.00$} \\
+PAAD~\tiny{Pancreas} & $0.240{\pm}0.03$ & $0.131{\pm}0.00$ & $0.272{\pm}0.02$ & $0.287{\pm}0.03$ & \running & \best{$0.308{\pm}0.02$} \\
+PRAD~\tiny{Prostate} & $0.307{\pm}0.02$ & $0.376{\pm}0.02$ & $0.440{\pm}0.02$ & $0.376{\pm}0.02$ & \running & \best{$0.453{\pm}0.02$} \\
+SKCM~\tiny{Skin} & $0.704{\pm}0.01$ & $0.460{\pm}0.12$ & $0.744{\pm}0.00$ & $0.714{\pm}0.02$ & \running & \best{$0.777{\pm}0.01$} \\
 \midrule
-\textbf{Average} & \running & \running & \running & \running & \running & $0.539$ \\
+\textbf{Average} & $0.431$ & $0.367$ & $0.523$ & $0.487$ & \running & \best{$0.539$} \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-Baseline and STEM columns are pending (jobs queued); values will be filled and the best per row bolded
-once the runs complete.
+STEM column is pending (runs in progress) and will be filled once complete. \morph{} leads six of seven
+cohorts and the average; HyperST is higher on COAD by $0.005$.
 \end{minipage}
 \end{table*}
 
