@@ -838,20 +838,20 @@ Pearson $\uparrow$). \textsc{Patch} selects the $k$ most morphologically similar
 (global attention $+$ slide token only). Identical backbone; mean$_{\text{std}}$, three seeds.}
 \label{tab:neighbour_ablation}
 \small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l ccc}
+\setlength{\tabcolsep}{5pt}
+\begin{tabular}{l ccc c}
 \toprule
-Cohort & PatchMorphoST & Random-$k$ & No-local \\
+Cohort & PatchMorphoST & Random-$k$ & No-local & $p$\,(vs Rand-$k$) \\
 \midrule
-IDC~\tiny{Breast}      & \best{$0.686{\pm}0.00$} & $0.677{\pm}0.01$ & $0.678{\pm}0.00$ \\
-COAD~\tiny{Colorectal} & \best{$0.495{\pm}0.02$} & $0.493{\pm}0.01$ & $0.491{\pm}0.01$ \\
-CCRCC~\tiny{Kidney}    & \best{$0.328{\pm}0.00$} & $0.309{\pm}0.01$ & $0.290{\pm}0.01$ \\
-LUNG~\tiny{Lung}       & \best{$0.690{\pm}0.00$} & $0.689{\pm}0.00$ & $0.687{\pm}0.00$ \\
-PAAD~\tiny{Pancreas}   & \best{$0.449{\pm}0.02$} & $0.447{\pm}0.03$ & $0.443{\pm}0.03$ \\
-PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & $0.442{\pm}0.01$ & \best{$0.446{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ & $0.735{\pm}0.01$ \\
+IDC~\tiny{Breast}      & \best{$0.686{\pm}0.00$} & $0.677{\pm}0.01$ & $0.678{\pm}0.00$ & $0.11$ \\
+COAD~\tiny{Colorectal} & \best{$0.495{\pm}0.02$} & $0.493{\pm}0.01$ & $0.491{\pm}0.01$ & $0.74$ \\
+CCRCC~\tiny{Kidney}    & \best{$0.328{\pm}0.00$} & $0.309{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.01^{*}$} \\
+LUNG~\tiny{Lung}       & \best{$0.690{\pm}0.00$} & $0.689{\pm}0.00$ & $0.687{\pm}0.00$ & $0.22$ \\
+PAAD~\tiny{Pancreas}   & \best{$0.449{\pm}0.02$} & $0.447{\pm}0.03$ & $0.443{\pm}0.03$ & $0.65$ \\
+PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & $0.442{\pm}0.01$ & \best{$0.446{\pm}0.01$} & $0.85$ \\
+SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ & $0.735{\pm}0.01$ & $0.22$ \\
 \midrule
-\textbf{Average}       & \best{$0.549$} & $0.542$ & $0.539$ \\
+\textbf{Average}       & \best{$0.549$} & $0.542$ & $0.539$ & \best{$0.03^{*}$} \\
 \bottomrule
 \end{tabular}
 \begin{minipage}{\linewidth}
@@ -859,8 +859,12 @@ SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ & $0.735{\pm
 The three variants form a consistent ordering: removing the local stream entirely (\textsc{No-local},
 $0.539$) is weakest; random local neighbours recover part of it ($0.542$); morphological selection
 recovers the most ($0.549$). The local stream thus contributes $+0.010$ overall, of which
-morphological \emph{selection} accounts for $+0.007$---a small but consistent effect. Most accuracy
+morphological \emph{selection} accounts for $+0.007$---a small but consistent effect; most accuracy
 still comes from the shared global-attention and slide-token streams.
+The last column is the paired $t$-test $p$-value (three seeds) of PatchMorphoST vs.\ Random-$k$ per
+cohort; only CCRCC is individually significant, but the \emph{Average} entry is the across-cohort
+Wilcoxon signed-rank test over all seven cohorts, which is significant ($p{=}0.03$; paired-$t$
+$p{=}0.06$). $^{*}p<0.05$.
 \end{minipage}
 \end{table}
 
