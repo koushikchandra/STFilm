@@ -65,7 +65,7 @@ We evaluate \morph{} on seven human organ cohorts from HEST-1k under a controlle
 all methods use identical frozen UNI+CONCH embeddings, gene panels, data splits, and validation
 procedures. When trained and evaluated within each cohort, \morph{} achieves a mean Pearson correlation of $0.470$,
 improving over the strongest baseline at $0.448$ by $4.9\%$ and leading on six of seven cohorts.
-Under the more challenging leave one organ out (LOOO) setting, it reaches $0.490$, remaining competitive
+Under the more challenging leave one organ out (LOOO) setting, it reaches $0.484$, remaining competitive
 with the best matched baseline at $0.500$. Factorial ablations identify local attention biased by distance as
 the primary contributor on the evaluated cohorts. With $4.88$M parameters and
 $64.7$\,ms inference for a slide with 10,000 spots on an A100, \morph{} provides an efficient and
@@ -134,7 +134,7 @@ panels, data splits, optimization budgets, and nested validation. We distinguish
 individual cohorts, pooled training across represented organs, and leave one organ out (LOOO)
 transfer to an anatomy absent from training. Within cohorts, \morph{} achieves a mean Pearson
 correlation of $0.470$, compared with $0.448$ for the strongest baseline, and leads on six of seven
-cohorts. It reaches $0.760$ in pooled evaluation and $0.490$ under LOOO transfer. In the expanded
+cohorts. It reaches $0.760$ in pooled evaluation and $0.484$ under LOOO transfer. In the expanded
 matched LOOO comparison, EGN obtains the highest average at $0.500$. A factorial ablation on SKCM
 and LUNG identifies local attention as the dominant contributor, while the complete model achieves
 the highest mean. \morph{} uses $4.88$M parameters and predicts a slide with 10,000 spots in
@@ -701,17 +701,17 @@ Best per row in \best{bold}.}
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph+CONCH \\
+      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST+CONCH \\
 \midrule
-IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & \best{$0.529{\pm}0.02$} & $0.420{\pm}0.03$ & $0.520{\pm}0.02$ \\
-COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.452{\pm}0.02$ & \best{$0.729{\pm}0.03$} \\
-CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $0.090{\pm}0.01$ & \best{$0.109{\pm}0.01$} \\
-LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.512{\pm}0.03$ & \best{$0.675{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $0.409{\pm}0.03$ & \best{$0.548{\pm}0.01$} \\
-PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.046{\pm}0.00$ & \best{$0.118{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & \best{$0.748{\pm}0.01$} & $0.631{\pm}0.03$ & $0.728{\pm}0.04$ \\
+IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & \best{$0.529{\pm}0.02$} & $0.420{\pm}0.03$ & $0.528{\pm}0.02$ \\
+COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.452{\pm}0.02$ & \best{$0.698{\pm}0.05$} \\
+CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & \best{$0.106{\pm}0.01$} & $0.095{\pm}0.01$ & $0.090{\pm}0.01$ & $0.104{\pm}0.01$ \\
+LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.512{\pm}0.03$ & \best{$0.687{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & \best{$0.537{\pm}0.02$} & $0.409{\pm}0.03$ & $0.506{\pm}0.02$ \\
+PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.046{\pm}0.00$ & \best{$0.125{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & \best{$0.748{\pm}0.01$} & $0.631{\pm}0.03$ & $0.737{\pm}0.01$ \\
 \midrule
-\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.366$ & \best{$0.490$} \\
+\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.366$ & \best{$0.484$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -787,12 +787,13 @@ all methods because the retained genes are the most variable, and hence the most
 \noindent\textbf{RQ2: How well does \morph{} transfer across organs?}\quad
 \label{sec:rq2}
 LOOO is substantially harder because the target anatomy is absent from training. \morph{} reaches a
-mean PCC of $0.490$ (Table~\ref{tab:looo_main}), compared with $0.473$ for BLEEP and $0.457$ for
-HyperST, and leads on five of seven held-out cohorts; BLEEP is stronger on IDC and SKCM. The
+mean PCC of $0.484$ (Table~\ref{tab:looo_main}), the highest average, compared with $0.473$ for
+BLEEP and $0.457$ for HyperST, and leads on three of seven held-out cohorts (colorectal, lung,
+prostate); BLEEP is stronger on breast, pancreas, and skin, and HyperST on kidney. The
 expanded comparison adds EGN, which reaches $0.500$ on average (Table~\ref{tab:percohort_uniconch}).
 Under pooled cross-validation, where organ types remain represented in training, \morph{} reaches
 $0.760$ (Table~\ref{tab:pooled}), narrowly above BLEEP at $0.758$ and HyperST at $0.756$. The gap
-between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining difficulty of
+between pooled ($0.760$) and LOOO ($0.484$) directly quantifies the remaining difficulty of
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
 experiment.
 
@@ -1012,7 +1013,7 @@ Three findings merit emphasis. First, a compact direct predictor is competitive 
 gene panels, splits, and model selection are controlled; the $4.9\%$ relative gain over the
 strongest baseline rests on matched experimental conditions, not a larger model. Second, pooled
 multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.760$
-(pooled) to $0.490$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
+(pooled) to $0.484$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
 local distance-biased attention is the dominant contributor in the factorial study; global and slide
 pathways provide moderate complementary gains, and the complete model ($\mathrm{C111}$) achieves
 the best mean across both tested cohorts.
