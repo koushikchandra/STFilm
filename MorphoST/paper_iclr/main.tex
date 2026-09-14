@@ -525,7 +525,7 @@ of architectural additions (Table~\ref{tab:ablation}).
 \caption{\textbf{Intra-cohort prediction across gene-panel sizes, per cohort (Pearson $\uparrow$).}
 Mean over three seeds for panels of 10, 50, and 100 highly-variable genes; best per cohort within
 each panel in \best{bold}. All methods use identical frozen UNI\,+\,CONCH features (1536-dim), splits,
-and training budget. \textbf{Mo}=Morph (ours); SN=ST-Net, H2=Hist2ST, Hy=HyperST, BL=BLEEP, SM=STEM.}
+and training budget. \textbf{Mo}=PatchMorphoST (ours); SN=ST-Net, H2=Hist2ST, Hy=HyperST, BL=BLEEP, SM=STEM.}
 \label{tab:panel_full}
 \scriptsize
 \setlength{\tabcolsep}{2.6pt}
@@ -570,7 +570,7 @@ budget (100 epochs, patience 20, inner-validation selection). HCC, LYMPH\_IDC, a
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph~(ours) \\
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
 \midrule
 IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.00$} \\
 COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & \best{$0.314{\pm}0.01$} & $0.177{\pm}0.01$ & $0.311{\pm}0.01$ \\
@@ -633,7 +633,7 @@ Table~\ref{tab:main} panel).}
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph~(ours) \\
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
 \midrule
 IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.686{\pm}0.00$} \\
 COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.495{\pm}0.02$ \\
@@ -667,7 +667,7 @@ Table~\ref{tab:main_g100} panel).}
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph~(ours) \\
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
 \midrule
 IDC~\tiny{Breast} & $0.615{\pm}0.01$ & $0.527{\pm}0.01$ & $0.690{\pm}0.01$ & $0.637{\pm}0.02$ & \running & \best{$0.698{\pm}0.01$} \\
 COAD~\tiny{Colorectal} & $0.339{\pm}0.01$ & $0.394{\pm}0.03$ & \best{$0.527{\pm}0.02$} & $0.493{\pm}0.01$ & \running & $0.522{\pm}0.02$ \\
