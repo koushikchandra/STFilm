@@ -901,6 +901,50 @@ Variant & SKCM & LUNG & PAAD & Macro avg (7 cohorts) \\
 \end{tabular}
 \end{table}
 
+\medskip
+\noindent\textbf{Neighbourhood definition: spatial vs.\ morphological locality.}
+Table~\ref{tab:neighbour_ablation} asks whether a spot's local neighbourhood should be defined by
+\emph{spatial} proximity (the $k$ nearest spots by coordinates, as in \morph{}) or by
+\emph{morphological} similarity (the $k$ patches with the highest cosine similarity in UNI+CONCH
+feature space, a coordinate-free variant we call \textsc{Patch-Morph}). Both share an identical
+backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$); only the local
+neighbour set differs, so any gap is attributable purely to how locality is defined.
+
+\begin{table*}[!t]
+\centering
+\caption{\textbf{Neighbourhood-definition ablation: spatial vs.\ morphological (patch-similarity)
+$k$NN} (intra-cohort Pearson $\uparrow$, HEST-1k). \emph{Spatial} selects the $k$ nearest spots by
+coordinates (the paper model); \emph{Patch} selects the $k$ most morphologically similar patches
+(cosine over UNI+CONCH, coordinate-free). Identical backbone; mean$_{\text{std}}$ over three seeds.}
+\label{tab:neighbour_ablation}
+\setlength{\tabcolsep}{5pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cc cc cc}
+\toprule
+ & \multicolumn{2}{c}{50-gene} & \multicolumn{2}{c}{100-gene} & \multicolumn{2}{c}{150-gene} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Cohort & Spatial & Patch & Spatial & Patch & Spatial & Patch \\
+\midrule
+IDC~\tiny{Breast}      & $0.581{\pm}0.01$ & $0.581{\pm}0.00$ & $0.682{\pm}0.01$ & \running & $0.698{\pm}0.01$ & \running \\
+COAD~\tiny{Colorectal} & $0.318{\pm}0.01$ & $0.311{\pm}0.01$ & $0.499{\pm}0.01$ & \running & $0.522{\pm}0.02$ & \running \\
+CCRCC~\tiny{Kidney}    & $0.252{\pm}0.01$ & $0.263{\pm}0.02$ & $0.328{\pm}0.02$ & \running & $0.340{\pm}0.01$ & \running \\
+LUNG~\tiny{Lung}       & $0.589{\pm}0.01$ & $0.594{\pm}0.00$ & $0.688{\pm}0.00$ & \running & $0.673{\pm}0.00$ & \running \\
+PAAD~\tiny{Pancreas}   & $0.437{\pm}0.03$ & $0.454{\pm}0.02$ & $0.435{\pm}0.03$ & \running & $0.308{\pm}0.02$ & \running \\
+PRAD~\tiny{Prostate}   & $0.410{\pm}0.01$ & $0.402{\pm}0.01$ & $0.450{\pm}0.00$ & \running & $0.453{\pm}0.02$ & \running \\
+SKCM~\tiny{Skin}       & $0.707{\pm}0.01$ & $0.682{\pm}0.01$ & $0.771{\pm}0.01$ & \running & $0.777{\pm}0.01$ & \running \\
+\midrule
+\textbf{Average}       & $0.471$ & $0.469$ & $0.550$ & \running & $0.539$ & \running \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+On the 50-gene panel, morphological neighbourhoods match spatial ones ($0.469$ vs.\ $0.471$; each
+wins three cohorts, ties one), indicating locality can be defined by patch similarity without loss
+of accuracy and \emph{without spot coordinates}. The 100- and 150-gene patch columns are in progress.
+\end{minipage}
+\end{table*}
+
 \FloatBarrier
 \medskip
 \noindent\textbf{RQ4: Does \morph{} preserve coherent tissue structure?}\quad
