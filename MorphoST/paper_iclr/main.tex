@@ -820,6 +820,47 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ \\
 \end{tabular}
 \end{table}
 
+\medskip
+\noindent\textbf{Neighbourhood selection: does \emph{which} neighbour matter?}
+Table~\ref{tab:neighbour_ablation} tests whether the identity of PatchMorphoST's local neighbours
+carries signal, or whether merely having a $k$-neighbour local-attention stream suffices.
+\textsc{PatchMorphoST} selects the $k$ patches with the highest cosine similarity in UNI+CONCH
+feature space; \textsc{Random-$k$} selects $k$ spots uniformly at random. Both share an identical
+backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$, coordinate-free) and the
+identical morphological-distance bias, so any gap is attributable purely to neighbour selection.
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Neighbourhood-selection ablation} (PatchMorphoST, 100-gene panel, intra-cohort
+Pearson $\uparrow$). \textsc{Patch} selects the $k$ most morphologically similar patches;
+\textsc{Random-$k$} selects $k$ spots at random. Identical backbone; mean$_{\text{std}}$, three seeds.}
+\label{tab:neighbour_ablation}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l cc}
+\toprule
+Cohort & PatchMorphoST & Random-$k$ \\
+\midrule
+IDC~\tiny{Breast}      & \best{$0.686{\pm}0.00$} & $0.677{\pm}0.01$ \\
+COAD~\tiny{Colorectal} & \best{$0.495{\pm}0.02$} & $0.493{\pm}0.01$ \\
+CCRCC~\tiny{Kidney}    & \best{$0.328{\pm}0.00$} & $0.309{\pm}0.01$ \\
+LUNG~\tiny{Lung}       & \best{$0.690{\pm}0.00$} & $0.689{\pm}0.00$ \\
+PAAD~\tiny{Pancreas}   & \best{$0.449{\pm}0.02$} & $0.447{\pm}0.03$ \\
+PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & \best{$0.442{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ \\
+\midrule
+\textbf{Average}       & \best{$0.549$} & $0.542$ \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}\footnotesize
+PatchMorphoST exceeds the random-$k$ control by a small but consistent margin ($0.549$ vs.\ $0.542$;
+higher on six of seven cohorts, up to $+0.019$ on CCRCC), so morphological neighbour
+\emph{selection} carries a modest but real signal. The bulk of accuracy nonetheless comes from the
+global-attention and slide-token streams shared by both variants.
+\end{minipage}
+\end{table}
+
 \FloatBarrier
 \medskip
 \noindent\textbf{RQ3: Which context pathway drives the gain, and does coordinate invariance hold?}\quad
@@ -899,47 +940,6 @@ Variant & SKCM & LUNG & PAAD & Macro avg (7 cohorts) \\
 \morph{} (RBF, continuous dist.) & \best{$0.707_{0.01}$} & \best{$0.589_{0.01}$} & \best{$0.437_{0.03}$} & \best{$0.470$} \\
 \bottomrule
 \end{tabular}
-\end{table}
-
-\medskip
-\noindent\textbf{Neighbourhood selection: does \emph{which} neighbour matter?}
-Table~\ref{tab:neighbour_ablation} tests whether the identity of PatchMorphoST's local neighbours
-carries signal, or whether merely having a $k$-neighbour local-attention stream suffices.
-\textsc{PatchMorphoST} selects the $k$ patches with the highest cosine similarity in UNI+CONCH
-feature space; \textsc{Random-$k$} selects $k$ spots uniformly at random. Both share an identical
-backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$, coordinate-free) and the
-identical morphological-distance bias, so any gap is attributable purely to neighbour selection.
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Neighbourhood-selection ablation} (PatchMorphoST, 100-gene panel, intra-cohort
-Pearson $\uparrow$). \textsc{Patch} selects the $k$ most morphologically similar patches;
-\textsc{Random-$k$} selects $k$ spots at random. Identical backbone; mean$_{\text{std}}$, three seeds.}
-\label{tab:neighbour_ablation}
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l cc}
-\toprule
-Cohort & PatchMorphoST & Random-$k$ \\
-\midrule
-IDC~\tiny{Breast}      & \best{$0.686{\pm}0.00$} & $0.677{\pm}0.01$ \\
-COAD~\tiny{Colorectal} & \best{$0.495{\pm}0.02$} & $0.493{\pm}0.01$ \\
-CCRCC~\tiny{Kidney}    & \best{$0.328{\pm}0.00$} & $0.309{\pm}0.01$ \\
-LUNG~\tiny{Lung}       & \best{$0.690{\pm}0.00$} & $0.689{\pm}0.00$ \\
-PAAD~\tiny{Pancreas}   & \best{$0.449{\pm}0.02$} & $0.447{\pm}0.03$ \\
-PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & \best{$0.442{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ \\
-\midrule
-\textbf{Average}       & \best{$0.549$} & $0.542$ \\
-\bottomrule
-\end{tabular}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-PatchMorphoST exceeds the random-$k$ control by a small but consistent margin ($0.549$ vs.\ $0.542$;
-higher on six of seven cohorts, up to $+0.019$ on CCRCC), so morphological neighbour
-\emph{selection} carries a modest but real signal. The bulk of accuracy nonetheless comes from the
-global-attention and slide-token streams shared by both variants.
-\end{minipage}
 \end{table}
 
 \FloatBarrier
