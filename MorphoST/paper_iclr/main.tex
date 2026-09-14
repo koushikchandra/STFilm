@@ -669,15 +669,15 @@ Table~\ref{tab:main_g100} panel).}
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
        & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
 \midrule
-IDC~\tiny{Breast} & $0.615{\pm}0.01$ & $0.527{\pm}0.01$ & $0.690{\pm}0.01$ & $0.637{\pm}0.02$ & \running & \best{$0.698{\pm}0.01$} \\
-COAD~\tiny{Colorectal} & $0.339{\pm}0.01$ & $0.394{\pm}0.03$ & \best{$0.527{\pm}0.02$} & $0.493{\pm}0.01$ & \running & $0.522{\pm}0.02$ \\
-CCRCC~\tiny{Kidney} & $0.236{\pm}0.01$ & $0.253{\pm}0.02$ & $0.328{\pm}0.02$ & $0.266{\pm}0.01$ & \running & \best{$0.340{\pm}0.01$} \\
-LUNG~\tiny{Lung} & $0.573{\pm}0.01$ & $0.431{\pm}0.02$ & $0.662{\pm}0.00$ & $0.637{\pm}0.01$ & \running & \best{$0.673{\pm}0.00$} \\
-PAAD~\tiny{Pancreas} & $0.240{\pm}0.03$ & $0.131{\pm}0.00$ & $0.272{\pm}0.02$ & $0.287{\pm}0.03$ & \running & \best{$0.308{\pm}0.02$} \\
-PRAD~\tiny{Prostate} & $0.307{\pm}0.02$ & $0.376{\pm}0.02$ & $0.440{\pm}0.02$ & $0.376{\pm}0.02$ & \running & \best{$0.453{\pm}0.02$} \\
-SKCM~\tiny{Skin} & $0.704{\pm}0.01$ & $0.460{\pm}0.12$ & $0.744{\pm}0.00$ & $0.714{\pm}0.02$ & \running & \best{$0.777{\pm}0.01$} \\
+IDC~\tiny{Breast} & $0.615{\pm}0.01$ & $0.527{\pm}0.01$ & $0.690{\pm}0.01$ & $0.637{\pm}0.02$ & \running & \best{$0.702{\pm}0.00$} \\
+COAD~\tiny{Colorectal} & $0.339{\pm}0.01$ & $0.394{\pm}0.03$ & \best{$0.527{\pm}0.02$} & $0.493{\pm}0.01$ & \running & $0.518{\pm}0.01$ \\
+CCRCC~\tiny{Kidney} & $0.236{\pm}0.01$ & $0.253{\pm}0.02$ & \best{$0.328{\pm}0.02$} & $0.266{\pm}0.01$ & \running & $0.324{\pm}0.01$ \\
+LUNG~\tiny{Lung} & $0.573{\pm}0.01$ & $0.431{\pm}0.02$ & $0.662{\pm}0.00$ & $0.637{\pm}0.01$ & \running & \best{$0.676{\pm}0.00$} \\
+PAAD~\tiny{Pancreas} & $0.240{\pm}0.03$ & $0.131{\pm}0.00$ & $0.272{\pm}0.02$ & $0.287{\pm}0.03$ & \running & \best{$0.321{\pm}0.02$} \\
+PRAD~\tiny{Prostate} & $0.307{\pm}0.02$ & $0.376{\pm}0.02$ & $0.440{\pm}0.02$ & $0.376{\pm}0.02$ & \running & \best{$0.449{\pm}0.01$} \\
+SKCM~\tiny{Skin} & $0.704{\pm}0.01$ & $0.460{\pm}0.12$ & $0.744{\pm}0.00$ & $0.714{\pm}0.02$ & \running & \best{$0.760{\pm}0.01$} \\
 \midrule
-\textbf{Average} & $0.431$ & $0.367$ & $0.523$ & $0.487$ & \running & \best{$0.539$} \\
+\textbf{Average} & $0.431$ & $0.367$ & $0.523$ & $0.487$ & \running & \best{$0.536$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -902,49 +902,43 @@ Variant & SKCM & LUNG & PAAD & Macro avg (7 cohorts) \\
 \end{table}
 
 \medskip
-\noindent\textbf{Neighbourhood definition: spatial vs.\ morphological locality.}
-Table~\ref{tab:neighbour_ablation} asks whether a spot's local neighbourhood should be defined by
-\emph{spatial} proximity (the $k$ nearest spots by coordinates, as in \morph{}) or by
-\emph{morphological} similarity (the $k$ patches with the highest cosine similarity in UNI+CONCH
-feature space, a coordinate-free variant we call \textsc{Patch-Morph}). Both share an identical
-backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$); only the local
-neighbour set differs, so any gap is attributable purely to how locality is defined.
+\noindent\textbf{Neighbourhood selection: does \emph{which} neighbour matter?}
+Table~\ref{tab:neighbour_ablation} tests whether the identity of PatchMorphoST's local neighbours
+carries signal, or whether merely having a $k$-neighbour local-attention stream suffices.
+\textsc{PatchMorphoST} selects the $k$ patches with the highest cosine similarity in UNI+CONCH
+feature space; \textsc{Random-$k$} selects $k$ spots uniformly at random. Both share an identical
+backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$, coordinate-free) and the
+identical morphological-distance bias, so any gap is attributable purely to neighbour selection.
 
-\begin{table*}[!t]
+\begin{table}[t]
 \centering
-\caption{\textbf{Neighbourhood-definition ablation: spatial vs.\ morphological (patch-similarity)
-$k$NN} (intra-cohort Pearson $\uparrow$, HEST-1k). \emph{Spatial} selects the $k$ nearest spots by
-coordinates (the paper model); \emph{Patch} selects the $k$ most morphologically similar patches
-(cosine over UNI+CONCH, coordinate-free). Identical backbone; mean$_{\text{std}}$ over three seeds.}
+\caption{\textbf{Neighbourhood-selection ablation} (PatchMorphoST, 100-gene panel, intra-cohort
+Pearson $\uparrow$). \textsc{Patch} selects the $k$ most morphologically similar patches;
+\textsc{Random-$k$} selects $k$ spots at random. Identical backbone; mean$_{\text{std}}$, three seeds.}
 \label{tab:neighbour_ablation}
-\setlength{\tabcolsep}{5pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l cc cc cc}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l cc}
 \toprule
- & \multicolumn{2}{c}{50-gene} & \multicolumn{2}{c}{100-gene} & \multicolumn{2}{c}{150-gene} \\
-\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
-Cohort & Spatial & Patch & Spatial & Patch & Spatial & Patch \\
+Cohort & PatchMorphoST & Random-$k$ \\
 \midrule
-IDC~\tiny{Breast}      & $0.581{\pm}0.01$ & $0.581{\pm}0.00$ & $0.682{\pm}0.01$ & $0.686{\pm}0.00$ & $0.698{\pm}0.01$ & \running \\
-COAD~\tiny{Colorectal} & $0.318{\pm}0.01$ & $0.311{\pm}0.01$ & $0.499{\pm}0.01$ & $0.495{\pm}0.02$ & $0.522{\pm}0.02$ & \running \\
-CCRCC~\tiny{Kidney}    & $0.252{\pm}0.01$ & $0.263{\pm}0.02$ & $0.328{\pm}0.02$ & $0.328{\pm}0.00$ & $0.340{\pm}0.01$ & \running \\
-LUNG~\tiny{Lung}       & $0.589{\pm}0.01$ & $0.594{\pm}0.00$ & $0.688{\pm}0.00$ & $0.690{\pm}0.00$ & $0.673{\pm}0.00$ & \running \\
-PAAD~\tiny{Pancreas}   & $0.437{\pm}0.03$ & $0.454{\pm}0.02$ & $0.435{\pm}0.03$ & $0.449{\pm}0.02$ & $0.308{\pm}0.02$ & \running \\
-PRAD~\tiny{Prostate}   & $0.410{\pm}0.01$ & $0.402{\pm}0.01$ & $0.450{\pm}0.00$ & $0.441{\pm}0.01$ & $0.453{\pm}0.02$ & \running \\
-SKCM~\tiny{Skin}       & $0.707{\pm}0.01$ & $0.682{\pm}0.01$ & $0.771{\pm}0.01$ & $0.750{\pm}0.01$ & $0.777{\pm}0.01$ & \running \\
+IDC~\tiny{Breast}      & $0.686{\pm}0.00$ & \running \\
+COAD~\tiny{Colorectal} & $0.495{\pm}0.02$ & \running \\
+CCRCC~\tiny{Kidney}    & $0.328{\pm}0.00$ & \running \\
+LUNG~\tiny{Lung}       & $0.690{\pm}0.00$ & \running \\
+PAAD~\tiny{Pancreas}   & $0.449{\pm}0.02$ & \running \\
+PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & \running \\
+SKCM~\tiny{Skin}       & $0.750{\pm}0.01$ & \running \\
 \midrule
-\textbf{Average}       & $0.471$ & $0.469$ & $0.550$ & $0.549$ & $0.539$ & \running \\
+\textbf{Average}       & $0.549$ & \running \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-Morphological neighbourhoods match spatial ones on both completed panels (50-gene: $0.469$ vs.\
-$0.471$; 100-gene: $0.549$ vs.\ $0.550$; each wins three-to-four cohorts), indicating locality can
-be defined by patch similarity without loss of accuracy and \emph{without spot coordinates}. The
-150-gene patch column is in progress.
+The random-$k$ control is in progress; if it matches PatchMorphoST, neighbour \emph{selection} is
+inconsequential and the signal comes from the global-attention and slide-token streams.
 \end{minipage}
-\end{table*}
+\end{table}
 
 \FloatBarrier
 \medskip
