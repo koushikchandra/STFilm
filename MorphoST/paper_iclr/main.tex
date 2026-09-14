@@ -635,15 +635,15 @@ Table~\ref{tab:main} panel).}
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
        & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & Morph~(ours) \\
 \midrule
-IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.687{\pm}0.00$} \\
+IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.686{\pm}0.00$} \\
 COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.495{\pm}0.02$ \\
-CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.320{\pm}0.02$} \\
+CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.01$} \\
 LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.685{\pm}0.00$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.690{\pm}0.00$} \\
 PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.404{\pm}0.02$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.449{\pm}0.02$} \\
-PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.445{\pm}0.01$} \\
+PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.441{\pm}0.01$} \\
 SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.724{\pm}0.01$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.750{\pm}0.01$} \\
 \midrule
-\textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.548$} \\
+\textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.549$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -925,23 +925,24 @@ coordinates (the paper model); \emph{Patch} selects the $k$ most morphologically
 \cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
 Cohort & Spatial & Patch & Spatial & Patch & Spatial & Patch \\
 \midrule
-IDC~\tiny{Breast}      & $0.581{\pm}0.01$ & $0.581{\pm}0.00$ & $0.682{\pm}0.01$ & \running & $0.698{\pm}0.01$ & \running \\
-COAD~\tiny{Colorectal} & $0.318{\pm}0.01$ & $0.311{\pm}0.01$ & $0.499{\pm}0.01$ & \running & $0.522{\pm}0.02$ & \running \\
-CCRCC~\tiny{Kidney}    & $0.252{\pm}0.01$ & $0.263{\pm}0.02$ & $0.328{\pm}0.02$ & \running & $0.340{\pm}0.01$ & \running \\
-LUNG~\tiny{Lung}       & $0.589{\pm}0.01$ & $0.594{\pm}0.00$ & $0.688{\pm}0.00$ & \running & $0.673{\pm}0.00$ & \running \\
-PAAD~\tiny{Pancreas}   & $0.437{\pm}0.03$ & $0.454{\pm}0.02$ & $0.435{\pm}0.03$ & \running & $0.308{\pm}0.02$ & \running \\
-PRAD~\tiny{Prostate}   & $0.410{\pm}0.01$ & $0.402{\pm}0.01$ & $0.450{\pm}0.00$ & \running & $0.453{\pm}0.02$ & \running \\
-SKCM~\tiny{Skin}       & $0.707{\pm}0.01$ & $0.682{\pm}0.01$ & $0.771{\pm}0.01$ & \running & $0.777{\pm}0.01$ & \running \\
+IDC~\tiny{Breast}      & $0.581{\pm}0.01$ & $0.581{\pm}0.00$ & $0.682{\pm}0.01$ & $0.686{\pm}0.00$ & $0.698{\pm}0.01$ & \running \\
+COAD~\tiny{Colorectal} & $0.318{\pm}0.01$ & $0.311{\pm}0.01$ & $0.499{\pm}0.01$ & $0.495{\pm}0.02$ & $0.522{\pm}0.02$ & \running \\
+CCRCC~\tiny{Kidney}    & $0.252{\pm}0.01$ & $0.263{\pm}0.02$ & $0.328{\pm}0.02$ & $0.328{\pm}0.00$ & $0.340{\pm}0.01$ & \running \\
+LUNG~\tiny{Lung}       & $0.589{\pm}0.01$ & $0.594{\pm}0.00$ & $0.688{\pm}0.00$ & $0.690{\pm}0.00$ & $0.673{\pm}0.00$ & \running \\
+PAAD~\tiny{Pancreas}   & $0.437{\pm}0.03$ & $0.454{\pm}0.02$ & $0.435{\pm}0.03$ & $0.449{\pm}0.02$ & $0.308{\pm}0.02$ & \running \\
+PRAD~\tiny{Prostate}   & $0.410{\pm}0.01$ & $0.402{\pm}0.01$ & $0.450{\pm}0.00$ & $0.441{\pm}0.01$ & $0.453{\pm}0.02$ & \running \\
+SKCM~\tiny{Skin}       & $0.707{\pm}0.01$ & $0.682{\pm}0.01$ & $0.771{\pm}0.01$ & $0.750{\pm}0.01$ & $0.777{\pm}0.01$ & \running \\
 \midrule
-\textbf{Average}       & $0.471$ & $0.469$ & $0.550$ & \running & $0.539$ & \running \\
+\textbf{Average}       & $0.471$ & $0.469$ & $0.550$ & $0.549$ & $0.539$ & \running \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-On the 50-gene panel, morphological neighbourhoods match spatial ones ($0.469$ vs.\ $0.471$; each
-wins three cohorts, ties one), indicating locality can be defined by patch similarity without loss
-of accuracy and \emph{without spot coordinates}. The 100- and 150-gene patch columns are in progress.
+Morphological neighbourhoods match spatial ones on both completed panels (50-gene: $0.469$ vs.\
+$0.471$; 100-gene: $0.549$ vs.\ $0.550$; each wins three-to-four cohorts), indicating locality can
+be defined by patch similarity without loss of accuracy and \emph{without spot coordinates}. The
+150-gene patch column is in progress.
 \end{minipage}
 \end{table*}
 
