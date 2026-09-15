@@ -134,7 +134,7 @@ panels, data splits, optimization budgets, and nested validation. We distinguish
 individual cohorts, pooled training across represented organs, and leave one organ out (LOOO)
 transfer to an anatomy absent from training. Within cohorts, \morph{} achieves a mean Pearson
 correlation of $0.470$, compared with $0.448$ for the strongest baseline, and leads on six of seven
-cohorts. It reaches $0.760$ in pooled evaluation and $0.484$ under LOOO transfer. In the expanded
+cohorts. It reaches $0.744$ in pooled evaluation and $0.484$ under LOOO transfer. In the expanded
 matched LOOO comparison, EGN obtains the highest average at $0.500$. A factorial ablation on SKCM
 and LUNG identifies local attention as the dominant contributor, while the complete model achieves
 the highest mean. \morph{} uses $4.88$M parameters and predicts a slide with 10,000 spots in
@@ -792,8 +792,8 @@ BLEEP and $0.457$ for HyperST, and leads on three of seven held-out cohorts (col
 prostate); BLEEP is stronger on breast, pancreas, and skin, and HyperST on kidney. The
 expanded comparison adds EGN, which reaches $0.500$ on average (Table~\ref{tab:percohort_uniconch}).
 Under pooled cross-validation, where organ types remain represented in training, \morph{} reaches
-$0.760$ (Table~\ref{tab:pooled}), narrowly above BLEEP at $0.758$ and HyperST at $0.756$. The gap
-between pooled ($0.760$) and LOOO ($0.484$) directly quantifies the remaining difficulty of
+$0.744$ (Table~\ref{tab:pooled}), close to BLEEP at $0.758$ and HyperST at $0.756$. The gap
+between pooled ($0.744$) and LOOO ($0.484$) directly quantifies the remaining difficulty of
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
 experiment.
 
@@ -813,10 +813,10 @@ Method & HEST-1k \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.758_{0.01}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & \best{$0.758_{0.01}$} \\
 STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ \\
 \midrule
-\morph{} (V3)                               & \best{$0.760_{0.01}$} \\
+PatchMorphoST                               & $0.744_{0.03}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -1018,7 +1018,7 @@ Spots & Latency (ms) & Memory (MiB) \\
 Three findings merit emphasis. First, a compact direct predictor is competitive when features,
 gene panels, splits, and model selection are controlled; the $4.9\%$ relative gain over the
 strongest baseline rests on matched experimental conditions, not a larger model. Second, pooled
-multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.760$
+multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.744$
 (pooled) to $0.484$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
 local distance-biased attention is the dominant contributor in the factorial study; global and slide
 pathways provide moderate complementary gains, and the complete model ($\mathrm{C111}$) achieves
