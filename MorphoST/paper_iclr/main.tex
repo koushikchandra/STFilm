@@ -170,20 +170,26 @@ Our contributions are threefold:
 
 \begin{table}[t]
 \centering
-\caption{\textbf{What drives cross-organ accuracy?} One-factor-at-a-time ablations on \morph{}. The
-frozen patch encoder is the dominant factor; how the model \emph{aggregates} those features
-(neighbourhood definition, slide-level context) contributes little. $\Delta$PCC over three seeds;
-$^{\dag}$intra-cohort 50-gene panel, others cross-organ POOLED.}
-\label{tab:ablation_summary}
+\caption{\textbf{Architectural components across representative H\&E$\to$ST predictors.}
+\morph{} is the only model that combines local neighbourhood attention, slide-wide global
+attention, a slide-level summary token, coordinate invariance, and continuous (distance-expressive)
+spatial encoding rather than binary adjacency. \checkmark~= component present.}
+\label{tab:design_comparison}
 \small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l l c c}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.1}
+\begin{tabular}{l ccccc}
 \toprule
-Factor & Change & $\Delta$PCC & Significant \\
+Method & \makecell{Local\\context} & \makecell{Global\\context} & \makecell{Slide\\token}
+       & \makecell{Coord.\\invariant} & \makecell{Cont.\\distance} \\
 \midrule
-Feature encoder              & CONCH $\to$ UNI\,+\,CONCH   & $+0.056$ & \textbf{yes} \\
-Local neighbourhood$^{\dag}$  & random $\to$ spatial $k$NN  & $+0.009$ & no \\
-Slide-level context          & off $\to$ on                & $+0.009$ & no \\
+ST-Net~\cite{he2020stnet}       &            &            &            &            &            \\
+Hist2ST~\cite{zeng2022hist2st}  & \checkmark & \checkmark &            &            &            \\
+HyperST~\cite{zhang2026hyperst} & \checkmark & \checkmark &            &            &            \\
+BLEEP~\cite{xie2023bleep}       &            &            &            &            &            \\
+STEM~\cite{zhu2025diffusion}    &            & \checkmark &            &            &            \\
+\midrule
+\morph{} (ours)                 & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
 \bottomrule
 \end{tabular}
 \end{table}
