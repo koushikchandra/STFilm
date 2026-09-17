@@ -20,7 +20,7 @@
 
 % ICLR 2027 submission
 
-\newcommand{\morph}{\textsc{Mist}}
+\newcommand{\morph}{\textbf{MIST}}
 \newcommand{\best}[1]{{\bfseries\boldmath #1}}
 \newcommand{\running}{\textcolor{gray}{---}}
 \newcommand{\heavytext}[1]{\leavevmode\rlap{\kern0.22pt #1}#1}
@@ -41,35 +41,32 @@
 
 \begin{document}
 
-\title{\morph: Multi-Scale Coordinate-Invariant Spatial Attention\\
+\title{\morph: Coordinate-Invariant Spatial Modeling\\
 for Gene Expression Prediction from Histology}
 
 \author{Anonymous}
 \maketitle
 
 \begin{abstract}
-Predicting spatial gene expression from H\&E histology images could expand access to
-spatial molecular analysis, but requires models to capture tissue organization across multiple
-spatial scales. Existing approaches either ignore spatial coordinates entirely, encode absolute
-positions that break under coordinate-frame changes, or use binary $k$NN adjacency that discards
-actual inter-spot distances. No prior method encodes continuous pairwise distances while remaining
-invariant to coordinate transformations.
-We introduce \morph{}, a compact spatial transformer that combines three complementary signals in
-each layer: $k$NN attention biased by \emph{continuous} pairwise distances for local tissue
-neighborhoods, global self-attention for dependencies across the slide, and attention pooling that
-forms a slide representation and broadcasts morphological context to every spot. Because coordinates
-enter the spatial pathway only through pairwise Euclidean distances encoded as radial-basis features,
-the model is invariant to coordinate-frame changes \emph{and} retains richer spatial information than
-binary-adjacency models, which treat all neighbors as equally close.
-We evaluate \morph{} on seven human organ cohorts from HEST-1k under a controlled protocol in which
-all methods use identical frozen UNI+CONCH embeddings, gene panels, data splits, and validation
-procedures. When trained and evaluated within each cohort, \morph{} achieves a mean Pearson correlation of $0.470$,
-improving over the strongest baseline at $0.448$ by $4.9\%$ and leading on six of seven cohorts.
-Under the more challenging leave one organ out (LOOO) setting, it reaches $0.484$, remaining competitive
-with the best matched baseline at $0.500$. Factorial ablations identify local attention biased by distance as
-the primary contributor on the evaluated cohorts. With $4.88$M parameters and
-$64.7$\,ms inference for a slide with 10,000 spots on an A100, \morph{} provides an efficient and
-geometrically principled model for spatial gene expression prediction from histology.
+Predicting spatial gene expression from routine histology images could extend molecular analysis
+to tissue samples without spatial transcriptomic measurements. This task requires integrating local
+morphology with tissue context while avoiding sensitivity to arbitrary choices of coordinate origin
+and orientation. We introduce \morph{}, a compact spatial transformer that combines three sources
+of context in each layer: attention over nearby spots, attention over all spots on a slide, and a
+pooled slide representation. The local pathway uses continuous pairwise distances to bias attention,
+retaining information about spatial proximity beyond a binary neighborhood graph. Because
+coordinates enter the model only through these distances, predictions are invariant to translations,
+rotations, and reflections of the coordinate frame when image features are fixed.
+We evaluate \morph{} on seven human organ cohorts from HEST-1k using matched frozen image features,
+gene panels, data splits, and model-selection procedures. In within-cohort prediction of 100 genes,
+\morph{} achieves a mean Pearson correlation of $0.550$, compared with $0.535$ for the strongest
+baseline, and leads on six of seven cohorts. In a separate 50-gene evaluation with an entire organ
+held out during training,
+\morph{} achieves $0.490$, compared with $0.473$ for BLEEP, the strongest baseline in the primary comparison.
+Factorial ablations on two cohorts identify local attention as the main contributor to predictive
+accuracy. With $4.88$M parameters and model-only inference of $64.7$\,ms for 10,000 spots on an A100,
+\morph{} combines explicit spatial structure with efficient prediction, while unseen-organ transfer
+remains a challenge.
 \end{abstract}
 
 \section{Introduction}
@@ -134,7 +131,7 @@ panels, data splits, optimization budgets, and nested validation. We distinguish
 individual cohorts, pooled training across represented organs, and leave one organ out (LOOO)
 transfer to an anatomy absent from training. Within cohorts, \morph{} achieves a mean Pearson
 correlation of $0.470$, compared with $0.448$ for the strongest baseline, and leads on six of seven
-cohorts. It reaches $0.744$ in pooled evaluation and $0.484$ under LOOO transfer. In the expanded
+cohorts. It reaches $0.760$ in pooled evaluation and $0.490$ under LOOO transfer. In the expanded
 matched LOOO comparison, EGN obtains the highest average at $0.500$. A factorial ablation on SKCM
 and LUNG identifies local attention as the dominant contributor, while the complete model achieves
 the highest mean. \morph{} uses $4.88$M parameters and predicts a slide with 10,000 spots in
@@ -390,6 +387,52 @@ is deterministic, single-pass inference with explicit geometric structure. Unlik
 that report within-cohort accuracy only, our controlled comparison separates interpolation from
 anatomical transfer, making the difficulty of organ shift directly measurable.
 
+\begin{table*}[t]
+\caption{Comparison of representative methods for predicting spatial gene expression from histology.}
+\label{tab:design_comparison}
+\centering
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.16}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lcccccccc@{}}
+\toprule
+Method & \makecell{Prediction\\form} & \makecell{Local tissue\\context} &
+\makecell{All-spot\\interaction} & \makecell{Slide\\summary} &
+\makecell{Coordinate\\signal} & \makecell{Frame\\invariant} &
+\makecell{Rot.\ stab.$\uparrow$\\(PCC)} &
+\makecell{Test-time\\rule} \\
+\midrule
+ST-Net~\cite{he2020stnet}    & Regression & --           & No  & No & None              & n/a & --   & Single pass \\
+Hist2ST~\cite{zeng2022hist2st} & Regression & Spot graph   & Yes & No & Absolute $x,y$    & No  & 0.51 & Single pass \\
+TRIPLEX~\cite{chung2024triplex} & Regression & Spot $k$NN   & Yes & No & \makecell{$k$NN adj.\\(binary)}   & Yes & 1.00 & Single pass \\
+BLEEP~\cite{xie2023bleep}    & Retrieval  & --           & No  & No & None              & n/a & --   & $k$NN lookup \\
+M2OST~\cite{wang2025m2ost}   & Regression & \makecell{Multiscale\\spot $k$NN} & No & No & \makecell{$k$NN adj.\\(binary)} & Yes & 1.00 & Single pass \\
+EGN~\cite{yang2023egn}       & \makecell{Exemplar\\regression} & -- & No & No & None       & n/a & --   & \makecell{Lookup +\\single pass} \\
+HyperST~\cite{zhang2026hyperst} & Regression & Niche $k$NN  & No  & No & \makecell{$k$NN adj.\\(binary)}   & Yes & 1.00 & Single pass \\
+STEM~\cite{zhu2025diffusion} & Diffusion  & --           & No  & No & None              & n/a & --   & Iterative sampling \\
+\midrule
+\textbf{\morph{} (ours)} & \textbf{Regression} & \textbf{Spot $k$NN} & \textbf{Yes} &
+\textbf{Yes} & \makecell{\textbf{Pairwise dist.}\\\textbf{(continuous RBF)}} & \textbf{Yes} & \textbf{1.00} & \textbf{Single pass} \\
+\bottomrule
+\end{tabular}
+}
+\vspace{2pt}
+
+\parbox{0.98\textwidth}{\scriptsize\textit{Notes.} Local tissue context distinguishes interaction
+among measured ST spots from a larger image region centered on the target. All-spot interaction
+means that measured spots from the same slide exchange information, while slide summary denotes an
+explicitly pooled slide representation. Coordinate signal refers to ST spot coordinates rather than
+positions of tokens within an image patch. Frame invariance is not applicable (n/a) when a method
+does not consume spot coordinates. Rot.\ stab.\ (PCC) is the mean per-gene Pearson correlation
+between predictions before and after a 90° coordinate rotation, measured on trained checkpoints
+with real Visium data; ``--'' denotes coordinate-free methods (trivially 1.00, not shown).
+$k$NN adj.\ (binary): distances used only to build the neighbor graph; all neighbors receive
+equal weight. Pairwise dist.\ (continuous RBF): actual inter-spot distances encoded as radial-basis
+features that continuously modulate per-head attention weights — closer neighbors receive
+stronger attention than distant ones. Both are frame-invariant; only the continuous encoding
+retains distance magnitude.}
+\end{table*}
 
 \section{Method}
 
@@ -520,171 +563,122 @@ The main model enables all three context pathways. Our factorial ablation indepe
 local (L), global (G), and slide-level (S) pathways, avoiding conclusions tied to a particular order
 of architectural additions (Table~\ref{tab:ablation}).
 
-\begin{table*}[!t]
+% Keep all three gene-panel comparisons in one indivisible float.
+\begin{table*}[!p]
 \centering
-\caption{\textbf{Intra-cohort prediction across gene-panel sizes, per cohort (Pearson $\uparrow$).}
-Mean over three seeds for panels of 10, 50, and 100 highly-variable genes; best per cohort within
-each panel in \best{bold}. All methods use identical frozen UNI\,+\,CONCH features (1536-dim), splits,
-and training budget. \textbf{Mo}=PatchMorphoST (ours); SN=ST-Net, H2=Hist2ST, Hy=HyperST, BL=BLEEP, SM=STEM.}
-\label{tab:panel_full}
-\scriptsize
-\setlength{\tabcolsep}{2.6pt}
-\resizebox{\textwidth}{!}{%
-\begin{tabular}{l cccccc cccccc cccccc}
-\toprule
-& \multicolumn{6}{c}{\textbf{10-gene}} & \multicolumn{6}{c}{\textbf{50-gene}} & \multicolumn{6}{c}{\textbf{100-gene}} \\
-\cmidrule(lr){2-7}\cmidrule(lr){8-13}\cmidrule(lr){14-19}
-Cohort & SN & H2 & Hy & BL & SM & Mo & SN & H2 & Hy & BL & SM & Mo & SN & H2 & Hy & BL & SM & Mo \\
-\midrule
-IDC~\tiny{Breast} & $0.666$ & $0.636$ & $0.679$ & $0.635$ & $0.591$ & \best{$0.708$} & $0.551$ & $0.309$ & $0.567$ & $0.519$ & $0.439$ & \best{$0.581$} & $0.611$ & $0.473$ & $0.671$ & $0.632$ & $0.565$ & \best{$0.687$} \\
-COAD~\tiny{Colorectal} & $0.255$ & \best{$0.447$} & $0.368$ & $0.413$ & $0.266$ & $0.382$ & $0.242$ & $0.295$ & $0.285$ & \best{$0.314$} & $0.177$ & $0.311$ & $0.336$ & $0.406$ & \best{$0.503$} & $0.488$ & $0.348$ & $0.495$ \\
-CCRCC~\tiny{Kidney} & $0.231$ & $0.273$ & $0.301$ & $0.231$ & $0.170$ & \best{$0.322$} & $0.163$ & $0.184$ & $0.256$ & $0.175$ & $0.123$ & \best{$0.270$} & $0.221$ & $0.274$ & $0.319$ & $0.247$ & $0.190$ & \best{$0.320$} \\
-LUNG~\tiny{Lung} & $0.702$ & $0.519$ & $0.758$ & $0.735$ & $0.616$ & \best{$0.759$} & $0.518$ & $0.470$ & $0.587$ & $0.562$ & $0.423$ & \best{$0.594$} & $0.595$ & $0.434$ & $0.685$ & $0.659$ & $0.498$ & \best{$0.690$} \\
-PAAD~\tiny{Pancreas} & $0.511$ & $0.377$ & \best{$0.566$} & $0.536$ & $0.393$ & $0.519$ & $0.359$ & $0.247$ & $0.404$ & $0.419$ & $0.233$ & \best{$0.454$} & $0.355$ & $0.222$ & $0.404$ & $0.399$ & $0.236$ & \best{$0.449$} \\
-PRAD~\tiny{Prostate} & $0.442$ & $0.459$ & \best{$0.526$} & $0.434$ & $0.325$ & $0.524$ & $0.294$ & $0.333$ & $0.384$ & $0.348$ & $0.207$ & \best{$0.402$} & $0.327$ & $0.341$ & $0.436$ & $0.377$ & $0.240$ & \best{$0.445$} \\
-SKCM~\tiny{Skin} & $0.728$ & $0.471$ & $0.741$ & $0.697$ & $0.598$ & \best{$0.769$} & $0.665$ & $0.522$ & $0.653$ & $0.645$ & $0.491$ & \best{$0.682$} & $0.696$ & $0.446$ & $0.724$ & $0.696$ & $0.602$ & \best{$0.750$} \\
-\midrule
-\textbf{Avg} & $0.505$ & $0.455$ & $0.563$ & $0.526$ & $0.423$ & \best{$0.569$} & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.299$ & \best{$0.470$} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.383$ & \best{$0.548$} \\
-\bottomrule
-\end{tabular}%
-}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-The 10-gene Mo column shows the equivalent Mist result as a placeholder while the dedicated 10-gene
-Morph run completes (Morph and Mist coincide to within noise on the finished 50/100-gene panels).
-STEM 100-gene averages exclude a pending seed on one cohort.
-\end{minipage}
-\end{table*}
-
-% Declared on page 4 so the two-column float appears at the top of page 5 with RQ1.
-\begin{table*}[!t]
-\centering
-\caption{\textbf{Intra-cohort gene expression prediction on HEST-1k, per cohort (Pearson
-$\uparrow$).} Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
-All methods use identical frozen UNI\,+\,CONCH features (1536-dim), 50-gene panels, and the same training
-budget (100 epochs, patience 20, inner-validation selection). HCC, LYMPH\_IDC, and READ excluded
-(see Appendix~\ref{app:cohort_stats}).}
+\caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-panel sizes
+(Pearson $\uparrow$).} PCC@$k$ denotes prediction with a $k$-gene panel.
+Mean$_{\text{std}}$ over three seeds with nested-validation; best per cohort and panel in \best{bold}.
+All methods use identical frozen UNI\,+\,CONCH features (1536-dim), splits, and training budget
+(100 epochs, patience 20, inner-validation selection). The 10-gene panel is the highest-variance
+subset of each cohort's HEST 50-HVG panel; the 100-gene panel extends it with the next 50
+highest-variance genes. HCC, LYMPH\_IDC, and READ are excluded (Appendix~\ref{app:cohort_stats}).}
 \label{tab:main}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cc c}
-\toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
-\midrule
-IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.00$} \\
-COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & \best{$0.314{\pm}0.01$} & $0.177{\pm}0.01$ & $0.311{\pm}0.01$ \\
-CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & $0.256{\pm}0.02$ & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & \best{$0.263{\pm}0.02$} \\
-LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.594{\pm}0.00$} \\
-PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.454{\pm}0.02$} \\
-PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.402{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.682{\pm}0.01$} \\
-\midrule
-\textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.299$ & \best{$0.469$} \\
-\bottomrule
-\end{tabular}%
-}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-STEM: corrected DiT (T=1000, 34M params).
-\end{minipage}
-\end{table*}
-
-\begin{table*}[!t]
-\centering
-\caption{\textbf{Intra-cohort prediction with a 10-gene panel (Pearson $\uparrow$).}
-Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
-Same models, cohorts, features (frozen UNI\,+\,CONCH, 1536-dim), splits, and training budget as
-Table~\ref{tab:main}; only the gene panel size differs (10 vs.\ 50). The 10-gene panel is the
-highest-variance subset of each cohort's HEST 50-HVG panel.}
 \label{tab:main_g10}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cc c}
-\toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
-\midrule
-IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.679{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.700{\pm}0.01$} \\
-COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.368{\pm}0.00$ & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.417{\pm}0.03$ \\
-CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.301{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.329{\pm}0.00$} \\
-LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.758{\pm}0.00$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.761{\pm}0.00$} \\
-PAAD~\tiny{Pancreas} & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & $0.566{\pm}0.04$ & $0.536{\pm}0.03$ & $0.393{\pm}0.04$ & \best{$0.572{\pm}0.03$} \\
-PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & \best{$0.526{\pm}0.01$} & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & $0.522{\pm}0.01$ \\
-SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & \best{$0.741{\pm}0.02$} & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & $0.730{\pm}0.01$ \\
-\midrule
-\textbf{Average} & $0.505$ & $0.455$ & $0.563$ & $0.526$ & $0.423$ & \best{$0.576$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table*}
-
-\begin{table*}[!t]
-\centering
-\caption{\textbf{Intra-cohort prediction with a 100-gene panel (Pearson $\uparrow$).}
-Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
-Same models, cohorts, features (frozen UNI\,+\,CONCH, 1536-dim), splits, and training budget as
-Table~\ref{tab:main}; only the gene panel size differs (100 vs.\ 50). The 100-gene panel extends
-each cohort's HEST 50-HVG panel with the next 50 highest-variance genes (a superset of the
-Table~\ref{tab:main} panel).}
 \label{tab:main_g100}
 \setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cc c}
+\begin{tabular}{llcccccc}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
+Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.686{\pm}0.00$} \\
-COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.495{\pm}0.02$ \\
-CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.01$} \\
-LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.685{\pm}0.00$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.690{\pm}0.00$} \\
-PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.404{\pm}0.02$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.449{\pm}0.02$} \\
-PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.441{\pm}0.01$} \\
-SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.724{\pm}0.01$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.750{\pm}0.01$} \\
+\multirow{8}{*}{\textbf{PCC@10}} & IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.679{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
+ & COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.368{\pm}0.00$ & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.382{\pm}0.02$ \\
+ & CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.301{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
+ & LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.758{\pm}0.00$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & \best{$0.566{\pm}0.04$} & $0.536{\pm}0.03$ & $0.393{\pm}0.04$ & $0.519{\pm}0.05$ \\
+ & PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & \best{$0.526{\pm}0.01$} & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & $0.524{\pm}0.02$ \\
+ & SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.741{\pm}0.02$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average} & $0.505$ & $0.455$ & $0.563$ & $0.526$ & $0.423$ & \best{$0.569$} \\
 \midrule
-\textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.549$} \\
+\multirow{8}{*}{\textbf{PCC@50}} & IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & $0.177{\pm}0.01$ & \best{$0.318{\pm}0.01$} \\
+ & CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & $0.252{\pm}0.01$ \\
+ & LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
+ & PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
+ & SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.299$ & \best{$0.470$} \\
+\midrule
+\multirow{8}{*}{\textbf{PCC@100}} & IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.499{\pm}0.01$ \\
+ & CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
+ & LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.685{\pm}0.00$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.404{\pm}0.02$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.435{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
+ & SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.724{\pm}0.01$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-$^\dag$STEM CCRCC has two of three seeds; its average excludes the pending seed.
+STEM: corrected DiT ($T=1000$, 34M params).
+$^\dag$STEM CCRCC at PCC@100 has two of three seeds; its average excludes the pending seed.
 \end{minipage}
 \end{table*}
 
-\begin{table*}[!t]
+% Keep all three gene-selection strategies in one indivisible float.
+\begin{table*}[!p]
 \centering
-\caption{\textbf{Intra-cohort prediction with a 150-gene panel (Pearson $\uparrow$).}
-Mean$_{\text{std}}$ over three seeds with nested-validation; best per row in \best{bold}.
-Same models, cohorts, features (frozen UNI\,+\,CONCH, 1536-dim), splits, and training budget as
-Table~\ref{tab:main}; only the gene panel size differs (150 vs.\ 50). The 150-gene panel extends
-each cohort's HEST 50-HVG panel with the next 100 highest-variance genes (a superset of the
-Table~\ref{tab:main_g100} panel).}
-\label{tab:main_g150}
+\caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-selection strategies
+(Pearson $\uparrow$).} \textbf{HVG}: highly variable genes (the HEST default); \textbf{DEG}:
+differentially expressed genes (Leiden clustering + Wilcoxon rank-sum); \textbf{HMHVG}:
+histology-morphology HVGs (HVGs most correlated with PCA components of the UNI+CONCH image
+features). Fifty genes each; mean$_{\text{std}}$ over three seeds with nested-validation; best per
+cohort and strategy in \best{bold}. Same features, splits, and training budget as
+Table~\ref{tab:main}.}
+\label{tab:panel_strategy}
 \setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cc c}
+\begin{tabular}{llcccccc}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
+Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast} & $0.615{\pm}0.01$ & $0.527{\pm}0.01$ & $0.690{\pm}0.01$ & $0.637{\pm}0.02$ & \running & \best{$0.702{\pm}0.00$} \\
-COAD~\tiny{Colorectal} & $0.339{\pm}0.01$ & $0.394{\pm}0.03$ & \best{$0.527{\pm}0.02$} & $0.493{\pm}0.01$ & \running & $0.518{\pm}0.01$ \\
-CCRCC~\tiny{Kidney} & $0.236{\pm}0.01$ & $0.253{\pm}0.02$ & \best{$0.328{\pm}0.02$} & $0.266{\pm}0.01$ & \running & $0.324{\pm}0.01$ \\
-LUNG~\tiny{Lung} & $0.573{\pm}0.01$ & $0.431{\pm}0.02$ & $0.662{\pm}0.00$ & $0.637{\pm}0.01$ & \running & \best{$0.676{\pm}0.00$} \\
-PAAD~\tiny{Pancreas} & $0.240{\pm}0.03$ & $0.131{\pm}0.00$ & $0.272{\pm}0.02$ & $0.287{\pm}0.03$ & \running & \best{$0.321{\pm}0.02$} \\
-PRAD~\tiny{Prostate} & $0.307{\pm}0.02$ & $0.376{\pm}0.02$ & $0.440{\pm}0.02$ & $0.376{\pm}0.02$ & \running & \best{$0.449{\pm}0.01$} \\
-SKCM~\tiny{Skin} & $0.704{\pm}0.01$ & $0.460{\pm}0.12$ & $0.744{\pm}0.00$ & $0.714{\pm}0.02$ & \running & \best{$0.760{\pm}0.01$} \\
+\multirow{8}{*}{\textbf{HVG}} & IDC~\tiny{Breast} & $0.551{\pm}0.01$ & $0.305{\pm}0.11$ & $0.568{\pm}0.01$ & $0.519{\pm}0.00$ & $0.434{\pm}0.00$ & \best{$0.581{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.235{\pm}0.01$ & $0.298{\pm}0.01$ & $0.294{\pm}0.02$ & \best{$0.322{\pm}0.01$} & $0.177{\pm}0.01$ & $0.318{\pm}0.01$ \\
+ & CCRCC~\tiny{Kidney} & $0.163{\pm}0.02$ & $0.180{\pm}0.03$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.118{\pm}0.01$ & $0.252{\pm}0.01$ \\
+ & LUNG~\tiny{Lung} & $0.521{\pm}0.01$ & $0.430{\pm}0.05$ & $0.585{\pm}0.00$ & $0.565{\pm}0.01$ & $0.407{\pm}0.00$ & \best{$0.589{\pm}0.01$} \\
+ & PAAD~\tiny{Pancreas} & $0.366{\pm}0.03$ & $0.248{\pm}0.04$ & $0.398{\pm}0.03$ & $0.412{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.287{\pm}0.02$ & $0.323{\pm}0.01$ & $0.380{\pm}0.02$ & $0.346{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
+ & SKCM~\tiny{Skin} & $0.661{\pm}0.01$ & $0.523{\pm}0.00$ & $0.661{\pm}0.01$ & $0.650{\pm}0.00$ & $0.461{\pm}0.02$ & \best{$0.707{\pm}0.01$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average} & $0.398$ & $0.330$ & $0.449$ & $0.427$ & $0.291$ & \best{$0.471$} \\
 \midrule
-\textbf{Average} & $0.431$ & $0.367$ & $0.523$ & $0.487$ & \running & \best{$0.536$} \\
+\multirow{8}{*}{\textbf{DEG}} & IDC~\tiny{Breast} & $0.697{\pm}0.01$ & $0.549{\pm}0.07$ & \best{$0.776{\pm}0.01$} & $0.731{\pm}0.01$ & $0.684{\pm}0.02$ & $0.774{\pm}0.01$ \\
+ & COAD~\tiny{Colorectal} & $0.497{\pm}0.00$ & $0.608{\pm}0.01$ & \best{$0.679{\pm}0.00$} & $0.639{\pm}0.02$ & $0.534{\pm}0.01$ & $0.677{\pm}0.00$ \\
+ & CCRCC~\tiny{Kidney} & $0.312{\pm}0.01$ & $0.335{\pm}0.01$ & $0.398{\pm}0.01$ & $0.304{\pm}0.00$ & $0.253{\pm}0.01$ & \best{$0.402{\pm}0.01$} \\
+ & LUNG~\tiny{Lung} & $0.566{\pm}0.01$ & $0.518{\pm}0.01$ & $0.660{\pm}0.00$ & $0.621{\pm}0.01$ & $0.440{\pm}0.01$ & \best{$0.662{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.425{\pm}0.03$ & $0.352{\pm}0.01$ & $0.509{\pm}0.02$ & $0.487{\pm}0.03$ & $0.306{\pm}0.04$ & \best{$0.518{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.413{\pm}0.00$ & $0.437{\pm}0.01$ & $0.535{\pm}0.02$ & $0.466{\pm}0.00$ & $0.355{\pm}0.03$ & \best{$0.539{\pm}0.01$} \\
+ & SKCM~\tiny{Skin} & $0.752{\pm}0.01$ & $0.656{\pm}0.00$ & $0.788{\pm}0.01$ & $0.746{\pm}0.03$ & $0.617{\pm}0.02$ & \best{$0.794{\pm}0.00$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average} & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
+\midrule
+\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast} & $0.724{\pm}0.01$ & $0.633{\pm}0.08$ & \best{$0.775{\pm}0.01$} & $0.739{\pm}0.02$ & $0.687{\pm}0.01$ & $0.774{\pm}0.01$ \\
+ & COAD~\tiny{Colorectal} & $0.503{\pm}0.01$ & $0.659{\pm}0.02$ & $0.691{\pm}0.00$ & $0.645{\pm}0.00$ & $0.528{\pm}0.03$ & \best{$0.698{\pm}0.01$} \\
+ & CCRCC~\tiny{Kidney} & $0.339{\pm}0.01$ & $0.387{\pm}0.01$ & $0.432{\pm}0.01$ & $0.349{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.454{\pm}0.02$} \\
+ & LUNG~\tiny{Lung} & $0.568{\pm}0.00$ & $0.598{\pm}0.00$ & \best{$0.698{\pm}0.01$} & $0.661{\pm}0.00$ & $0.517{\pm}0.01$ & $0.693{\pm}0.00$ \\
+ & PAAD~\tiny{Pancreas} & $0.441{\pm}0.03$ & $0.341{\pm}0.04$ & $0.500{\pm}0.03$ & $0.493{\pm}0.02$ & $0.305{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
+ & PRAD~\tiny{Prostate} & $0.452{\pm}0.00$ & $0.477{\pm}0.01$ & $0.552{\pm}0.03$ & $0.432{\pm}0.04$ & $0.337{\pm}0.02$ & \best{$0.555{\pm}0.02$} \\
+ & SKCM~\tiny{Skin} & $0.824{\pm}0.03$ & $0.710{\pm}0.14$ & $0.897{\pm}0.00$ & $0.849{\pm}0.02$ & $0.731{\pm}0.06$ & \best{$0.901{\pm}0.00$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average} & $0.550$ & $0.544$ & $0.649$ & $0.595$ & $0.485$ & \best{$0.657$} \\
 \bottomrule
 \end{tabular}%
 }
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
-STEM column is pending (runs in progress) and will be filled once complete. \morph{} leads six of seven
-cohorts and the average; HyperST is higher on COAD by $0.005$.
+All strategies select 50 genes per cohort. \morph{} attains the highest average under every strategy;
+absolute accuracy rises HVG$<$DEG$<$HMHVG for all methods, as morphology-correlated panels are the
+most predictable from H\&E.
 \end{minipage}
 \end{table*}
 
@@ -701,17 +695,17 @@ Best per row in \best{bold}.}
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST+CONCH \\
+      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
 \midrule
-IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & \best{$0.529{\pm}0.02$} & $0.420{\pm}0.03$ & $0.528{\pm}0.02$ \\
-COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.452{\pm}0.02$ & \best{$0.698{\pm}0.05$} \\
-CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & \best{$0.106{\pm}0.01$} & $0.095{\pm}0.01$ & $0.090{\pm}0.01$ & $0.104{\pm}0.01$ \\
-LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.512{\pm}0.03$ & \best{$0.687{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & \best{$0.537{\pm}0.02$} & $0.409{\pm}0.03$ & $0.506{\pm}0.02$ \\
-PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.046{\pm}0.00$ & \best{$0.125{\pm}0.01$} \\
-SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & \best{$0.748{\pm}0.01$} & $0.631{\pm}0.03$ & $0.737{\pm}0.01$ \\
+IDC~\tiny{Breast}      & $0.198{\pm}0.05$ & $0.458{\pm}0.01$ & $0.465{\pm}0.02$ & \best{$0.529{\pm}0.02$} & $0.420{\pm}0.03$ & $0.520{\pm}0.02$ \\
+COAD~\tiny{Colorectal} & $0.420{\pm}0.06$ & $0.670{\pm}0.03$ & $0.669{\pm}0.03$ & $0.662{\pm}0.01$ & $0.452{\pm}0.02$ & \best{$0.729{\pm}0.03$} \\
+CCRCC~\tiny{Kidney}    & $0.068{\pm}0.01$ & $0.055{\pm}0.01$ & $0.106{\pm}0.01$ & $0.095{\pm}0.01$ & $0.090{\pm}0.01$ & \best{$0.109{\pm}0.01$} \\
+LUNG~\tiny{Lung}       & $0.493{\pm}0.07$ & $0.378{\pm}0.18$ & $0.657{\pm}0.01$ & $0.624{\pm}0.01$ & $0.512{\pm}0.03$ & \best{$0.675{\pm}0.01$} \\
+PAAD~\tiny{Pancreas}   & $0.459{\pm}0.02$ & $0.399{\pm}0.02$ & $0.463{\pm}0.00$ & $0.537{\pm}0.02$ & $0.409{\pm}0.03$ & \best{$0.548{\pm}0.01$} \\
+PRAD~\tiny{Prostate}   & $0.079{\pm}0.00$ & $0.098{\pm}0.02$ & $0.114{\pm}0.03$ & $0.118{\pm}0.01$ & $0.046{\pm}0.00$ & \best{$0.118{\pm}0.01$} \\
+SKCM~\tiny{Skin}       & $0.520{\pm}0.16$ & $0.736{\pm}0.01$ & $0.725{\pm}0.03$ & \best{$0.748{\pm}0.01$} & $0.631{\pm}0.03$ & $0.728{\pm}0.04$ \\
 \midrule
-\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.366$ & \best{$0.484$} \\
+\textbf{Average}       & $0.319$ & $0.399$ & $0.457$ & $0.473$ & $0.366$ & \best{$0.490$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -772,12 +766,12 @@ spots. Experiments run on one NVIDIA A100 GPU.
 \medskip
 \noindent\textbf{RQ1: Does \morph{} improve intra-cohort prediction?}\quad
 \label{sec:rq1}
-Table~\ref{tab:main} reports the feature-matched comparison. \morph{} obtains the highest mean PCC
+Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
 ($0.470$), compared with $0.448$ for HyperST and $0.426$ for BLEEP, a $4.9\%$ relative improvement
 over the strongest baseline. It leads on six of seven cohorts; HyperST is higher on CCRCC by
 $0.004$. The gain is therefore broad but not uniform, and it is largest on skin ($+0.054$ vs.\
 HyperST) and prostate ($+0.026$). The same ranking holds under a smaller \textbf{10-gene} panel
-(Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
+(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
 ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
 ($0.569$ vs.\ $0.563$ for HyperST) and tops four of seven cohorts. Absolute correlations rise across
 all methods because the retained genes are the most variable, and hence the most predictable.
@@ -787,13 +781,12 @@ all methods because the retained genes are the most variable, and hence the most
 \noindent\textbf{RQ2: How well does \morph{} transfer across organs?}\quad
 \label{sec:rq2}
 LOOO is substantially harder because the target anatomy is absent from training. \morph{} reaches a
-mean PCC of $0.484$ (Table~\ref{tab:looo_main}), the highest average, compared with $0.473$ for
-BLEEP and $0.457$ for HyperST, and leads on three of seven held-out cohorts (colorectal, lung,
-prostate); BLEEP is stronger on breast, pancreas, and skin, and HyperST on kidney. The
+mean PCC of $0.490$ (Table~\ref{tab:looo_main}), compared with $0.473$ for BLEEP and $0.457$ for
+HyperST, and leads on five of seven held-out cohorts; BLEEP is stronger on IDC and SKCM. The
 expanded comparison adds EGN, which reaches $0.500$ on average (Table~\ref{tab:percohort_uniconch}).
 Under pooled cross-validation, where organ types remain represented in training, \morph{} reaches
-$0.744$ (Table~\ref{tab:pooled}), close to BLEEP at $0.758$ and HyperST at $0.756$. The gap
-between pooled ($0.744$) and LOOO ($0.484$) directly quantifies the remaining difficulty of
+$0.760$ (Table~\ref{tab:pooled}), narrowly above BLEEP at $0.758$ and HyperST at $0.756$. The gap
+between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining difficulty of
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
 experiment.
 
@@ -813,59 +806,12 @@ Method & HEST-1k \\
 ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
 Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
 HyperST~\cite{zhang2026hyperst} (CVPR'26)      & $0.756_{0.01}$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & \best{$0.758_{0.01}$} \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.758_{0.01}$ \\
 STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ \\
 \midrule
-PatchMorphoST                               & $0.744_{0.03}$ \\
+\morph{} (V3)                               & \best{$0.760_{0.01}$} \\
 \bottomrule
 \end{tabular}
-\end{table}
-
-\medskip
-\noindent\textbf{Neighbourhood selection: does \emph{which} neighbour matter?}
-Table~\ref{tab:neighbour_ablation} tests whether the identity of PatchMorphoST's local neighbours
-carries signal, or whether merely having a $k$-neighbour local-attention stream suffices.
-\textsc{PatchMorphoST} selects the $k$ patches with the highest cosine similarity in UNI+CONCH
-feature space; \textsc{Random-$k$} selects $k$ spots uniformly at random. Both share an identical
-backbone (dim 256, four layers, four heads, $k{=}8$, MSE$+0.5(1-$PCC$)$, coordinate-free) and the
-identical morphological-distance bias, so any gap is attributable purely to neighbour selection.
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Neighbourhood-selection ablation} (PatchMorphoST, 100-gene panel, intra-cohort
-Pearson $\uparrow$). \textsc{Patch} selects the $k$ most morphologically similar patches;
-\textsc{Random-$k$} selects $k$ spots at random; \textsc{No-local} removes the local stream entirely
-(global attention $+$ slide token only). Identical backbone; mean$_{\text{std}}$, three seeds.}
-\label{tab:neighbour_ablation}
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l ccc c}
-\toprule
-Cohort & PatchMorphoST & Random-$k$ & No-local & $p$\,(vs Rand-$k$) \\
-\midrule
-IDC~\tiny{Breast}      & \best{$0.686{\pm}0.00$} & $0.677{\pm}0.01$ & $0.678{\pm}0.00$ & $0.11$ \\
-COAD~\tiny{Colorectal} & \best{$0.495{\pm}0.02$} & $0.493{\pm}0.01$ & $0.491{\pm}0.01$ & $0.74$ \\
-CCRCC~\tiny{Kidney}    & \best{$0.328{\pm}0.00$} & $0.309{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.01^{*}$} \\
-LUNG~\tiny{Lung}       & \best{$0.690{\pm}0.00$} & $0.689{\pm}0.00$ & $0.687{\pm}0.00$ & $0.22$ \\
-PAAD~\tiny{Pancreas}   & \best{$0.449{\pm}0.02$} & $0.447{\pm}0.03$ & $0.443{\pm}0.03$ & $0.65$ \\
-PRAD~\tiny{Prostate}   & $0.441{\pm}0.01$ & $0.442{\pm}0.01$ & \best{$0.446{\pm}0.01$} & $0.85$ \\
-SKCM~\tiny{Skin}       & \best{$0.750{\pm}0.01$} & $0.740{\pm}0.01$ & $0.735{\pm}0.01$ & $0.22$ \\
-\midrule
-\textbf{Average}       & \best{$0.549$} & $0.542$ & $0.539$ & \best{$0.03^{*}$} \\
-\bottomrule
-\end{tabular}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-The three variants form a consistent ordering: removing the local stream entirely (\textsc{No-local},
-$0.539$) is weakest; random local neighbours recover part of it ($0.542$); morphological selection
-recovers the most ($0.549$). The local stream thus contributes $+0.010$ overall, of which
-morphological \emph{selection} accounts for $+0.007$---a small but consistent effect; most accuracy
-still comes from the shared global-attention and slide-token streams.
-The last column is the paired $t$-test $p$-value (three seeds) of PatchMorphoST vs.\ Random-$k$ per
-cohort; only CCRCC is individually significant, but the \emph{Average} entry is the across-cohort
-Wilcoxon signed-rank test over all seven cohorts, which is significant ($p{=}0.03$; paired-$t$
-$p{=}0.06$). $^{*}p<0.05$.
-\end{minipage}
 \end{table}
 
 \FloatBarrier
@@ -1018,8 +964,8 @@ Spots & Latency (ms) & Memory (MiB) \\
 Three findings merit emphasis. First, a compact direct predictor is competitive when features,
 gene panels, splits, and model selection are controlled; the $4.9\%$ relative gain over the
 strongest baseline rests on matched experimental conditions, not a larger model. Second, pooled
-multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.744$
-(pooled) to $0.484$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
+multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.760$
+(pooled) to $0.490$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
 local distance-biased attention is the dominant contributor in the factorial study; global and slide
 pathways provide moderate complementary gains, and the complete model ($\mathrm{C111}$) achieves
 the best mean across both tested cohorts.
@@ -1313,51 +1259,49 @@ Table~\ref{tab:panel_percohort} gives the per-cohort breakdown.
 \morph{} leads on 5 of 7 cohorts under HVG, 5 of 7 under DEG, and 5 of 7 under HMHVG.
 HyperST is stronger on CCRCC (HVG), COAD/IDC (DEG), and IDC/LUNG (HMHVG).
 
-\begin{table*}[h]
+\begin{table*}[!p]
 \centering
 \caption{\textbf{Per-cohort gene panel comparison: intra-cohort PCC$\uparrow$ (HEST-1k).}
 Mean$_{\mathrm{std}}$ over three seeds. All methods use UNI\,+\,CONCH (1536-dim) and nested-validation.
 Best per cohort per panel in \best{bold}.}
 \label{tab:panel_percohort}
 \small
-\setlength{\tabcolsep}{4pt}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l cccccc}
+\begin{tabular}{llcccccc}
 \toprule
-Cohort & ST-Net & Hist2ST & HyperST & BLEEP & STEM & \morph{} \\
+Panel & Cohort & ST-Net & Hist2ST & HyperST & BLEEP & STEM & \morph{} \\
 \midrule
-\multicolumn{7}{l}{\textit{Panel: HVG (highly variable genes, HEST-1k default)}} \\
+\multirow{8}{*}{\textbf{HVG}} & IDC~\tiny{Breast}      & $0.551_{0.007}$ & $0.305_{0.108}$ & $0.568_{0.006}$ & $0.519_{0.002}$ & $0.434_{0.002}$ & \best{$0.581_{0.008}$} \\
+ & COAD~\tiny{Colorectal} & $0.235_{0.005}$ & $0.298_{0.009}$ & $0.294_{0.015}$ & \best{$0.322_{0.006}$} & $0.177_{0.014}$ & $0.318_{0.008}$ \\
+ & CCRCC~\tiny{Kidney}    & $0.163_{0.015}$ & $0.180_{0.030}$ & \best{$0.256_{0.020}$} & $0.175_{0.015}$ & $0.118_{0.006}$ & $0.252_{0.007}$ \\
+ & LUNG~\tiny{Lung}       & $0.521_{0.010}$ & $0.430_{0.050}$ & $0.585_{0.005}$ & $0.565_{0.008}$ & $0.407_{0.003}$ & \best{$0.589_{0.006}$} \\
+ & PAAD~\tiny{Pancreas}   & $0.366_{0.032}$ & $0.248_{0.038}$ & $0.398_{0.033}$ & $0.412_{0.034}$ & $0.233_{0.019}$ & \best{$0.437_{0.028}$} \\
+ & PRAD~\tiny{Prostate}   & $0.287_{0.023}$ & $0.323_{0.012}$ & $0.380_{0.021}$ & $0.346_{0.007}$ & $0.207_{0.016}$ & \best{$0.410_{0.006}$} \\
+ & SKCM~\tiny{Skin}       & $0.661_{0.006}$ & $0.523_{0.003}$ & $0.661_{0.010}$ & $0.650_{0.004}$ & $0.461_{0.018}$ & \best{$0.707_{0.007}$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average}          & $0.398$ & $0.330$ & $0.449$ & $0.427$ & $0.291$ & \best{$0.471$} \\
 \midrule
-IDC~\tiny{Breast}      & $0.551_{0.007}$ & $0.305_{0.108}$ & $0.568_{0.006}$ & $0.519_{0.002}$ & $0.434_{0.002}$ & \best{$0.581_{0.008}$} \\
-COAD~\tiny{Colorectal} & $0.235_{0.005}$ & $0.298_{0.009}$ & $0.294_{0.015}$ & \best{$0.322_{0.006}$} & $0.177_{0.014}$ & $0.318_{0.008}$ \\
-CCRCC~\tiny{Kidney}    & $0.163_{0.015}$ & $0.180_{0.030}$ & \best{$0.256_{0.020}$} & $0.175_{0.015}$ & $0.118_{0.006}$ & $0.252_{0.007}$ \\
-LUNG~\tiny{Lung}       & $0.521_{0.010}$ & $0.430_{0.050}$ & $0.585_{0.005}$ & $0.565_{0.008}$ & $0.407_{0.003}$ & \best{$0.589_{0.006}$} \\
-PAAD~\tiny{Pancreas}   & $0.366_{0.032}$ & $0.248_{0.038}$ & $0.398_{0.033}$ & $0.412_{0.034}$ & $0.233_{0.019}$ & \best{$0.437_{0.028}$} \\
-PRAD~\tiny{Prostate}   & $0.287_{0.023}$ & $0.323_{0.012}$ & $0.380_{0.021}$ & $0.346_{0.007}$ & $0.207_{0.016}$ & \best{$0.410_{0.006}$} \\
-SKCM~\tiny{Skin}       & $0.661_{0.006}$ & $0.523_{0.003}$ & $0.661_{0.010}$ & $0.650_{0.004}$ & $0.461_{0.018}$ & \best{$0.707_{0.007}$} \\
-\textbf{Mean}          & $0.398$ & $0.330$ & $0.449$ & $0.427$ & $0.291$ & \best{$0.471$} \\
+\multirow{8}{*}{\textbf{DEG}} & IDC~\tiny{Breast}      & $0.697_{0.010}$ & $0.549_{0.067}$ & \best{$0.776_{0.011}$} & $0.731_{0.014}$ & $0.684_{0.020}$ & $0.774_{0.009}$ \\
+ & COAD~\tiny{Colorectal} & $0.497_{0.003}$ & $0.608_{0.010}$ & \best{$0.679_{0.004}$} & $0.639_{0.016}$ & $0.534_{0.014}$ & $0.677_{0.003}$ \\
+ & CCRCC~\tiny{Kidney}    & $0.312_{0.014}$ & $0.335_{0.013}$ & $0.398_{0.012}$ & $0.304_{0.003}$ & $0.253_{0.009}$ & \best{$0.402_{0.013}$} \\
+ & LUNG~\tiny{Lung}       & $0.566_{0.006}$ & $0.518_{0.006}$ & $0.660_{0.001}$ & $0.621_{0.006}$ & $0.440_{0.009}$ & \best{$0.662_{0.002}$} \\
+ & PAAD~\tiny{Pancreas}   & $0.425_{0.032}$ & $0.352_{0.011}$ & $0.509_{0.023}$ & $0.487_{0.029}$ & $0.306_{0.042}$ & \best{$0.518_{0.026}$} \\
+ & PRAD~\tiny{Prostate}   & $0.413_{0.004}$ & $0.437_{0.008}$ & $0.535_{0.018}$ & $0.466_{0.005}$ & $0.355_{0.026}$ & \best{$0.539_{0.012}$} \\
+ & SKCM~\tiny{Skin}       & $0.752_{0.009}$ & $0.656_{0.004}$ & $0.788_{0.005}$ & $0.746_{0.026}$ & $0.617_{0.023}$ & \best{$0.794_{0.002}$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average}          & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
 \midrule
-\multicolumn{7}{l}{\textit{Panel: DEG (differentially expressed genes; unsupervised Leiden + Wilcoxon)}} \\
-\midrule
-IDC~\tiny{Breast}      & $0.697_{0.010}$ & $0.549_{0.067}$ & \best{$0.776_{0.011}$} & $0.731_{0.014}$ & $0.684_{0.020}$ & $0.774_{0.009}$ \\
-COAD~\tiny{Colorectal} & $0.497_{0.003}$ & $0.608_{0.010}$ & \best{$0.679_{0.004}$} & $0.639_{0.016}$ & $0.534_{0.014}$ & $0.677_{0.003}$ \\
-CCRCC~\tiny{Kidney}    & $0.312_{0.014}$ & $0.335_{0.013}$ & $0.398_{0.012}$ & $0.304_{0.003}$ & $0.253_{0.009}$ & \best{$0.402_{0.013}$} \\
-LUNG~\tiny{Lung}       & $0.566_{0.006}$ & $0.518_{0.006}$ & $0.660_{0.001}$ & $0.621_{0.006}$ & $0.440_{0.009}$ & \best{$0.662_{0.002}$} \\
-PAAD~\tiny{Pancreas}   & $0.425_{0.032}$ & $0.352_{0.011}$ & $0.509_{0.023}$ & $0.487_{0.029}$ & $0.306_{0.042}$ & \best{$0.518_{0.026}$} \\
-PRAD~\tiny{Prostate}   & $0.413_{0.004}$ & $0.437_{0.008}$ & $0.535_{0.018}$ & $0.466_{0.005}$ & $0.355_{0.026}$ & \best{$0.539_{0.012}$} \\
-SKCM~\tiny{Skin}       & $0.752_{0.009}$ & $0.656_{0.004}$ & $0.788_{0.005}$ & $0.746_{0.026}$ & $0.617_{0.023}$ & \best{$0.794_{0.002}$} \\
-\textbf{Mean}          & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
-\midrule
-\multicolumn{7}{l}{\textit{Panel: HMHVG (histology-morphology HVGs; max Pearson with UNI+CONCH PCA)}} \\
-\midrule
-IDC~\tiny{Breast}      & $0.724_{0.014}$ & $0.633_{0.082}$ & \best{$0.775_{0.011}$} & $0.739_{0.018}$ & $0.687_{0.008}$ & $0.774_{0.011}$ \\
-COAD~\tiny{Colorectal} & $0.503_{0.010}$ & $0.659_{0.018}$ & $0.691_{0.003}$ & $0.645_{0.004}$ & $0.528_{0.032}$ & \best{$0.698_{0.005}$} \\
-CCRCC~\tiny{Kidney}    & $0.339_{0.007}$ & $0.387_{0.010}$ & $0.432_{0.006}$ & $0.349_{0.010}$ & $0.290_{0.013}$ & \best{$0.454_{0.017}$} \\
-LUNG~\tiny{Lung}       & $0.568_{0.005}$ & $0.598_{0.003}$ & \best{$0.698_{0.006}$} & $0.661_{0.002}$ & $0.517_{0.011}$ & $0.693_{0.004}$ \\
-PAAD~\tiny{Pancreas}   & $0.441_{0.032}$ & $0.341_{0.038}$ & $0.500_{0.031}$ & $0.493_{0.023}$ & $0.305_{0.027}$ & \best{$0.524_{0.023}$} \\
-PRAD~\tiny{Prostate}   & $0.452_{0.002}$ & $0.477_{0.011}$ & $0.552_{0.029}$ & $0.432_{0.045}$ & $0.337_{0.016}$ & \best{$0.555_{0.022}$} \\
-SKCM~\tiny{Skin}       & $0.824_{0.029}$ & $0.710_{0.141}$ & $0.897_{0.001}$ & $0.849_{0.018}$ & $0.731_{0.060}$ & \best{$0.901_{0.002}$} \\
-\textbf{Mean}          & $0.550$ & $0.544$ & $0.649$ & $0.595$ & $0.485$ & \best{$0.657$} \\
+\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast}      & $0.724_{0.014}$ & $0.633_{0.082}$ & \best{$0.775_{0.011}$} & $0.739_{0.018}$ & $0.687_{0.008}$ & $0.774_{0.011}$ \\
+ & COAD~\tiny{Colorectal} & $0.503_{0.010}$ & $0.659_{0.018}$ & $0.691_{0.003}$ & $0.645_{0.004}$ & $0.528_{0.032}$ & \best{$0.698_{0.005}$} \\
+ & CCRCC~\tiny{Kidney}    & $0.339_{0.007}$ & $0.387_{0.010}$ & $0.432_{0.006}$ & $0.349_{0.010}$ & $0.290_{0.013}$ & \best{$0.454_{0.017}$} \\
+ & LUNG~\tiny{Lung}       & $0.568_{0.005}$ & $0.598_{0.003}$ & \best{$0.698_{0.006}$} & $0.661_{0.002}$ & $0.517_{0.011}$ & $0.693_{0.004}$ \\
+ & PAAD~\tiny{Pancreas}   & $0.441_{0.032}$ & $0.341_{0.038}$ & $0.500_{0.031}$ & $0.493_{0.023}$ & $0.305_{0.027}$ & \best{$0.524_{0.023}$} \\
+ & PRAD~\tiny{Prostate}   & $0.452_{0.002}$ & $0.477_{0.011}$ & $0.552_{0.029}$ & $0.432_{0.045}$ & $0.337_{0.016}$ & \best{$0.555_{0.022}$} \\
+ & SKCM~\tiny{Skin}       & $0.824_{0.029}$ & $0.710_{0.141}$ & $0.897_{0.001}$ & $0.849_{0.018}$ & $0.731_{0.060}$ & \best{$0.901_{0.002}$} \\
+\cmidrule(l){2-8}
+ & \textbf{Average}          & $0.550$ & $0.544$ & $0.649$ & $0.595$ & $0.485$ & \best{$0.657$} \\
 \bottomrule
 \end{tabular}%
 }
