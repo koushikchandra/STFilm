@@ -151,23 +151,6 @@ ablation on SKCM and LUNG identifies local attention as the dominant contributor
 the highest mean. \morph{} uses $4.88$M parameters and predicts a slide with 10,000 spots in
 $64.7$\,ms on an A100.
 
-\noindent\textbf{Contributions.}
-Our contributions are threefold:
-\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
-  \item We introduce \morph{}, a multi-scale spatial transformer that fuses local, slide-wide, and
-  slide-summary context in every layer using \emph{continuous} pairwise-distance RBF features as the
-  sole coordinate signal. This is the first ST prediction model to use continuous inter-spot distances
-  rather than binary adjacency, making it both coordinate-frame invariant and distance-expressive: the
-  attention bias shifts continuously with proximity, unlike uniform neighbor aggregation in
-  binary-adjacency baselines.
-  \item We conduct a rotation-sensitivity experiment across all evaluated baselines on real Visium data,
-  showing that absolute-position models (Hist2ST: PCC $=0.51$) are strongly frame-dependent, while
-  both binary-adjacency and \morph{} achieve PCC $\geq0.997$, and clarifying that the distinction
-  between them lies in distance expressiveness rather than invariance alone.
-  \item We provide a controlled HEST-1k evaluation across within-cohort, pooled, and unseen-organ
-  settings, together with factorial context ablations and measurements of computational efficiency.
-\end{itemize}
-
 \begin{table}[t]
 \centering
 \caption{\textbf{Architectural components across representative H\&E$\to$ST predictors.}
@@ -195,17 +178,27 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{table}
 
 \medskip
-\noindent We organize our study around four research questions:
-\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
-  \item \textbf{RQ1 (Accuracy).} Does \morph{} match or exceed existing predictors for intra-cohort
-  H\&E$\to$ST prediction, across gene-panel sizes (10/50/100) and selection strategies (HVG, DEG, HMHVG)?
-  \item \textbf{RQ2 (Transfer).} How well does \morph{} generalize across organs under pooled
-  cross-validation and the stricter leave-one-organ-out (LOOO) setting?
-  \item \textbf{RQ3 (What matters).} Which factors actually drive accuracy---the frozen patch encoder,
-  the local/global/slide-level context streams, or how the spatial neighbourhood is defined?
-  \item \textbf{RQ4 (Structure).} Do \morph{}'s predictions preserve coherent spatial tissue structure
-  usable for downstream analysis, and at what computational cost?
-\end{itemize}
+\noindent We investigate five research questions: \textbf{RQ1 (Accuracy):} Does \morph{} match or
+exceed existing predictors for intra-cohort H\&E$\to$ST prediction across gene-panel sizes (10/50/100)
+and selection strategies (HVG, DEG, HMHVG)? \textbf{RQ2 (Transfer):} How well does \morph{} generalize
+across organs under pooled cross-validation and the stricter leave-one-organ-out (LOOO) setting?
+\textbf{RQ3 (What matters):} Which factors drive accuracy---the frozen patch encoder, the
+local/global/slide-level context streams, or the spatial-neighbourhood definition? \textbf{RQ4
+(Structure):} Do \morph{}'s predictions preserve coherent spatial tissue structure usable for downstream
+analysis? \textbf{RQ5 (Efficiency):} Is \morph{} computationally efficient for whole-slide prediction?
+
+\medskip
+\noindent\textbf{Contributions.} This work makes three contributions:
+\begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
+  \item We introduce \morph{}, a multi-scale spatial transformer that fuses local, slide-wide, and
+  slide-summary context in every layer using continuous pairwise-distance RBF features as its sole
+  coordinate signal, providing coordinate-frame invariance while retaining distance information.
+  \item We establish the value of this design through rotation-sensitivity tests, factorial context
+  ablations, and distance-encoding controls, identifying the components that drive accuracy.
+  \item To the best of our knowledge, we provide the first controlled pooled cross-organ evaluation
+  for histology-to-spatial-expression prediction, alongside intra-cohort and held-out-organ tests,
+  with matched features, gene panels, splits, baselines, and model-selection procedures.
+\end{enumerate}
 
 \iffalse
 \begin{figure*}[t]
@@ -391,45 +384,31 @@ all genes in one pass.}
 \section{Related Work}
 
 \noindent\textbf{Machine Learning Prediction of Gene Expression from Histology.}\quad
-ST-Net \cite{he2020stnet} established patch-level regression from histology to expression.
-HisToGene \cite{pang2021histogene} and Hist2ST \cite{zeng2022hist2st} subsequently introduced
-slide-level attention and spatial graphs, while TRIPLEX \cite{chung2024triplex} combines local,
-neighbourhood, and global morphology. BLEEP \cite{xie2023bleep} follows a different strategy: it
-aligns image and expression embeddings and retrieves expression from similar training examples.
-More recent models incorporate higher-order cellular interactions \cite{sun2026mctogene}, dual-path
-discrimination \cite{song2026genedml}, or hyperbolic cross-modal structure
-\cite{zhang2026hyperst}. M2OST \cite{wang2025m2ost} integrates multiscale image regions for
-many-to-one regression, whereas EGN \cite{yang2023egn} augments a patch predictor with retrieved
-exemplars. Because their original evaluations vary in features, gene panels, splits,
-and model-selection procedures, published scores do not by themselves isolate architectural gains.
-
-STEM \cite{zhu2025diffusion} frames expression inference as conditional generation rather than
-deterministic regression. This distinction is important: a generator can represent multiple
-expression profiles compatible with similar morphology, whereas \morph{} estimates one profile per
-spot. Our objective is therefore narrower. We ask whether an inexpensive point predictor can provide
-a strong accuracy and transfer baseline under a matched protocol; we do not claim to model biological
-uncertainty or the full conditional expression distribution.
+ST-Net~\cite{he2020stnet} established patch-level regression. Hist2ST~\cite{zeng2022hist2st}
+and HyperST~\cite{zhang2026hyperst} add spatial context, while BLEEP~\cite{xie2023bleep}
+aligns image and expression embeddings for cross-modal retrieval. STEM~\cite{zhu2025diffusion}
+instead treats expression prediction as conditional generation. These methods use different
+features, gene panels, splits, and selection procedures, so their published scores do not isolate
+architectural gains; our comparisons therefore use a matched protocol. MIST is a deterministic
+point predictor and does not model the full conditional expression distribution.
 
 \medskip
 \noindent\textbf{Geometric Structure and Coordinate Invariance.}\quad
 Spatial prediction depends on the coordinate representation supplied to a model. Absolute position
 embeddings can encode location within a particular coordinate frame, but their output may change
 when an equivalent tissue layout is translated, rotated, or reflected. Geometric networks address
-this issue by constructing interactions from relative quantities \cite{satorras2021egnn}. \morph{}
-uses an invariant construction in which coordinates enter its spatial pathway only through pairwise
-Euclidean distances. Because these distances are preserved by translations, rotations, and
-reflections, no transformed coordinate frames or prediction averaging are required. This guarantee
-applies to the spatial pathway for fixed histology features; it does not imply that the frozen image
-encoder is invariant to rotations of the image itself.
+this issue by constructing interactions from relative quantities \cite{satorras2021egnn}. MIST uses
+pairwise Euclidean distances, which are preserved by translations, rotations, and reflections. The
+guarantee applies to the spatial pathway for fixed histology features, not to rotations of the image
+encoder input.
 
 \medskip
 \noindent\textbf{Generalization across Samples and Organs.}\quad
-HEST-1k \cite{jaume2024hest} spans many cohorts and organs, yet its standard predictive benchmark is
-organized within cohorts. A model can therefore exploit organ-specific morphology, expression
-statistics, or acquisition effects. Cross-sample benchmarking also identifies distribution shift as
-a central challenge \cite{storm2025benchmark}. We separate two forms of multi-organ evaluation:
-pooled cross-validation holds out samples while retaining their organ types in training, whereas
-LOOO withholds an entire organ. The latter is a stricter test of anatomical transfer.
+HEST-1k \cite{jaume2024hest} spans many cohorts and organs, but within-cohort evaluation can
+organized within cohorts. A model can therefore exploit organ-specific morphology or acquisition
+effects. We therefore distinguish pooled cross-validation, which holds out samples while retaining
+their organ types in training, from LOOO, which withholds an entire organ and provides a stricter test
+of anatomical transfer.
 
 \medskip
 \noindent\textbf{Positioning of \morph{}.}
@@ -443,7 +422,11 @@ anatomical transfer, making the difficulty of organ shift directly measurable.
 
 \section{Method}
 
-\noindent\textbf{Problem Set-up.}\quad
+MIST maps frozen spot-level histology features and measured spot coordinates to a spatial gene
+expression map. Its method has three stages: coordinate-invariant distance encoding, a shared
+multi-context layer, and supervised prediction with a correlation-aware objective.
+
+\subsection{Problem Setup}
 For a slide with $N$ spots, let
 $\mathbf{F}=[\mathbf{f}_1,\ldots,\mathbf{f}_N]^\top\in\mathbb{R}^{N\times d_{\mathrm{in}}}$
 denote frozen pathology features and
@@ -456,7 +439,7 @@ test time. In the feature-matched main comparisons, $\mathbf{f}_i$ concatenates 
 \cite{chen2024uni} and CONCH \cite{lu2024conch} embeddings ($d_{\mathrm{in}}=1536$).
 
 \medskip
-\noindent\textbf{Continuous Distance Encoding.}\quad
+\subsection{Coordinate-Invariant Distance Encoding}
 We first compute the pairwise Euclidean distance matrix
 $D_{ij}=\lVert\mathbf{p}_i-\mathbf{p}_j\rVert_2$. For each spot $i$, we retain the indices
 $\mathcal{N}(i)$ and distances of its $k$ nearest neighbours, excluding the spot itself. Distances
@@ -468,8 +451,7 @@ are expanded into $M$ radial-basis features,
 where the fixed bandwidth parameters $\gamma_m$ are logarithmically spaced. These features influence
 attention weights but are never added to the spot embeddings as absolute positions.
 
-\begin{proposition}[Coordinate frame invariance]
-\label{prop:coordinate_invariance}
+\par\medskip\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Coordinate frame invariance):}\label{prop:coordinate_invariance}\par
 Let $R\in\mathbb{R}^{2\times2}$ be orthogonal, let $\mathbf{t}\in\mathbb{R}^{2}$, and define
 $\mathbf{P}'=\mathbf{P}R^\top+\mathbf{1}\mathbf{t}^\top$. For fixed histology features
 $\mathbf{F}$, the prediction is unchanged:
@@ -478,18 +460,17 @@ f_\theta(\mathbf{F},\mathbf{P}')=f_\theta(\mathbf{F},\mathbf{P}).
 \end{equation}
 Thus, the spatial pathway is invariant to translations, rotations, and reflections of the coordinate
 frame in exact arithmetic.
-\end{proposition}
 The guarantee concerns a change of coordinate frame with fixed histology features; it does not claim
 that the frozen image encoder is invariant to transformations of the histology image. The proof is in
 Appendix~\ref{app:formal_guarantees}.
-Note that binary $k$NN adjacency models (TRIPLEX, HyperST, M2OST) satisfy the same invariance
-property, since pairwise distances are also rotation-invariant. The distinguishing property of
+Note that binary $k$NN adjacency models satisfy the same invariance property, since pairwise
+distances are also rotation-invariant. The distinguishing property of
 \morph{} is that it retains the \emph{magnitude} of those distances as continuous RBF features
 influencing attention weights, whereas binary-adjacency models collapse each distance to a 0/1
 neighbor indicator, losing the information of how close or far each neighbor actually is.
 
 \medskip
-\noindent\textbf{The \morph{} Layer.}\quad
+\subsection{Multi-Context MIST Layer}
 \insightbox{Core Idea.}{At every layer, each spot receives three messages in parallel: one from its
 nearby spots, one from all spots, and one from a pooled summary of the slide. The model adds these
 messages to the current spot representation and refines the result with a feed-forward network.
@@ -502,7 +483,8 @@ radial-basis features are reused in all $L$ transformer layers. At layer $\ell$,
 representation $\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)})$ is passed through three context
 pathways.
 
-\noindent\textbf{Local distance-biased attention.} Each spot attends to its $k$ neighbours with a
+\subsubsection{Local distance-biased attention}
+Each spot attends to its $k$ neighbours with a
 learned, distance-dependent bias for each attention head. For head $h$, the attention weights are
 \begin{equation}
 \alpha_{ij}^{h}=\operatorname{softmax}_{j\in\mathcal{N}(i)}\!\left(
@@ -513,12 +495,14 @@ where $d_h=d/H$ for $H$ heads. The local output is the concatenation of the weig
 followed by a learned output projection. Morphological similarity is captured by the query--key
 term, while spatial distance contributes through the learned radial-basis bias.
 
-\noindent\textbf{Global self-attention.} In parallel, standard multi-head self-attention
+\subsubsection{Global self-attention}
+In parallel, standard multi-head self-attention
 \cite{vaswani2017attention} allows every spot to attend to all $N$ spots. This pathway captures
 long-range dependencies that may not be connected in the local graph. It uses morphology features
 only and is permutation-equivariant with respect to spot order.
 
-\noindent\textbf{Attention-pooled slide context.} A learned scalar scoring function produces
+\subsubsection{Attention-pooled slide context}
+A learned scalar scoring function produces
 $a_i=\operatorname{softmax}_{i}(s(\mathbf{h}_i))$. The slide representation is
 \begin{equation}
 \mathbf{g}=W_g\left(\sum_{i=1}^{N}a_i\mathbf{h}_i\right)+\mathbf{b}_g,
@@ -539,21 +523,19 @@ two-layer feed-forward network with expansion factor four and GELU activation:
 After $L$ layers, layer normalization and a linear head map each spot representation to its $G$
 predicted gene values. The model produces the complete slide prediction in one forward pass.
 
-\begin{proposition}[Permutation equivariance]
-\label{prop:permutation_equivariance}
+\par\medskip\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Permutation equivariance):}\label{prop:permutation_equivariance}\par
 Let $Q\in\{0,1\}^{N\times N}$ be a permutation matrix. If the $k$NN construction handles distance
 ties equivariantly, then
 \begin{equation}
 f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P}).
 \end{equation}
 Therefore, reordering the input spots only reorders their predicted expression profiles.
-\end{proposition}
 Appendix~\ref{app:formal_guarantees} provides the proof. Our numerical checks evaluate both
 Propositions~\ref{prop:coordinate_invariance} and~\ref{prop:permutation_equivariance} under finite
 precision.
 
 \medskip
-\noindent\textbf{Training Objective.}
+\subsection{Training Objective and Ablations}
 \label{sec:loss}
 For a slide with measured expression $\mathbf{Y}$, we optimize mean squared error together with a
 gene-wise Pearson-correlation term:
@@ -790,10 +772,13 @@ Appendix~\ref{app:panel} report the comparison.
 \noindent\textbf{Experiment Setup.}\quad
 \label{sec:setup}
 \textbf{Evaluation regimes.} Intra-cohort evaluation trains a separate model within each cohort.
-Pooled five-fold cross-validation trains jointly across organs and holds out samples from represented
-organs. LOOO trains on six organs and tests the seventh, which is absent from training. Pooled folds
-are sample-disjoint; because patient identifiers are unavailable for some cohorts, we do not claim
-that they are patient-disjoint.
+Pooled five-fold cross-validation trains jointly across organs and holds out slide-level samples while
+retaining each organ type in training. Organ identity is used to define and report the cross-organ
+protocol, but organ labels and other slide metadata are not provided as model inputs. LOOO trains on
+six organs and tests the seventh, which is absent from training. Pooled folds are sample-disjoint;
+because patient identifiers are unavailable for some cohorts, we do not claim that they are
+patient-disjoint. To the best of our knowledge, this is the first pooled cross-organ evaluation of
+histology-to-spatial-expression prediction under a matched, controlled protocol.
 
 \textbf{Metrics and protocol.} We report the Pearson correlation coefficient (PCC), Spearman
 correlation (SCC), and mean squared error (MSE) between predicted and measured expression, averaged
@@ -816,7 +801,7 @@ for at most $100$ epochs with early-stopping patience of $20$; each step samples
 spots. Experiments run on one NVIDIA A100 GPU.
 
 \medskip
-\noindent\textbf{RQ1: Does \morph{} improve intra-cohort prediction?}\quad
+\subsection{Results for RQ1: Intra-cohort prediction}
 \label{sec:rq1}
 Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
 ($0.470$), compared with $0.448$ for HyperST and $0.426$ for BLEEP, a $4.9\%$ relative improvement
@@ -830,13 +815,13 @@ all methods because the retained genes are the most variable, and hence the most
 
 \FloatBarrier
 \medskip
-\noindent\textbf{RQ2: How well does \morph{} transfer across organs?}\quad
+\subsection{Results for RQ2: Cross-organ transfer}
 \label{sec:rq2}
 LOOO is substantially harder because the target anatomy is absent from training. \morph{} reaches a
 mean PCC of $0.490$ (Table~\ref{tab:looo_main}), compared with $0.473$ for BLEEP and $0.457$ for
-HyperST, and leads on five of seven held-out cohorts; BLEEP is stronger on IDC and SKCM. The
-expanded comparison adds EGN, which reaches $0.500$ on average (Table~\ref{tab:percohort_uniconch}).
-Under pooled cross-validation, where organ types remain represented in training, \morph{} reaches
+HyperST, and leads on five of seven held-out cohorts; BLEEP is stronger on IDC and SKCM.
+Under pooled cross-validation, where slide-level samples are held out while organ types remain
+represented in training, \morph{} reaches
 $0.760$ (Table~\ref{tab:pooled}), narrowly above BLEEP at $0.758$ and HyperST at $0.756$. The gap
 between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining difficulty of
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
@@ -845,7 +830,7 @@ experiment.
 
 \FloatBarrier
 \medskip
-\noindent\textbf{RQ3: Which context pathway drives the gain, and does coordinate invariance hold?}\quad
+\subsection{Results for RQ3: What drives accuracy and coordinate invariance?}
 \label{sec:rq3}
 The factorial study in Table~\ref{tab:ablation} evaluates all eight combinations of local (L),
 global (G), and slide-level (S) context on SKCM and LUNG. Local attention provides the largest
@@ -926,7 +911,7 @@ Variant & SKCM & LUNG & PAAD & Macro avg (7 cohorts) \\
 
 \FloatBarrier
 \medskip
-\noindent\textbf{RQ4: Does \morph{} preserve coherent tissue structure?}\quad
+\subsection{Results for RQ4: Spatial structure preservation}
 \label{sec:rq4}
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
 using either predicted or measured expression and compare the induced domains with adjusted Rand
@@ -937,7 +922,7 @@ as evidence of uniformly improved domain recovery.
 
 \FloatBarrier
 \medskip
-\noindent\textbf{RQ5: Is \morph{} computationally efficient?}\quad
+\subsection{Results for RQ5: Computational efficiency}
 \label{sec:rq5}
 \morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
 (Table~\ref{tab:complexity}). Its advantage over the baselines is not minimum parameter count ---
