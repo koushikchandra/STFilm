@@ -60,9 +60,8 @@ rotations, and reflections of the coordinate frame when image features are fixed
 We evaluate \morph{} on seven human organ cohorts from HEST-1k through intra-cohort prediction,
 pooled multi-organ testing on held-out samples, and leave-one-organ-out cross-organ transfer,
 using matched features, gene panels, splits, and model-selection procedures within each comparison.
-In intra-cohort prediction of 100 genes,
-\morph{} improves mean Pearson correlation by $2.8\%$ over the strongest baseline and leads on
-six of seven cohorts. In pooled evaluation on held-out samples from represented organs, it improves
+In intra-cohort prediction of 100 genes, \morph{} improves mean Pearson correlation by $2.8\%$ over
+the strongest baseline and leads on six of seven cohorts. In pooled evaluation on held-out samples from represented organs, it improves
 correlation by $0.3\%$ over the strongest baseline.
 In a separate 50-gene cross-organ evaluation with an entire organ held out during training,
 \morph{} improves correlation by $3.6\%$ over BLEEP, the strongest baseline considered.
@@ -568,40 +567,40 @@ highest-variance genes. HCC, LYMPH\_IDC, and READ are excluded (Appendix~\ref{ap
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{llcccccc}
+\begin{tabular}{llccccc}
 \toprule
-Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@10}} & IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.679{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
- & COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.368{\pm}0.00$ & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.382{\pm}0.02$ \\
- & CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.301{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
- & LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.758{\pm}0.00$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
- & PAAD~\tiny{Pancreas} & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & \best{$0.566{\pm}0.04$} & $0.536{\pm}0.03$ & $0.393{\pm}0.04$ & $0.519{\pm}0.05$ \\
- & PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & \best{$0.526{\pm}0.01$} & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & $0.524{\pm}0.02$ \\
- & SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.741{\pm}0.02$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
-\cmidrule(l){2-8}
- & \textbf{Average} & $0.505$ & $0.455$ & $0.563$ & $0.526$ & $0.423$ & \best{$0.569$} \\
+\multirow{8}{*}{\textbf{PCC@10}} & IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
+ & COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.382{\pm}0.02$ \\
+ & CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
+ & LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & \best{$0.536{\pm}0.03$} & $0.393{\pm}0.04$ & $0.519{\pm}0.05$ \\
+ & PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
+ & SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average} & $0.505$ & $0.455$ & $0.526$ & $0.423$ & \best{$0.569$} \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@50}} & IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.567{\pm}0.01$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
- & COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.285{\pm}0.01$ & $0.314{\pm}0.01$ & $0.177{\pm}0.01$ & \best{$0.318{\pm}0.01$} \\
- & CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & $0.252{\pm}0.01$ \\
- & LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.587{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
- & PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.404{\pm}0.04$ & $0.419{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
- & PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.384{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
- & SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.653{\pm}0.01$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
-\cmidrule(l){2-8}
- & \textbf{Average}       & $0.399$ & $0.337$ & $0.448$ & $0.426$ & $0.299$ & \best{$0.470$} \\
+\multirow{8}{*}{\textbf{PCC@50}} & IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.314{\pm}0.01$ & $0.177{\pm}0.01$ & \best{$0.318{\pm}0.01$} \\
+ & CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & \best{$0.252{\pm}0.01$} \\
+ & LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
+ & PAAD~\tiny{Pancreas}   & $0.359{\pm}0.03$ & $0.247{\pm}0.02$ & $0.419{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
+ & SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average}       & $0.399$ & $0.337$ & $0.426$ & $0.299$ & \best{$0.470$} \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@100}} & IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.671{\pm}0.01$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
- & COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & \best{$0.503{\pm}0.01$} & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & $0.499{\pm}0.01$ \\
- & CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.319{\pm}0.00$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
- & LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.685{\pm}0.00$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
- & PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.404{\pm}0.02$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.435{\pm}0.03$} \\
- & PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.436{\pm}0.01$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
- & SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.724{\pm}0.01$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
-\cmidrule(l){2-8}
- & \textbf{Average} & $0.449$ & $0.371$ & $0.535$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
+\multirow{8}{*}{\textbf{PCC@100}} & IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & \best{$0.499{\pm}0.01$} \\
+ & CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
+ & LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.435{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
+ & SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average} & $0.449$ & $0.371$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -618,48 +617,48 @@ $^\dag$STEM CCRCC at PCC@100 has two of three seeds; its average excludes the pe
 \caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-selection strategies
 (Pearson $\uparrow$).} \textbf{HVG}: highly variable genes (the HEST default); \textbf{DEG}:
 differentially expressed genes (Leiden clustering + Wilcoxon rank-sum); \textbf{HMHVG}:
-high-mean highly variable genes selected from variance-filtered candidates using expression statistics
-with PCA components of UNI+CONCH image features). Fifty genes each; mean$_{\text{std}}$ over three seeds with nested-validation; best per
+high-mean highly variable genes selected from variance-filtered candidates using expression statistics.
+Fifty genes each; mean$_{\text{std}}$ over three seeds with nested-validation; best per
 cohort and strategy in \best{bold}. Same features, splits, and training budget as
 Table~\ref{tab:main}.}
 \label{tab:panel_strategy}
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.15}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{llcccccc}
+\begin{tabular}{llccccc}
 \toprule
-Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
+      & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
-\multirow{8}{*}{\textbf{HVG}} & IDC~\tiny{Breast} & $0.551{\pm}0.01$ & $0.305{\pm}0.11$ & $0.568{\pm}0.01$ & $0.519{\pm}0.00$ & $0.434{\pm}0.00$ & \best{$0.581{\pm}0.01$} \\
- & COAD~\tiny{Colorectal} & $0.235{\pm}0.01$ & $0.298{\pm}0.01$ & $0.294{\pm}0.02$ & \best{$0.322{\pm}0.01$} & $0.177{\pm}0.01$ & $0.318{\pm}0.01$ \\
- & CCRCC~\tiny{Kidney} & $0.163{\pm}0.02$ & $0.180{\pm}0.03$ & \best{$0.256{\pm}0.02$} & $0.175{\pm}0.02$ & $0.118{\pm}0.01$ & $0.252{\pm}0.01$ \\
- & LUNG~\tiny{Lung} & $0.521{\pm}0.01$ & $0.430{\pm}0.05$ & $0.585{\pm}0.00$ & $0.565{\pm}0.01$ & $0.407{\pm}0.00$ & \best{$0.589{\pm}0.01$} \\
- & PAAD~\tiny{Pancreas} & $0.366{\pm}0.03$ & $0.248{\pm}0.04$ & $0.398{\pm}0.03$ & $0.412{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
- & PRAD~\tiny{Prostate} & $0.287{\pm}0.02$ & $0.323{\pm}0.01$ & $0.380{\pm}0.02$ & $0.346{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
- & SKCM~\tiny{Skin} & $0.661{\pm}0.01$ & $0.523{\pm}0.00$ & $0.661{\pm}0.01$ & $0.650{\pm}0.00$ & $0.461{\pm}0.02$ & \best{$0.707{\pm}0.01$} \\
-\cmidrule(l){2-8}
- & \textbf{Average} & $0.398$ & $0.330$ & $0.449$ & $0.427$ & $0.291$ & \best{$0.471$} \\
+\multirow{8}{*}{\textbf{HVG}} & IDC~\tiny{Breast} & $0.551{\pm}0.01$ & $0.305{\pm}0.11$ & $0.519{\pm}0.00$ & $0.434{\pm}0.00$ & \best{$0.581{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.235{\pm}0.01$ & $0.298{\pm}0.01$ & \best{$0.322{\pm}0.01$} & $0.177{\pm}0.01$ & $0.318{\pm}0.01$ \\
+ & CCRCC~\tiny{Kidney} & $0.163{\pm}0.02$ & $0.180{\pm}0.03$ & $0.175{\pm}0.02$ & $0.118{\pm}0.01$ & \best{$0.252{\pm}0.01$} \\
+ & LUNG~\tiny{Lung} & $0.521{\pm}0.01$ & $0.430{\pm}0.05$ & $0.565{\pm}0.01$ & $0.407{\pm}0.00$ & \best{$0.589{\pm}0.01$} \\
+ & PAAD~\tiny{Pancreas} & $0.366{\pm}0.03$ & $0.248{\pm}0.04$ & $0.412{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.287{\pm}0.02$ & $0.323{\pm}0.01$ & $0.346{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
+ & SKCM~\tiny{Skin} & $0.661{\pm}0.01$ & $0.523{\pm}0.00$ & $0.650{\pm}0.00$ & $0.461{\pm}0.02$ & \best{$0.707{\pm}0.01$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average} & $0.398$ & $0.330$ & $0.427$ & $0.291$ & \best{$0.471$} \\
 \midrule
-\multirow{8}{*}{\textbf{DEG}} & IDC~\tiny{Breast} & $0.697{\pm}0.01$ & $0.549{\pm}0.07$ & \best{$0.776{\pm}0.01$} & $0.731{\pm}0.01$ & $0.684{\pm}0.02$ & $0.774{\pm}0.01$ \\
- & COAD~\tiny{Colorectal} & $0.497{\pm}0.00$ & $0.608{\pm}0.01$ & \best{$0.679{\pm}0.00$} & $0.639{\pm}0.02$ & $0.534{\pm}0.01$ & $0.677{\pm}0.00$ \\
- & CCRCC~\tiny{Kidney} & $0.312{\pm}0.01$ & $0.335{\pm}0.01$ & $0.398{\pm}0.01$ & $0.304{\pm}0.00$ & $0.253{\pm}0.01$ & \best{$0.402{\pm}0.01$} \\
- & LUNG~\tiny{Lung} & $0.566{\pm}0.01$ & $0.518{\pm}0.01$ & $0.660{\pm}0.00$ & $0.621{\pm}0.01$ & $0.440{\pm}0.01$ & \best{$0.662{\pm}0.00$} \\
- & PAAD~\tiny{Pancreas} & $0.425{\pm}0.03$ & $0.352{\pm}0.01$ & $0.509{\pm}0.02$ & $0.487{\pm}0.03$ & $0.306{\pm}0.04$ & \best{$0.518{\pm}0.03$} \\
- & PRAD~\tiny{Prostate} & $0.413{\pm}0.00$ & $0.437{\pm}0.01$ & $0.535{\pm}0.02$ & $0.466{\pm}0.00$ & $0.355{\pm}0.03$ & \best{$0.539{\pm}0.01$} \\
- & SKCM~\tiny{Skin} & $0.752{\pm}0.01$ & $0.656{\pm}0.00$ & $0.788{\pm}0.01$ & $0.746{\pm}0.03$ & $0.617{\pm}0.02$ & \best{$0.794{\pm}0.00$} \\
-\cmidrule(l){2-8}
- & \textbf{Average} & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
+\multirow{8}{*}{\textbf{DEG}} & IDC~\tiny{Breast} & $0.697{\pm}0.01$ & $0.549{\pm}0.07$ & $0.731{\pm}0.01$ & $0.684{\pm}0.02$ & \best{$0.774{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.497{\pm}0.00$ & $0.608{\pm}0.01$ & $0.639{\pm}0.02$ & $0.534{\pm}0.01$ & \best{$0.677{\pm}0.00$} \\
+ & CCRCC~\tiny{Kidney} & $0.312{\pm}0.01$ & $0.335{\pm}0.01$ & $0.304{\pm}0.00$ & $0.253{\pm}0.01$ & \best{$0.402{\pm}0.01$} \\
+ & LUNG~\tiny{Lung} & $0.566{\pm}0.01$ & $0.518{\pm}0.01$ & $0.621{\pm}0.01$ & $0.440{\pm}0.01$ & \best{$0.662{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.425{\pm}0.03$ & $0.352{\pm}0.01$ & $0.487{\pm}0.03$ & $0.306{\pm}0.04$ & \best{$0.518{\pm}0.03$} \\
+ & PRAD~\tiny{Prostate} & $0.413{\pm}0.00$ & $0.437{\pm}0.01$ & $0.466{\pm}0.00$ & $0.355{\pm}0.03$ & \best{$0.539{\pm}0.01$} \\
+ & SKCM~\tiny{Skin} & $0.752{\pm}0.01$ & $0.656{\pm}0.00$ & $0.746{\pm}0.03$ & $0.617{\pm}0.02$ & \best{$0.794{\pm}0.00$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average} & $0.523$ & $0.494$ & $0.571$ & $0.456$ & \best{$0.624$} \\
 \midrule
-\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast} & $0.724{\pm}0.01$ & $0.633{\pm}0.08$ & \best{$0.775{\pm}0.01$} & $0.739{\pm}0.02$ & $0.687{\pm}0.01$ & $0.774{\pm}0.01$ \\
- & COAD~\tiny{Colorectal} & $0.503{\pm}0.01$ & $0.659{\pm}0.02$ & $0.691{\pm}0.00$ & $0.645{\pm}0.00$ & $0.528{\pm}0.03$ & \best{$0.698{\pm}0.01$} \\
- & CCRCC~\tiny{Kidney} & $0.339{\pm}0.01$ & $0.387{\pm}0.01$ & $0.432{\pm}0.01$ & $0.349{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.454{\pm}0.02$} \\
- & LUNG~\tiny{Lung} & $0.568{\pm}0.00$ & $0.598{\pm}0.00$ & \best{$0.698{\pm}0.01$} & $0.661{\pm}0.00$ & $0.517{\pm}0.01$ & $0.693{\pm}0.00$ \\
- & PAAD~\tiny{Pancreas} & $0.441{\pm}0.03$ & $0.341{\pm}0.04$ & $0.500{\pm}0.03$ & $0.493{\pm}0.02$ & $0.305{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
- & PRAD~\tiny{Prostate} & $0.452{\pm}0.00$ & $0.477{\pm}0.01$ & $0.552{\pm}0.03$ & $0.432{\pm}0.04$ & $0.337{\pm}0.02$ & \best{$0.555{\pm}0.02$} \\
- & SKCM~\tiny{Skin} & $0.824{\pm}0.03$ & $0.710{\pm}0.14$ & $0.897{\pm}0.00$ & $0.849{\pm}0.02$ & $0.731{\pm}0.06$ & \best{$0.901{\pm}0.00$} \\
-\cmidrule(l){2-8}
- & \textbf{Average} & $0.550$ & $0.544$ & $0.649$ & $0.595$ & $0.485$ & \best{$0.657$} \\
+\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast} & $0.724{\pm}0.01$ & $0.633{\pm}0.08$ & $0.739{\pm}0.02$ & $0.687{\pm}0.01$ & \best{$0.774{\pm}0.01$} \\
+ & COAD~\tiny{Colorectal} & $0.503{\pm}0.01$ & $0.659{\pm}0.02$ & $0.645{\pm}0.00$ & $0.528{\pm}0.03$ & \best{$0.698{\pm}0.01$} \\
+ & CCRCC~\tiny{Kidney} & $0.339{\pm}0.01$ & $0.387{\pm}0.01$ & $0.349{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.454{\pm}0.02$} \\
+ & LUNG~\tiny{Lung} & $0.568{\pm}0.00$ & $0.598{\pm}0.00$ & $0.661{\pm}0.00$ & $0.517{\pm}0.01$ & \best{$0.693{\pm}0.00$} \\
+ & PAAD~\tiny{Pancreas} & $0.441{\pm}0.03$ & $0.341{\pm}0.04$ & $0.493{\pm}0.02$ & $0.305{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
+ & PRAD~\tiny{Prostate} & $0.452{\pm}0.00$ & $0.477{\pm}0.01$ & $0.432{\pm}0.04$ & $0.337{\pm}0.02$ & \best{$0.555{\pm}0.02$} \\
+ & SKCM~\tiny{Skin} & $0.824{\pm}0.03$ & $0.710{\pm}0.14$ & $0.849{\pm}0.02$ & $0.731{\pm}0.06$ & \best{$0.901{\pm}0.00$} \\
+\cmidrule(l){2-7}
+ & \textbf{Average} & $0.550$ & $0.544$ & $0.595$ & $0.485$ & \best{$0.657$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -884,6 +883,17 @@ Spot permutation & $5.96\times10^{-7}$ \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=\linewidth]{figures/qualitative_skcm.png}
+\caption{\textbf{Qualitative spatial expression maps} for a held-out skin (SKCM) slide (TENX117),
+three genes (rows). Each panel colours every spot by expression; \morph{} (right) most faithfully
+recovers the ground-truth spatial structure---the perivascular ring for \emph{LYZ}/\emph{CD52} and
+the epidermal edge for \emph{KRTDAP}---attaining the highest per-gene PCC (in orange), whereas STEM
+is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH features.}
+\label{fig:qualitative}
+\end{figure*}
 
 \noindent\textbf{Distance encoding ablation.}
 Table~\ref{tab:dist_ablation} isolates the contribution of continuous pairwise-distance encoding
@@ -1456,7 +1466,7 @@ seeds with nested-validation; best (lowest) per row in \best{bold}. Same models,
 \begin{tabular}{l ccc cc c}
 \toprule
 Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
-       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
 IDC~\tiny{Breast} & $2.966{\pm}0.311$ & $2.740{\pm}0.194$ & $2.331{\pm}0.065$ & $2.503{\pm}0.061$ & $2.811{\pm}0.056$ & \best{$2.242{\pm}0.031$} \\
 COAD~\tiny{Colorectal} & $2.335{\pm}0.063$ & \best{$2.195{\pm}0.058$} & $2.244{\pm}0.046$ & $2.201{\pm}0.062$ & $2.632{\pm}0.021$ & $2.322{\pm}0.031$ \\
