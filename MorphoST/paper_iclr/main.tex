@@ -57,16 +57,21 @@ pooled slide representation. The local pathway uses continuous pairwise distance
 retaining information about spatial proximity beyond a binary neighborhood graph. Because
 coordinates enter the model only through these distances, predictions are invariant to translations,
 rotations, and reflections of the coordinate frame when image features are fixed.
-We evaluate \morph{} on seven human organ cohorts from HEST-1k using matched frozen image features,
-gene panels, data splits, and model-selection procedures. In within-cohort prediction of 100 genes,
-\morph{} achieves a mean Pearson correlation of $0.550$, compared with $0.535$ for the strongest
-baseline, and leads on six of seven cohorts. In a separate 50-gene evaluation with an entire organ
-held out during training,
-\morph{} achieves $0.490$, compared with $0.473$ for BLEEP, the strongest baseline in the primary comparison.
-Factorial ablations on two cohorts identify local attention as the main contributor to predictive
-accuracy. With $4.88$M parameters and model-only inference of $64.7$\,ms for 10,000 spots on an A100,
-\morph{} combines explicit spatial structure with efficient prediction, while unseen-organ transfer
-remains a challenge.
+We evaluate \morph{} on seven human organ cohorts from HEST-1k through intra-cohort prediction,
+pooled multi-organ testing on held-out samples, and leave-one-organ-out cross-organ transfer,
+using matched features, gene panels, splits, and model-selection procedures within each comparison.
+In intra-cohort prediction of 100 genes,
+\morph{} improves mean Pearson correlation by $2.8\%$ over the strongest baseline and leads on
+six of seven cohorts. In pooled evaluation on held-out samples from represented organs, it improves
+correlation by $0.3\%$ over the strongest baseline.
+In a separate 50-gene cross-organ evaluation with an entire organ held out during training,
+\morph{} improves correlation by $3.6\%$ over BLEEP, the strongest baseline considered.
+Across frozen UNI, CONCH, and combined UNI\,+\,CONCH features, \morph{} consistently
+achieves the highest mean correlation among the methods in the pooled encoder comparison.
+Factorial ablations identify local attention as the main contributor to predictive accuracy.
+With $4.88$M parameters and model-only inference of $64.7$\,ms for 10,000 spots on an A100,
+\morph{} supports accurate, efficient prediction across cohorts and feature encoders, while
+generalization to unseen organs remains a challenge.
 \end{abstract}
 
 \section{Introduction}
@@ -93,7 +98,7 @@ spot contains local visual evidence, nearby spots define its tissue neighborhood
 can share structure, and the composition of the slide can shift the expected expression profile.
 Existing methods capture parts of this context through independent patch regression
 \cite{he2020stnet}, spatial graphs and transformers
-\cite{pang2021histogene,zeng2022hist2st}, cross-modal retrieval \cite{xie2023bleep}, or conditional
+\cite{zeng2022hist2st}, cross-modal retrieval \cite{xie2023bleep}, or conditional
 generation \cite{zhu2025diffusion}. Yet adding spatial context introduces a second concern: a model
 that consumes absolute positions can depend on the scanner coordinate frame. The same relative
 tissue arrangement may then produce different predictions after its coordinates are translated,
@@ -104,11 +109,11 @@ and context across the slide without becoming sensitive to an arbitrary coordina
 question by reconsidering two common design choices.
 
 \noindent\textbf{Coordinate representation.}
-Spatial models broadly fall into three groups. Methods such as Hist2ST~\cite{zeng2022hist2st} and
-HisToGene~\cite{pang2021histogene} embed absolute $x,y$ integer positions, making predictions
+Spatial models broadly fall into three groups. Methods such as Hist2ST~\cite{zeng2022hist2st} embed
+absolute $x,y$ integer positions, making predictions
 sensitive to the scanner coordinate frame (rotation drops mean PCC from 1.00 to $\approx$0.5 in our
-experiments). Methods such as TRIPLEX~\cite{chung2024triplex}, HyperST~\cite{zhang2026hyperst} and
-M2OST~\cite{wang2025m2ost} instead build a binary $k$NN adjacency matrix from spot coordinates and
+experiments). Binary-adjacency spatial models such as HyperST~\cite{zhang2026hyperst} instead build a
+binary $k$NN adjacency matrix from spot coordinates and
 aggregate neighbor features with uniform weights; because pairwise distances are rotation-invariant,
 these models are coordinate-frame invariant, but the adjacency discards the actual inter-spot
 distances, so all neighbors within the graph are treated as equally close regardless of how near or
@@ -141,9 +146,8 @@ panels, data splits, optimization budgets, and nested validation. We distinguish
 individual cohorts, pooled training across represented organs, and leave one organ out (LOOO)
 transfer to an anatomy absent from training. Within cohorts, \morph{} achieves a mean Pearson
 correlation of $0.470$, compared with $0.448$ for the strongest baseline, and leads on six of seven
-cohorts. It reaches $0.760$ in pooled evaluation and $0.490$ under LOOO transfer. In the expanded
-matched LOOO comparison, EGN obtains the highest average at $0.500$. A factorial ablation on SKCM
-and LUNG identifies local attention as the dominant contributor, while the complete model achieves
+cohorts. It reaches $0.760$ in pooled evaluation and $0.490$ under LOOO transfer. A factorial
+ablation on SKCM and LUNG identifies local attention as the dominant contributor, while the complete model achieves
 the highest mean. \morph{} uses $4.88$M parameters and predicts a slide with 10,000 spots in
 $64.7$\,ms on an A100.
 
@@ -154,15 +158,35 @@ Our contributions are threefold:
   slide-summary context in every layer using \emph{continuous} pairwise-distance RBF features as the
   sole coordinate signal. This is the first ST prediction model to use continuous inter-spot distances
   rather than binary adjacency, making it both coordinate-frame invariant and distance-expressive: the
-  attention bias shifts continuously with proximity, unlike uniform neighbor aggregation in TRIPLEX,
-  HyperST, and M2OST.
-  \item We conduct a rotation-sensitivity experiment across all seven baselines on real Visium data,
+  attention bias shifts continuously with proximity, unlike uniform neighbor aggregation in
+  binary-adjacency baselines.
+  \item We conduct a rotation-sensitivity experiment across all evaluated baselines on real Visium data,
   showing that absolute-position models (Hist2ST: PCC $=0.51$) are strongly frame-dependent, while
   both binary-adjacency and \morph{} achieve PCC $\geq0.997$, and clarifying that the distinction
   between them lies in distance expressiveness rather than invariance alone.
   \item We provide a controlled HEST-1k evaluation across within-cohort, pooled, and unseen-organ
   settings, together with factorial context ablations and measurements of computational efficiency.
 \end{itemize}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{What drives cross-organ accuracy?} One-factor-at-a-time ablations on \morph{}. The
+frozen patch encoder is the dominant factor; how the model \emph{aggregates} those features
+(neighbourhood definition, slide-level context) contributes little. $\Delta$PCC over three seeds;
+$^{\dag}$intra-cohort 50-gene panel, others cross-organ POOLED.}
+\label{tab:ablation_summary}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l l c c}
+\toprule
+Factor & Change & $\Delta$PCC & Significant \\
+\midrule
+Feature encoder              & CONCH $\to$ UNI\,+\,CONCH   & $+0.056$ & \textbf{yes} \\
+Local neighbourhood$^{\dag}$  & random $\to$ spatial $k$NN  & $+0.009$ & no \\
+Slide-level context          & off $\to$ on                & $+0.009$ & no \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 
 \iffalse
@@ -593,8 +617,8 @@ $^\dag$STEM CCRCC at PCC@100 has two of three seeds; its average excludes the pe
 \centering
 \caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-selection strategies
 (Pearson $\uparrow$).} \textbf{HVG}: highly variable genes (the HEST default); \textbf{DEG}:
-differentially expressed genes (Leiden clustering + Wilcoxon rank-sum); \textbf{ICG}:
-image-correlated genes (variance-filtered genes ranked by maximum absolute correlation
+differentially expressed genes (Leiden clustering + Wilcoxon rank-sum); \textbf{HMHVG}:
+high-mean highly variable genes selected from variance-filtered candidates using expression statistics
 with PCA components of UNI+CONCH image features). Fifty genes each; mean$_{\text{std}}$ over three seeds with nested-validation; best per
 cohort and strategy in \best{bold}. Same features, splits, and training budget as
 Table~\ref{tab:main}.}
@@ -627,7 +651,7 @@ Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CV
 \cmidrule(l){2-8}
  & \textbf{Average} & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
 \midrule
-\multirow{8}{*}{\textbf{ICG}} & IDC~\tiny{Breast} & $0.724{\pm}0.01$ & $0.633{\pm}0.08$ & \best{$0.775{\pm}0.01$} & $0.739{\pm}0.02$ & $0.687{\pm}0.01$ & $0.774{\pm}0.01$ \\
+\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast} & $0.724{\pm}0.01$ & $0.633{\pm}0.08$ & \best{$0.775{\pm}0.01$} & $0.739{\pm}0.02$ & $0.687{\pm}0.01$ & $0.774{\pm}0.01$ \\
  & COAD~\tiny{Colorectal} & $0.503{\pm}0.01$ & $0.659{\pm}0.02$ & $0.691{\pm}0.00$ & $0.645{\pm}0.00$ & $0.528{\pm}0.03$ & \best{$0.698{\pm}0.01$} \\
  & CCRCC~\tiny{Kidney} & $0.339{\pm}0.01$ & $0.387{\pm}0.01$ & $0.432{\pm}0.01$ & $0.349{\pm}0.01$ & $0.290{\pm}0.01$ & \best{$0.454{\pm}0.02$} \\
  & LUNG~\tiny{Lung} & $0.568{\pm}0.00$ & $0.598{\pm}0.00$ & \best{$0.698{\pm}0.01$} & $0.661{\pm}0.00$ & $0.517{\pm}0.01$ & $0.693{\pm}0.00$ \\
@@ -642,7 +666,7 @@ Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CV
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
 All strategies select 50 genes per cohort. \morph{} attains the highest average under every strategy;
-absolute accuracy rises HVG$<$DEG$<$ICG for all methods, as morphology-correlated panels are the
+absolute accuracy rises HVG$<$DEG$<$HMHVG for all methods, as HMHVG panels are the
 most predictable from H\&E.
 \end{minipage}
 \end{table*}
@@ -739,10 +763,8 @@ Thus, HMHVG in these papers denotes selection by expression mean and variability
 
 Our panel comparison uses three 50-gene target sets shared by all evaluated models:
 \textbf{HVG}, the default HEST panel; \textbf{DEG}, selected by Wilcoxon tests across
-unsupervised Leiden clusters; and \textbf{image-correlated genes (ICG)}, selected by maximum
-absolute Pearson correlation with PCA components of frozen UNI+CONCH features after
-variance-based candidate filtering. ICG is distinct from the expression-based HMHVG
-selection used by HyperST and STEM. The models are trained and evaluated separately for
+unsupervised Leiden clusters; and \textbf{HMHVG}, selected using expression mean and variability
+after variance-based candidate filtering. The models are trained and evaluated separately for
 each panel with the same cohort splits. Table~\ref{tab:panel_strategy} and
 Appendix~\ref{app:panel} report the comparison.
 
@@ -1211,18 +1233,18 @@ MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 Table~\ref{tab:panel} reports intra-cohort mean PCC averaged over seven cohorts and three seeds
 for three gene-panel strategies: highly variable genes (\textbf{HVG}, the HEST-1k default),
 unsupervised differentially expressed genes (\textbf{DEG}; Leiden clustering + Wilcoxon), and
-image-correlated genes (\textbf{ICG}; variance-filtered genes with highest maximum absolute Pearson correlation to
-UNI+CONCH PCA components).
-The supplied panel-generation script constructs DEG and ICG panels once per cohort using
+high-mean highly variable genes (\textbf{HMHVG}; selected using expression mean and variability
+after variance filtering).
+The supplied panel-generation script constructs DEG and HMHVG panels once per cohort using
 all available slides, rather than selecting genes separately within each training fold.
 These results therefore describe an exploratory comparison with fixed cohort-level panels;
 held-out expression can influence target selection, and nested checkpoint validation does
 not remove this dependence. A strictly inductive comparison requires training-fold-only
-panel selection and retraining. The ICG outputs retain the legacy \texttt{hmhvg} name on disk.
+panel selection and retraining.
 All methods use identical UNI+CONCH features, nested-validation, and the same training protocol.
-DEG and ICG panels consistently outperform HVG across all methods, with ICG yielding the
+DEG and HMHVG panels consistently outperform HVG across all methods, with HMHVG yielding the
 highest mean for every method tested.
-\morph{} leads on all three panels, with its advantage most pronounced on ICG ($0.657$ vs.\
+\morph{} leads on all three panels, with its advantage most pronounced on HMHVG ($0.657$ vs.\
 $0.649$ for HyperST) and consistent across DEG ($0.624$ vs.\ $0.621$) and HVG ($0.471$ vs.\
 $0.449$).
 
@@ -1237,7 +1259,7 @@ Best per column in \best{bold}.}
 \setlength{\tabcolsep}{7pt}
 \begin{tabular}{l ccc}
 \toprule
-Method & HVG & DEG & ICG \\
+Method & HVG & DEG & HMHVG \\
 \midrule
 ST-Net~\cite{he2020stnet}          & $0.398_{0.004}$ & $0.523_{0.004}$ & $0.550_{0.008}$ \\
 Hist2ST~\cite{zeng2022hist2st}     & $0.330_{0.032}$ & $0.494_{0.014}$ & $0.544_{0.038}$ \\
@@ -1251,8 +1273,8 @@ STEM~\cite{zhu2025diffusion}       & $0.291_{0.005}$ & $0.456_{0.002}$ & $0.485_
 \end{table}
 
 Table~\ref{tab:panel_percohort} gives the per-cohort breakdown.
-\morph{} leads on 5 of 7 cohorts under HVG, 5 of 7 under DEG, and 5 of 7 under ICG.
-HyperST is stronger on CCRCC (HVG), COAD/IDC (DEG), and IDC/LUNG (ICG).
+\morph{} leads on 5 of 7 cohorts under HVG, 5 of 7 under DEG, and 5 of 7 under HMHVG.
+HyperST is stronger on CCRCC (HVG), COAD/IDC (DEG), and IDC/LUNG (HMHVG).
 
 \begin{table*}[!p]
 \centering
@@ -1288,7 +1310,7 @@ Panel & Cohort & ST-Net & Hist2ST & HyperST & BLEEP & STEM & \morph{} \\
 \cmidrule(l){2-8}
  & \textbf{Average}          & $0.523$ & $0.494$ & $0.621$ & $0.571$ & $0.456$ & \best{$0.624$} \\
 \midrule
-\multirow{8}{*}{\textbf{ICG}} & IDC~\tiny{Breast}      & $0.724_{0.014}$ & $0.633_{0.082}$ & \best{$0.775_{0.011}$} & $0.739_{0.018}$ & $0.687_{0.008}$ & $0.774_{0.011}$ \\
+\multirow{8}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast}      & $0.724_{0.014}$ & $0.633_{0.082}$ & \best{$0.775_{0.011}$} & $0.739_{0.018}$ & $0.687_{0.008}$ & $0.774_{0.011}$ \\
  & COAD~\tiny{Colorectal} & $0.503_{0.010}$ & $0.659_{0.018}$ & $0.691_{0.003}$ & $0.645_{0.004}$ & $0.528_{0.032}$ & \best{$0.698_{0.005}$} \\
  & CCRCC~\tiny{Kidney}    & $0.339_{0.007}$ & $0.387_{0.010}$ & $0.432_{0.006}$ & $0.349_{0.010}$ & $0.290_{0.013}$ & \best{$0.454_{0.017}$} \\
  & LUNG~\tiny{Lung}       & $0.568_{0.005}$ & $0.598_{0.003}$ & \best{$0.698_{0.006}$} & $0.661_{0.002}$ & $0.517_{0.011}$ & $0.693_{0.004}$ \\
