@@ -194,6 +194,18 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{tabular}
 \end{table}
 
+\medskip
+\noindent We organize our study around four research questions:
+\begin{itemize}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
+  \item \textbf{RQ1 (Accuracy).} Does \morph{} match or exceed existing predictors for intra-cohort
+  H\&E$\to$ST prediction, across gene-panel sizes (10/50/100) and selection strategies (HVG, DEG, HMHVG)?
+  \item \textbf{RQ2 (Transfer).} How well does \morph{} generalize across organs under pooled
+  cross-validation and the stricter leave-one-organ-out (LOOO) setting?
+  \item \textbf{RQ3 (What matters).} Which factors actually drive accuracy---the frozen patch encoder,
+  the local/global/slide-level context streams, or how the spatial neighbourhood is defined?
+  \item \textbf{RQ4 (Structure).} Do \morph{}'s predictions preserve coherent spatial tissue structure
+  usable for downstream analysis, and at what computational cost?
+\end{itemize}
 
 \iffalse
 \begin{figure*}[t]
