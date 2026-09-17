@@ -173,7 +173,7 @@ Our contributions are threefold:
 \caption{\textbf{Architectural components across representative H\&E$\to$ST predictors.}
 \morph{} is the only model that combines local neighbourhood attention, slide-wide global
 attention, a slide-level summary token, coordinate invariance, and continuous (distance-expressive)
-spatial encoding rather than binary adjacency. \checkmark~= component present.}
+spatial encoding rather than binary adjacency. $\bullet$~= present, $\circ$~= absent.}
 \label{tab:design_comparison}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -183,13 +183,13 @@ spatial encoding rather than binary adjacency. \checkmark~= component present.}
 Method & \makecell{Local\\context} & \makecell{Global\\context} & \makecell{Slide\\token}
        & \makecell{Coord.\\invariant} & \makecell{Cont.\\distance} \\
 \midrule
-ST-Net~\cite{he2020stnet}       &            &            &            &            &            \\
-Hist2ST~\cite{zeng2022hist2st}  & \checkmark & \checkmark &            &            &            \\
-HyperST~\cite{zhang2026hyperst} & \checkmark & \checkmark &            &            &            \\
-BLEEP~\cite{xie2023bleep}       &            &            &            &            &            \\
-STEM~\cite{zhu2025diffusion}    &            & \checkmark &            &            &            \\
+ST-Net~\cite{he2020stnet}       & $\circ$    & $\circ$    & $\circ$    & $\circ$    & $\circ$    \\
+Hist2ST~\cite{zeng2022hist2st}  & $\bullet$  & $\bullet$  & $\circ$    & $\circ$    & $\circ$    \\
+HyperST~\cite{zhang2026hyperst} & $\bullet$  & $\bullet$  & $\circ$    & $\circ$    & $\circ$    \\
+BLEEP~\cite{xie2023bleep}       & $\circ$    & $\circ$    & $\circ$    & $\circ$    & $\circ$    \\
+STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$    & $\circ$    \\
 \midrule
-\morph{} (ours)                 & \checkmark & \checkmark & \checkmark & \checkmark & \checkmark \\
+\morph{} (ours)                 & $\bullet$  & $\bullet$  & $\bullet$  & $\bullet$  & $\bullet$  \\
 \bottomrule
 \end{tabular}
 \end{table}
