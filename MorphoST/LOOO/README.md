@@ -23,7 +23,8 @@ LOOO/
 ```
 
 ## Data you must provide (not in this repo — too large)
-Point `DATA_ROOT` and `EMBED_ROOT` (top of each `.sbatch`) at:
+**See [DATA.md](DATA.md) for how to download it.** In short, point `DATA_ROOT` and `EMBED_ROOT`
+(top of each `.sbatch`) at:
 - `DATA_ROOT/<COHORT>/adata/<sample>.h5ad` — expression, and `var_50genes.json`
 - `EMBED_ROOT/<COHORT>/<encoder>/fp32/<sample>.h5` — frozen patch embeddings
   (encoder used here: `uni_conch`, 1536-dim)
