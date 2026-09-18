@@ -16,7 +16,7 @@ You point the launchers at these two roots with `DATA_ROOT` and `EMBED_ROOT` (se
 
 ## Option 1 — download the prepared bundle (recommended)
 
-The data is attached to the **`looo5-data` GitHub Release** as split parts (`.part-aa`, `.part-ab`).
+The data is attached to the **`looo5-data` GitHub Release** as one or more split parts (`looo5_data.tar.gz.part-*`).
 
 **With the GitHub CLI (`gh`):**
 ```bash
