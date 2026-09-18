@@ -895,30 +895,6 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 \label{fig:qualitative}
 \end{figure*}
 
-\noindent\textbf{Distance encoding ablation.}
-Table~\ref{tab:dist_ablation} isolates the contribution of continuous pairwise-distance encoding
-by comparing \morph{} (C111) trained with the full RBF distance bias against the same model with
-the bias disabled---reducing local attention to binary adjacency where every neighbour receives equal
-attention weight. Results are averaged over three seeds on each of the seven HEST-1k cohorts.
-
-\begin{table}[t]
-\centering
-\caption{\textbf{Distance encoding ablation.} Macro-averaged Pearson mean$_{\text{std}}$ over
-seven cohorts, three seeds each. ``RBF'' uses the continuous pairwise-distance bias; ``binary''
-disables it, making local attention equivalent to uniform $k$NN aggregation.}
-\label{tab:dist_ablation}
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l ccc c}
-\toprule
-Variant & SKCM & LUNG & PAAD & Macro avg (7 cohorts) \\
-\midrule
-\morph{} (binary, no dist.\ bias) & \running & \running & \running & \running \\
-\morph{} (RBF, continuous dist.) & \best{$0.707_{0.01}$} & \best{$0.589_{0.01}$} & \best{$0.437_{0.03}$} & \best{$0.470$} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \FloatBarrier
 \medskip
 \subsection{Results for RQ4: Spatial structure preservation}
