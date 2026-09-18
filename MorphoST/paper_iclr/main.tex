@@ -556,6 +556,7 @@ of architectural additions (Table~\ref{tab:ablation}).
 \caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-panel sizes
 (Pearson $\uparrow$).} PCC@$k$ denotes prediction with a $k$-gene panel.
 Mean$_{\text{std}}$ over three seeds with nested-validation; best per cohort and panel in \best{bold}.
+The bottom block reports the cohort-averaged MSE\,$\downarrow$ at each panel size (best, i.e.\ lowest, in \best{bold}).
 All methods use identical frozen UNI\,+\,CONCH features (1536-dim), splits, and training budget
 (100 epochs, patience 20, inner-validation selection). The 10-gene panel is the highest-variance
 subset of each cohort's HEST 50-HVG panel; the 100-gene panel extends it with the next 50
@@ -600,6 +601,11 @@ Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
  & SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
 \cmidrule(l){2-7}
  & \textbf{Average} & $0.449$ & $0.371$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{\textbf{Avg}\\\textbf{MSE}\,$\downarrow$}}
+ & @10  & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$} \\
+ & @50  & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$} \\
+ & @100 & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$} \\
 \bottomrule
 \end{tabular}%
 }
