@@ -1,0 +1,103 @@
+{
+  "hest_root": "../../dataset",
+  "config": {
+    "hest_root": "../../dataset",
+    "out_root": "cross_organ_splits5",
+    "regimes": "B",
+    "n_folds": 5,
+    "n_genes": 50,
+    "gene_panel_mode": "union_topk",
+    "check_availability": true,
+    "hest_meta": null,
+    "meta_id_col": "id",
+    "meta_patient_col": "patient",
+    "seed": 1
+  },
+  "outputs": {
+    "LOOO": {
+      "dir": "cross_organ_splits5/LOOO",
+      "folds": [
+        {
+          "regime": "B_LOOO",
+          "held_out_organ": "colorectal",
+          "test_cohorts": [
+            "COAD"
+          ],
+          "train_cohorts": [
+            "CCRCC",
+            "LUNG",
+            "PAAD",
+            "PRAD"
+          ],
+          "n_train": 52,
+          "n_test": 4,
+          "n_genes": 32
+        },
+        {
+          "regime": "B_LOOO",
+          "held_out_organ": "kidney",
+          "test_cohorts": [
+            "CCRCC"
+          ],
+          "train_cohorts": [
+            "COAD",
+            "LUNG",
+            "PAAD",
+            "PRAD"
+          ],
+          "n_train": 32,
+          "n_test": 24,
+          "n_genes": 33
+        },
+        {
+          "regime": "B_LOOO",
+          "held_out_organ": "lung",
+          "test_cohorts": [
+            "LUNG"
+          ],
+          "train_cohorts": [
+            "CCRCC",
+            "COAD",
+            "PAAD",
+            "PRAD"
+          ],
+          "n_train": 54,
+          "n_test": 2,
+          "n_genes": 31
+        },
+        {
+          "regime": "B_LOOO",
+          "held_out_organ": "pancreas",
+          "test_cohorts": [
+            "PAAD"
+          ],
+          "train_cohorts": [
+            "CCRCC",
+            "COAD",
+            "LUNG",
+            "PRAD"
+          ],
+          "n_train": 53,
+          "n_test": 3,
+          "n_genes": 16
+        },
+        {
+          "regime": "B_LOOO",
+          "held_out_organ": "prostate",
+          "test_cohorts": [
+            "PRAD"
+          ],
+          "train_cohorts": [
+            "CCRCC",
+            "COAD",
+            "LUNG",
+            "PAAD"
+          ],
+          "n_train": 33,
+          "n_test": 23,
+          "n_genes": 33
+        }
+      ]
+    }
+  }
+}

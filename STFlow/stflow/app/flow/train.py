@@ -185,7 +185,7 @@ if __name__ == '__main__':
     parser.add_argument('--embed_dataroot', type=str, default="/home/username/Anonymous_STFlow/dataset/embed_dataroot")
     parser.add_argument('--gene_list', type=str, default='var_50genes.json')
     parser.add_argument('--save_dir', type=str, default="/home/username/Anonymous_STFlow/results_dir/")
-    parser.add_argument('--feature_encoder', type=str, default='uni_v1_official', help="uni_v1_official | resnet50_trunc | ciga | gigapath")
+    parser.add_argument('--feature_encoder', type=str, default='uni_v1_official', help="uni_v1_official | resnet50_trunc | ciga | gigapath | uni_conch")
     parser.add_argument('--normalize_method', type=str, default="log1p")
     parser.add_argument('--exp_code', type=str, default="test")
     
@@ -232,6 +232,7 @@ if __name__ == '__main__':
         "gigapath": 1536,
         "ciga": 512,
         "resnet50_trunc": 1024,
+        "uni_conch": 1536,
     }[args.feature_encoder]
 
     set_random_seed(args.seed)

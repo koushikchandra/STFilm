@@ -1,0 +1,4 @@
+sample_id,patches_path,expr_path
+TENX116,PAAD/patches/TENX116.h5,PAAD/adata/TENX116.h5ad
+TENX140,PAAD/patches/TENX140.h5,PAAD/adata/TENX140.h5ad
+TENX126,PAAD/patches/TENX126.h5,PAAD/adata/TENX126.h5ad
