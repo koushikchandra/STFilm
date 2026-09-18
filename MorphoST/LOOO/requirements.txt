@@ -1,0 +1,10 @@
+# Python 3.10+ ; a CUDA-capable GPU is needed for training.
+torch
+numpy
+pandas
+scipy
+scikit-learn
+scanpy
+h5py
+pillow
+matplotlib
