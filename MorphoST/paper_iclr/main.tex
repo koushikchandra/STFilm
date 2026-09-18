@@ -701,22 +701,22 @@ STEM: corrected DiT ($T=1000$, 34M params), three seeds.
 \end{minipage}
 
 \vspace{1.6em}
-\caption{\textbf{Cross-organ POOLED, average Pearson $\uparrow$ (HEST-1k).} 5-fold pooled
+\caption{\textbf{Cross-organ POOLED on HEST-1k.} 5-fold pooled
 cross-validation; mean$_{\mathrm{std}}$ over three seeds; nested-validation.
-Best in \best{bold}.}
+Best per metric in \best{bold}.}
 \label{tab:pooled}
 {\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l c}
+\setlength{\tabcolsep}{7pt}
+\begin{tabular}{l ccc}
 \toprule
-Method & HEST-1k \\
+Method & PCC $\uparrow$ & MSE $\downarrow$ & MAE $\downarrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.758_{0.01}$ \\
-STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ \\
+ST-Net~\cite{he2020stnet} (NBE'20)         & $0.370_{0.01}$ & $0.944_{0.05}$ & $0.653_{0.01}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & $0.737_{0.01}$ & $0.467_{0.01}$ & $0.419_{0.01}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)         & $0.758_{0.01}$ & \best{$0.427_{0.02}$} & \best{$0.380_{0.00}$} \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ & $0.594_{0.01}$ & $0.428_{0.01}$ \\
 \midrule
-\morph{} (V3)                               & \best{$0.760_{0.01}$} \\
+\morph{} (V3)                               & \best{$0.760_{0.01}$} & $0.440_{0.02}$ & $0.410_{0.01}$ \\
 \bottomrule
 \end{tabular}
 }
