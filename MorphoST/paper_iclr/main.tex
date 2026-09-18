@@ -556,7 +556,7 @@ of architectural additions (Table~\ref{tab:ablation}).
 \caption{\textbf{Intra-cohort gene expression prediction on HEST-1k across gene-panel sizes
 (Pearson $\uparrow$).} PCC@$k$ denotes prediction with a $k$-gene panel.
 Mean$_{\text{std}}$ over three seeds with nested-validation; best per cohort and panel in \best{bold}.
-The bottom blocks report the cohort-averaged MSE\,$\downarrow$ and MAE\,$\downarrow$ at each panel size (best, i.e.\ lowest, in \best{bold}).
+Each panel closes with the cohort-averaged \textbf{Avg.\ PCC}\,$\uparrow$, \textbf{Avg.\ MSE}\,$\downarrow$, and \textbf{Avg.\ MAE}\,$\downarrow$ (best in \best{bold}).
 All methods use identical frozen UNI\,+\,CONCH features (1536-dim), splits, and training budget
 (100 epochs, patience 20, inner-validation selection). The 10-gene panel is the highest-variance
 subset of each cohort's HEST 50-HVG panel; the 100-gene panel extends it with the next 50
@@ -572,7 +572,7 @@ highest-variance genes. HCC, LYMPH\_IDC, and READ are excluded (Appendix~\ref{ap
 Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
        & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@10}} & IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
+\multirow{10}{*}{\textbf{PCC@10}} & IDC~\tiny{Breast} & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
  & COAD~\tiny{Colorectal} & $0.255{\pm}0.02$ & \best{$0.447{\pm}0.02$} & $0.413{\pm}0.01$ & $0.266{\pm}0.01$ & $0.382{\pm}0.02$ \\
  & CCRCC~\tiny{Kidney} & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
  & LUNG~\tiny{Lung} & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
@@ -580,9 +580,11 @@ Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
  & PRAD~\tiny{Prostate} & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
  & SKCM~\tiny{Skin} & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
 \cmidrule(l){2-7}
- & \textbf{Average} & $0.505$ & $0.455$ & $0.526$ & $0.423$ & \best{$0.569$} \\
+ & \textbf{Avg. PCC}\,$\uparrow$   & $0.505$ & $0.455$ & $0.526$ & $0.423$ & \best{$0.569$} \\
+ & \textbf{Avg. MSE}\,$\downarrow$ & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$} \\
+ & \textbf{Avg. MAE}\,$\downarrow$ & $1.897$ & $1.439$ & $1.332$ & $1.397$ & \best{$1.306$} \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@50}} & IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
+\multirow{10}{*}{\textbf{PCC@50}} & IDC~\tiny{Breast}      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
  & COAD~\tiny{Colorectal} & $0.242{\pm}0.01$ & $0.295{\pm}0.01$ & $0.314{\pm}0.01$ & $0.177{\pm}0.01$ & \best{$0.318{\pm}0.01$} \\
  & CCRCC~\tiny{Kidney}    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & \best{$0.252{\pm}0.01$} \\
  & LUNG~\tiny{Lung}       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
@@ -590,9 +592,11 @@ Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
  & PRAD~\tiny{Prostate}   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
  & SKCM~\tiny{Skin}       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
 \cmidrule(l){2-7}
- & \textbf{Average}       & $0.399$ & $0.337$ & $0.426$ & $0.299$ & \best{$0.470$} \\
+ & \textbf{Avg. PCC}\,$\uparrow$   & $0.399$ & $0.337$ & $0.426$ & $0.299$ & \best{$0.470$} \\
+ & \textbf{Avg. MSE}\,$\downarrow$ & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$} \\
+ & \textbf{Avg. MAE}\,$\downarrow$ & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
 \midrule
-\multirow{8}{*}{\textbf{PCC@100}} & IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
+\multirow{10}{*}{\textbf{PCC@100}} & IDC~\tiny{Breast} & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
  & COAD~\tiny{Colorectal} & $0.336{\pm}0.00$ & $0.406{\pm}0.01$ & $0.488{\pm}0.01$ & $0.348{\pm}0.02$ & \best{$0.499{\pm}0.01$} \\
  & CCRCC~\tiny{Kidney} & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
  & LUNG~\tiny{Lung} & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
@@ -600,17 +604,9 @@ Metric & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
  & PRAD~\tiny{Prostate} & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
  & SKCM~\tiny{Skin} & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
 \cmidrule(l){2-7}
- & \textbf{Average} & $0.449$ & $0.371$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
-\midrule
-\multirow{3}{*}{\shortstack[l]{\textbf{Avg}\\\textbf{MSE}\,$\downarrow$}}
- & @10  & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$} \\
- & @50  & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$} \\
- & @100 & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$} \\
-\cmidrule(l){2-7}
-\multirow{3}{*}{\shortstack[l]{\textbf{Avg}\\\textbf{MAE}\,$\downarrow$}}
- & @10  & $1.897$ & $1.439$ & $1.332$ & $1.397$ & \best{$1.306$} \\
- & @50  & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
- & @100 & $1.411$ & $1.034$ & $0.948$ & $1.040$ & \best{$0.929$} \\
+ & \textbf{Avg. PCC}\,$\uparrow$   & $0.449$ & $0.371$ & $0.500$ & $0.415$$^\dag$ & \best{$0.550$} \\
+ & \textbf{Avg. MSE}\,$\downarrow$ & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$} \\
+ & \textbf{Avg. MAE}\,$\downarrow$ & $1.411$ & $1.034$ & $0.948$ & $1.040$ & \best{$0.929$} \\
 \bottomrule
 \end{tabular}%
 }
