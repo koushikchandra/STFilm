@@ -630,7 +630,8 @@ differentially expressed genes (Leiden clustering + Wilcoxon rank-sum); \textbf{
 high-mean highly variable genes selected from variance-filtered candidates using expression statistics.
 Fifty genes each; mean$_{\text{std}}$ over three seeds with nested-validation; best per
 cohort and strategy in \best{bold}. Same features, splits, and training budget as
-Table~\ref{tab:main}.}
+Table~\ref{tab:main}. The bottom blocks report the cohort-averaged MSE\,$\downarrow$ and
+MAE\,$\downarrow$ per strategy (best, i.e.\ lowest, in \best{bold}).}
 \label{tab:panel_strategy}
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{1.15}
@@ -669,6 +670,16 @@ Panel & Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22}
  & SKCM~\tiny{Skin} & $0.824{\pm}0.03$ & $0.710{\pm}0.14$ & $0.849{\pm}0.02$ & $0.731{\pm}0.06$ & \best{$0.901{\pm}0.00$} \\
 \cmidrule(l){2-7}
  & \textbf{Average} & $0.550$ & $0.544$ & $0.595$ & $0.485$ & \best{$0.657$} \\
+\midrule
+\multirow{3}{*}{\shortstack[l]{\textbf{Avg}\\\textbf{MSE}\,$\downarrow$}}
+ & HVG   & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$} \\
+ & DEG   & $3.853$ & $1.961$ & $1.783$ & $2.172$ & \best{$1.724$} \\
+ & HMHVG & $4.005$ & $1.977$ & $1.754$ & $2.158$ & \best{$1.622$} \\
+\cmidrule(l){2-7}
+\multirow{3}{*}{\shortstack[l]{\textbf{Avg}\\\textbf{MAE}\,$\downarrow$}}
+ & HVG   & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
+ & DEG   & $1.548$ & $1.071$ & $1.003$ & $1.105$ & \best{$0.989$} \\
+ & HMHVG & $1.549$ & $1.079$ & $0.987$ & $1.094$ & \best{$0.959$} \\
 \bottomrule
 \end{tabular}%
 }
