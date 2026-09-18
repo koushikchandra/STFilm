@@ -44,7 +44,9 @@ Results: `results_looo5_mist/LOOO_C111_seed*/` and
 `baselines/results_looo5_baselines/LOOO_<model>_seed*/` (per-fold + `results_kfold.json`).
 
 ## Dependencies
-`pip install -r requirements.txt` (Python 3.10+, a CUDA GPU for training).
+`pip install -r requirements.txt` (Python 3.10+). Runs on **any** CUDA GPU (not A100-specific —
+MIST is 4.88M params and the encoder features are precomputed), or on **CPU** (slower); the
+trainers auto-detect the device.
 
 ## Regenerating the splits (optional)
 ```

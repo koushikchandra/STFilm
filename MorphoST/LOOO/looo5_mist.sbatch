@@ -4,7 +4,7 @@
 #SBATCH --account=weile-lab
 #SBATCH --qos=scavenger
 #SBATCH --requeue
-#SBATCH --gres=gpu:a100:1
+#SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=8
 #SBATCH --mem=64G
 #SBATCH --time=12:00:00
@@ -32,7 +32,9 @@ EMBED_ROOT="${EMBED_ROOT:-$REPO_DIR/../../embed_dataroot}" # <cohort>/<encoder>/
 
 cd "$REPO_DIR"
 echo "[looo5_mist] node=$(hostname) task=${SLURM_ARRAY_TASK_ID:-0}"
-python -c "import torch; exit(0 if torch.cuda.is_available() else 1)" || { echo "ERROR: No CUDA"; exit 1; }
+# Runs on any CUDA GPU, or falls back to CPU automatically (train.py picks the device).
+# For a different cluster, edit the #SBATCH partition/account/gres above.
+python -c "import torch; print('[looo5_mist] cuda:', torch.cuda.is_available())"
 
 SEEDS=(1 2 3)
 SEED=${SEEDS[${SLURM_ARRAY_TASK_ID:-0}]}
