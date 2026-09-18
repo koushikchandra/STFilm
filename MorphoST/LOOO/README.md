@@ -8,6 +8,10 @@ Gene panels are recomputed leakage-safe from the training organs (16–33 genes/
 Everything needed to run is inside this directory (a vendored subset of `stflow/` is bundled),
 so you can clone just `LOOO/` and run — **only the HEST data lives outside** (see below).
 
+**Five models are evaluated:** `ST-Net`, `Hist2ST`, `BLEEP` (NeurIPS'23), `STEM`, and **`MIST`** (ours).
+Model → command name: `ST-Net=stnet`, `Hist2ST=hist2st`, `BLEEP=bleep`, `STEM=stem` (all via
+`baselines/baseline_spatial.py`); `MIST` via `train.py`.
+
 ## Layout
 ```
 LOOO/
@@ -31,17 +35,42 @@ LOOO/
 
 Cohorts needed: `COAD  CCRCC  LUNG  PAAD  PRAD`.
 
-## Run
-On SLURM:
-```
-sbatch looo5_mist.sbatch                 # MIST
-sbatch baselines/looo5_baselines.sbatch  # baselines
-```
-Without a cluster, run the `python ...` block from inside each `.sbatch` directly
-(set `DATA_ROOT`/`EMBED_ROOT` first, e.g. `export DATA_ROOT=/path/to/dataset`).
+## Run — all five models (ST-Net, Hist2ST, BLEEP, STEM, MIST)
 
-Results: `results_looo5_mist/LOOO_C111_seed*/` and
-`baselines/results_looo5_baselines/LOOO_<model>_seed*/` (per-fold + `results_kfold.json`).
+First set the data paths (see [DATA.md](DATA.md)):
+```bash
+export DATA_ROOT=~/looo5_data/dataset
+export EMBED_ROOT=~/looo5_data/embed_dataroot
+```
+
+### On SLURM (any GPU — A100 not required)
+```bash
+sbatch looo5_mist.sbatch                 # MIST (ours)
+sbatch baselines/looo5_baselines.sbatch  # ST-Net, Hist2ST, BLEEP, STEM (4 baselines x 3 seeds)
+```
+
+### Without a cluster (GPU if present, else CPU)
+MIST:
+```bash
+PYTHONPATH=$PWD python train.py --regime LOOO --version V3 --components 111 --seed 1 \
+  --feature_encoder uni_conch --splits_root cross_organ_splits5 \
+  --folds colorectal kidney lung pancreas prostate \
+  --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
+  --save_root results_looo5_mist --epochs 100 --patience 20 --device cuda
+```
+Each baseline — set `MODEL` to `stnet`, `hist2st`, `bleep`, then `stem`:
+```bash
+for MODEL in stnet hist2st bleep stem; do
+  PYTHONPATH=$PWD python baselines/baseline_spatial.py --model $MODEL --regime LOOO --seed 1 \
+    --feature_encoder uni_conch --splits_root cross_organ_splits5 \
+    --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
+    --save_root baselines/results_looo5_baselines --epochs 100 --patience 20 --device 0
+done
+```
+Repeat with `--seed 2` and `--seed 3` for the 3-seed averages.
+
+Results: `results_looo5_mist/LOOO_C111_seed*/` (MIST) and
+`baselines/results_looo5_baselines/LOOO_<model>_seed*/` (baselines) — per-fold JSON + `results_kfold.json`.
 
 ## Dependencies
 `pip install -r requirements.txt` (Python 3.10+). Runs on **any** CUDA GPU (not A100-specific —
