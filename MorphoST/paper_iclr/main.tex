@@ -84,11 +84,14 @@ without matched ST measurements.
 
 \begin{figure*}[t]
 \centering
-\input{figures/trism_overview}
-\caption{\textbf{\morph{} overview.} The model combines frozen spot morphology features with
-coordinate geometry, distance-biased local attention, global self-attention, and a pooled slide
-representation to predict the spatial expression map. Coordinates enter only through pairwise
-distances, making the spatial pathway invariant to translations, rotations, and reflections.}
+\includegraphics[width=\linewidth]{figures/mist_overview.pdf}
+\caption{\textbf{\morph{} overview.} \textbf{(a)}~From an H\&E whole-slide image with aligned spot
+coordinates $P=\{(x,y)\}$, spot-centered patches are embedded by a frozen pathology encoder
+(UNI, CONCH, or UNI\,+\,CONCH) into per-spot tokens; inter-spot similarities supply local context.
+A stack of multi-context transformer layers then predicts the spatial expression map in a single
+pass. \textbf{(b)}~Each layer fuses a \emph{local-context} pathway (neighbour aggregation) and a
+\emph{global-context} pathway (all-spot self-attention) by residual addition, followed by
+LayerNorm/FFN and a linear expression head.}
 \label{fig:arch}
 \end{figure*}
 
