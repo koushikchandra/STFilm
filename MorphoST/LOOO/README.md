@@ -14,6 +14,25 @@ whole organ out). Splits: `cross_organ_splits5_nocp/POOLED/` (5 folds, leakage-s
 (`ST-Net=stnet`, `Hist2ST=hist2st`, `BLEEP=bleep`, `STEM=stem` via `baselines/baseline_spatial.py`;
 **`MIST`** (ours) via `train.py`).
 
+### Encoder / features (UNI + CONCH → 1536-dim, frozen)
+Every model consumes the **same frozen patch features**, so the comparison is feature-matched — no
+encoder is trained or fine-tuned here. The features are a concatenation of two public pathology
+foundation encoders, computed once per H&E patch:
+
+| Encoder | Model | Dim |
+|---|---|---|
+| **UNI** (ViT-L/16, `MahmoodLab/UNI`) | image patch encoder | 1024 |
+| **CONCH** (`MahmoodLab/CONCH`) | image patch encoder | 512 |
+| **UNI + CONCH** (concatenated) | what this repo uses | **1536** |
+
+- Selected on the command line with **`--feature_encoder uni_conch`** (do not change it — the splits
+  and models here assume the 1536-dim vector).
+- The features are **precomputed and shipped in the data bundle** at
+  `EMBED_ROOT/<COHORT>/uni_conch/fp32/<sample>.h5` (fp32). You do **not** need the UNI/CONCH weights,
+  a Hugging Face login, or a GPU feature-extraction pass — that was already done.
+- Only if you rebuild from raw HEST (Option 2 in [DATA.md](DATA.md)) do you need the gated UNI +
+  CONCH weights to regenerate these `.h5` files.
+
 ### 0. Prerequisites
 - **Python 3.10+** and a **GPU** (any non-Volta card — see the GPU note below — or CPU, slower).
 - Everything to run is in this directory: a vendored subset of `stflow/` is bundled, so **no
