@@ -13,6 +13,7 @@
 \usepackage{colortbl}
 \usepackage{makecell}
 \usepackage{enumitem}
+\usepackage{float}
 \usepackage{placeins}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
@@ -602,6 +603,42 @@ spots per step on one NVIDIA A100.
 \section{Results}
 \label{sec:results}
 
+\begin{table}[H]
+\centering
+\caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
+Mean$_{\text{std}}$ over three seeds with nested-validation; lower values are better and the
+best result in each row is in \best{bold}. The models, features, splits, and training budget
+match Tables~\ref{tab:panel_strategy} and~\ref{tab:main}.}
+\label{tab:error_strategy}
+\setlength{\tabcolsep}{5pt}
+\renewcommand{\arraystretch}{1.12}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{ll>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c}
+\toprule
+& & \multicolumn{5}{c}{\cellcolor{blue!5}\textbf{MSE} $\downarrow$} & \multicolumn{5}{c}{\cellcolor{orange!7}\textbf{MAE} $\downarrow$} \\
+Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
+        & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
+\midrule
+\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{selection}\\\textit{strategy}}}}
+& HVG   & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
+         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
+& DEG   & $3.853$ & $1.961$ & $1.783$ & $2.172$ & \best{$1.724$}
+         & $1.548$ & $1.071$ & $1.003$ & $1.105$ & \best{$0.989$} \\
+& HMHVG & $4.005$ & $1.977$ & $1.754$ & $2.158$ & \best{$1.622$}
+         & $1.549$ & $1.079$ & $0.987$ & $1.094$ & \best{$0.959$} \\
+\midrule
+\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{panel}\\\textit{size}}}}
+& 10  & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$}
+         & $1.897$ & $1.439$ & $1.332$ & $1.397$ & \best{$1.306$} \\
+& 50  & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
+         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
+& 100 & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$}
+         & $1.411$ & $1.034$ & $0.948$ & $1.040$ & \best{$0.929$} \\
+\bottomrule
+\end{tabular}
+}%
+\end{table}
+
 \medskip
 \subsection{Results for RQ1: Intra-cohort prediction}
 \label{sec:rq1}
@@ -694,41 +731,6 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 \FloatBarrier
 \medskip
 % ---- LOOO/POOLED/error tables moved here so RQ1-RQ3 text keeps page 7 ----
-\begin{table*}[!p]
-\centering
-\caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
-Mean$_{\text{std}}$ over three seeds with nested-validation; lower values are better and the
-best result in each row is in \best{bold}. The models, features, splits, and training budget
-match Tables~\ref{tab:panel_strategy} and~\ref{tab:main}.}
-\label{tab:error_strategy}
-\setlength{\tabcolsep}{5pt}
-\renewcommand{\arraystretch}{1.12}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{ll>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c}
-\toprule
-& & \multicolumn{5}{c}{\cellcolor{blue!5}\textbf{MSE} $\downarrow$} & \multicolumn{5}{c}{\cellcolor{orange!7}\textbf{MAE} $\downarrow$} \\
-Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
-        & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
-\midrule
-\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{selection}\\\textit{strategy}}}}
-& HVG   & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
-         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
-& DEG   & $3.853$ & $1.961$ & $1.783$ & $2.172$ & \best{$1.724$}
-         & $1.548$ & $1.071$ & $1.003$ & $1.105$ & \best{$0.989$} \\
-& HMHVG & $4.005$ & $1.977$ & $1.754$ & $2.158$ & \best{$1.622$}
-         & $1.549$ & $1.079$ & $0.987$ & $1.094$ & \best{$0.959$} \\
-\midrule
-\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{panel}\\\textit{size}}}}
-& 10  & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$}
-         & $1.897$ & $1.439$ & $1.332$ & $1.397$ & \best{$1.306$} \\
-& 50  & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
-         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
-& 100 & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$}
-         & $1.411$ & $1.034$ & $0.948$ & $1.040$ & \best{$0.929$} \\
-\bottomrule
-\end{tabular}
-}%
-\end{table*}
 
 
 
