@@ -1,9 +1,93 @@
-# 5-Organ Cross-Organ POOLED + LOOO (self-contained test cases)
+# MIST Ablation study on POOLED (self-contained)
 
-> **This `POOLED` branch adds the 5-fold POOLED run** on the no-COAD/PAAD organ set
-> **CCRCC** (kidney), **IDC** (breast), **LUNG** (lung), **PRAD** (prostate), **SKCM** (skin).
-> See **[POOLED run](#pooled-run-5-fold-pooled-cross-validation)** below. The original LOOO
-> instructions follow after it and are unchanged.
+> **This `Ablation` branch adds a MIST ablation study run on the 5-fold POOLED data** (no-COAD/PAAD
+> 5-organ set: **CCRCC** kidney, **IDC** breast, **LUNG** lung, **PRAD** prostate, **SKCM** skin),
+> UNI+CONCH features. It reuses the exact POOLED data + splits below — **so do the POOLED data setup
+> first** ([Encoder/features](#encoder--features-uni--conch--1536-dim-frozen), then POOLED
+> [step 1 (code)](#1-get-the-code) and [step 2 (data)](#2-get-the-data--pooled5-data-release--not-looo5-data)),
+> then come back here. The full POOLED run and the original LOOO instructions follow further down.
+
+## Ablation study (POOLED)
+
+All configs share **one architecture** — `ContextMIST` (`morphost_context.py`) — and differ only in
+which streams/mechanisms are on, so it is a clean apples-to-apples ablation. Same data, splits,
+UNI+CONCH features, 5-fold POOLED, **3 seeds each**. Model tag = the config name.
+
+### The streams
+MIST's block sums three streams: **L**ocal (spatial-kNN attention), **G**lobal (full self-attention),
+**S**lide (AttentionPool → slide token). `--config` toggles them.
+
+### Configs (16 total = 4 requested + extensions), grouped
+**A. Context-stream factorial** (all 7 non-empty L/G/S combos; global on in the first four):
+
+| `--config` | L | G | S | note |
+|---|:-:|:-:|:-:|---|
+| `full` | ✓ | ✓ | ✓ | **Full MIST** (requested #1) |
+| `global` | ✗ | ✓ | ✗ | Only Global (requested #2; the base) |
+| `global_local` | ✓ | ✓ | ✗ | Global + Local (requested #3) |
+| `global_slide` | ✗ | ✓ | ✓ | Global + Slide (requested #4) |
+| `local` | ✓ | ✗ | ✗ | local-only (global OFF) |
+| `slide` | ✗ | ✗ | ✓ | slide-only (global OFF) |
+| `local_slide` | ✓ | ✗ | ✓ | local + slide (global OFF) |
+
+**B. Local-mechanism** (does *spatial* structure / distance weighting matter?):
+
+| output tag | `--config` | extra flag | tests |
+|---|---|---|---|
+| `global_random` | `global_random` | — | local attends to **random** k, not spatial kNN |
+| `full_nodist` | `full` | `--no-use_distance_bias` | full model, RBF distance-bias OFF |
+| `global_local_nodist` | `global_local` | `--no-use_distance_bias` | G+L, distance-bias OFF |
+
+**C. Capacity / k sweep** (robustness, on `full`):
+
+| output tag | extra flag |
+|---|---|
+| `full_k4` / `full_k16` | `--k 4` / `--k 16` (neighbours; default 8) |
+| `full_L2` / `full_L6` | `--n_layers 2` / `6` (depth; default 4) |
+| `full_d128` / `full_d512` | `--dim 128` / `512` (width; default 256) |
+
+**16 configs × 3 seeds = 48 runs; each run loops the 5 POOLED folds internally.**
+
+### Run — SLURM (all 48 at once)
+```bash
+export DATA_ROOT=~/pooled5_data/dataset EMBED_ROOT=~/pooled5_data/embed_dataroot
+sbatch ablation_pooled.sbatch      # --array=0-47 : one (config, seed) per task
+```
+`--requeue`-safe, skips finished folds. **Edit the `#SBATCH` header for your cluster** (partition/
+account/qos, and drop the v100 `--exclude`) exactly as in the POOLED section.
+
+### Run — one config without a cluster
+E.g. Full MIST, seed 1 (POOLED auto-runs folds 0–4; add the group-B/C extra flags as needed):
+```bash
+PYTHONPATH=$PWD python train_ablation.py \
+  --regime POOLED --config full --seed 1 --exp_code POOLED_full_seed1 \
+  --feature_encoder uni_conch --splits_root cross_organ_splits5_nocp \
+  --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
+  --save_root results_ablation --epochs 100 --patience 20 --device cuda
+```
+Swap `--config` (e.g. `global`, `global_local`, `local`, …), append extras
+(`--no-use_distance_bias`, `--k 16`, `--n_layers 6`, `--dim 512`), and set a matching `--exp_code`.
+Repeat for `--seed 2` and `--seed 3`.
+
+### Results & aggregation
+```
+results_ablation/POOLED_<tag>_seed{1,2,3}/
+    fold_{0..4}_results.json      # per-fold metrics
+    results_kfold.json            # "pearson_mean" = PCC over the 5 folds (that seed)
+```
+Reported value per config = **mean ± std over the 3 seeds** of `pearson_mean`:
+```bash
+python - <<'PY'
+import json, glob, numpy as np, os
+root="results_ablation"
+tags=sorted({os.path.basename(d).rsplit("_seed",1)[0] for d in glob.glob(f"{root}/POOLED_*_seed*")})
+for t in tags:
+    v=[json.load(open(f))["pearson_mean"] for f in sorted(glob.glob(f"{root}/{t}_seed*/results_kfold.json"))]
+    if v: print(f"{t:24s} PCC = {np.mean(v):.3f} ± {np.std(v):.3f}  (n={len(v)})")
+PY
+```
+
+---
 
 ## POOLED run (5-fold pooled cross-validation)
 
