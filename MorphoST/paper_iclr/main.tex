@@ -729,15 +729,14 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ & $0.594_{
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/fig_ablation_pccmse.png}
-\caption{\textbf{Ablation study on cross-organ POOLED} (11-gene leakage-safe panel), each panel
-reported in both Pearson correlation (PCC\,$\uparrow$) and mean-squared error (MSE\,$\downarrow$).
-\textbf{(a)}~Architectural (context-stream) ablation: global attention only (G), global\,+\,local
-(G+L), and the full model (L+G+S; local\,+\,global\,+\,slide). The full model is best on both PCC
-($0.774$) and MSE ($0.421$); the G+L bar is hatched as it currently has a single seed (remaining
-stream configurations are still training). \textbf{(b)}~Feature-encoder ablation: UNI, CONCH, and
-UNI\,+\,CONCH frozen features; UNI\,+\,CONCH is best on both PCC ($0.774$) and MSE ($0.421$). PCC is drawn as bars and MSE as
-lollipops (lower is better); in each sub-plot the best value is marked with a star ($\star$, orange).
-Error bars are std over three seeds.}
+\caption{\textbf{Ablation study on cross-organ POOLED} (11-gene leakage-safe panel), grouped by
+metric: \textbf{(a)}~Pearson correlation (PCC\,$\uparrow$, bars) and \textbf{(b)}~mean-squared error
+(MSE\,$\downarrow$, lollipops). Each metric is shown for the \emph{architectural} (context-stream)
+ablation --- global attention only (G), global\,+\,local (G+L), and the full model (L+G+S;
+local\,+\,global\,+\,slide) --- and the \emph{feature-encoder} ablation --- UNI, CONCH, and
+UNI\,+\,CONCH frozen features. The full model / UNI\,+\,CONCH is best on both metrics (PCC $0.774$,
+MSE $0.421$; starred, $\star$ orange). G+L is drawn hatched/hollow as it currently has a single
+seed (its remaining stream configurations are still training). Error bars are std over three seeds.}
 \label{fig:encoder}
 \label{fig:ablation}
 \end{figure*}
