@@ -47,9 +47,8 @@ $p\!\approx\!0.02$ in both regimes), a gain on par with STFlow's own core compon
 local descriptor is the strongest conditioner and improves \emph{every} one of eleven clinical
 biomarkers (11/11; e.g.\ Ki-67, CD8A, KIT) at a cost of only $+0.26$M parameters; scaling the
 backbone on top of it---the only architectural lever that moved the transfer ceiling---gives our
-best result. Two negative results sharpen the recipe: categorical organ identity does not help
-(unseen organs fall back to a null token), and a morphology mixture-of-experts overfits the small
-folds. Finally, we show that near-zero transfer scores on three organs are a \emph{metric
+best result. Categorical organ identity does not help because unseen organs fall back to a null
+token. Finally, we show that near-zero transfer scores on three organs are a \emph{metric
 artifact}---the leakage-safe panel is near-silent in the held-out organ---and a detection-filtered
 re-scoring lifts all methods by ${\sim}0.03$ while preserving the ranking. Together these give a
 simple, equivariance-safe recipe for organ-generalizable ST prediction: condition on continuous,
@@ -93,7 +92,7 @@ perturb the equivariant backbone.
 We ask two questions. \textbf{(Q1)} Does a whole-slide ST model generalize across organs, and
 by how much can conditioning help? \textbf{(Q2)} What kind of conditioning helps---categorical
 metadata (organ id), a global histology descriptor, a per-spot local descriptor, or a learned
-mixture of morphology experts? To answer them we (i) build a leakage-safe cross-organ
+prototype-enhanced hybrid descriptor? To answer them we (i) build a leakage-safe cross-organ
 re-partition of HEST-1k with two regimes, and (ii) add \textbf{STFiLM}, a family of
 feature-wise linear modulation (FiLM)~\cite{film} / adaptive layer-norm
 (adaLN-Zero)~\cite{dit} conditioners to STFlow that respect a strict equivariance guardrail.
@@ -107,8 +106,8 @@ against probing, spatial, and generative baselines.
 invariant scalar token stream and provably preserves the SE(2)-equivariant backbone (verified
 numerically to machine precision).
 \item An \textbf{ablation of conditioner types} showing that continuous, inference-available
-histology descriptors help ($p\!\approx\!0.02$), whereas organ-id metadata alone and a
-morphology mixture-of-experts do not, with an analysis of \emph{why}.
+histology descriptors help ($p\!\approx\!0.02$), whereas organ-id metadata alone does not,
+with an analysis of \emph{why}.
 \item A \textbf{diagnosis of the cross-organ metric floor}: near-zero scores on three organs
 are driven by near-silent leakage-safe panels, not model failure; a detection-filtered
 re-scoring makes the metric meaningful without breaking leakage safety.
@@ -154,8 +153,7 @@ design: how should such a model be \emph{conditioned} so that one set of weights
 FiLM~\cite{film} modulates features by learned per-channel shift and scale---in the lineage of
 style-based modulation~\cite{stylegan}; diffusion transformers
 use adaptive layer-norm (adaLN-Zero)~\cite{dit}, zero-initialized to identity for stable training,
-with classifier-free guidance~\cite{cfg} for controllable conditioning strength; mixture-of-experts
-layers~\cite{switch} route tokens to specialized sub-networks. Injecting such conditioning into a
+with classifier-free guidance~\cite{cfg} for controllable conditioning strength. Injecting such conditioning into a
 \emph{geometric} backbone is delicate: it must not corrupt the equivariant features that give the
 model its inductive bias. STFlow attains E(2) invariance through frame averaging~\cite{frameaveraging},
 in the tradition of equivariant architectures such as steerable CNNs~\cite{e2cnn},
@@ -243,8 +241,6 @@ zero-initialized \emph{null token} for classifier-free guidance and unseen categ
 \item \textsc{local}: a \emph{per-spot} descriptor---the mean of each spot's spatial-$k$NN
 neighbor embeddings---added to the global term, giving each spot its own shift/scale. The
 neighbor mean is permutation- and SE(2)-invariant.
-\item \textsc{moe}: per-spot routing over $E$ morphology-expert MLPs on the scalar stream, with
-a Switch-Transformer load-balance loss and a spatial-smoothness penalty on the routing.
 \end{itemize}
 Crucially, a conditioner is only \emph{valid} if available at inference. Histology features and
 organ metadata are; gene expression (the target) is not. \textsc{meta} therefore falls back to
@@ -336,7 +332,7 @@ as we show below, improves \emph{every} biomarker over its own base. Scaling the
 on top of \textsc{local} ($4\!\to\!6$ layers, hidden $128\!\to\!256$) yields our best result
 (LOOO $0.4724$, POOLED $0.7982$; $+0.010/+0.003$ over \textsc{local}, consistent across all three
 seeds), the only architectural lever that moved the transfer ceiling in our study. Categorical
-metadata alone (\textsc{meta}) matches \textsc{none}, and the morphology MoE regresses to baseline.
+metadata alone (\textsc{meta}) matches \textsc{none}.
 
 \begin{table}[t]
 \centering
@@ -357,7 +353,6 @@ STFlow~\cite{stflow} (\textsc{none}) & 2025 & 0.4477 & 0.7853 \\
 \;+\,\textsc{meta} (organ id) &      & 0.4462 & 0.7865 \\
 \;+\,\textsc{desc} (global)   &      & 0.4590 & 0.7937 \\
 \;+\,\textsc{hybrid}          &      & 0.4594 & 0.7934 \\
-\;+\,\textsc{moe}             &      & 0.4488 & 0.7862 \\
 \;+\,\textsc{local} (best conditioner) &  & 0.4624 & 0.7950 \\
 \;+\,\textsc{local}\,$+$\,capacity (best) & & \textbf{0.4724} & \textbf{0.7982} \\
 \bottomrule
@@ -366,7 +361,7 @@ STFlow~\cite{stflow} (\textsc{none}) & 2025 & 0.4477 & 0.7853 \\
 strongest prior baseline \underline{underlined}. All baselines are feature-matched (identical UNI
 features, splits, panels, and metric). \textsc{local} is the best conditioner; scaling the backbone
 capacity on top of it (\textsc{$+$\,capacity}: $4\!\to\!6$ layers, hidden $128\!\to\!256$) gives our
-best result, while organ-id metadata alone (\textsc{meta}) and the morphology MoE do not help. See
+best result, while organ-id metadata alone (\textsc{meta}) does not help. See
 Sec.~\ref{sec:exp}.}
 \label{tab:main}
 \end{table}
@@ -510,7 +505,6 @@ Hist2ST~\cite{hist2st}     & 0.409 & 0.444 \\
 BLEEP~\cite{bleep}         & 0.423 & 0.452 \\
 \midrule
 STFlow (\textsc{none})     & 0.448 & 0.479 \\
-STFlow~$+$~\textsc{moe}    & 0.449 & 0.481 \\
 STFiLM (\textsc{desc})     & 0.459 & 0.491 \\
 STFiLM (\textsc{local})    & \textbf{0.462} & \textbf{0.495} \\
 \bottomrule
@@ -568,13 +562,11 @@ than being explained away by it.
 
 \subsection{Analysis}
 \label{sec:analysis}
-Two negative results are informative. \textsc{meta} (organ id) matches \textsc{none} because in
+One negative result is informative. \textsc{meta} (organ id) matches \textsc{none} because in
 LOOO the held-out organ maps to the null token (no signal) and in POOLED organ identity adds
 little beyond what histology already encodes---consistent with the inference-availability rule:
 useful conditioners must be present for \emph{unseen} organs, which continuous histology
-descriptors are and categorical organ id is not. \textsc{moe} regresses because added expert
-capacity and untuned auxiliary losses overfit the small HEST folds; the simple per-spot
-descriptor (\textsc{local}) is both cheaper and better. Notably, the FiLM gain
+descriptors are and categorical organ id is not. Notably, the FiLM gain
 ($+0.011$--$0.015$) is comparable to STFlow's own ablated components (frame averaging and flow
 matching each contribute ${\sim}0.01$ PCC in~\cite{stflow}), indicating conditioning is a
 first-class design axis for this task.
@@ -592,8 +584,7 @@ one wants from a conditioner meant to generalize, and the reason it also wins $1
 
 \paragraph{Overhead.} STFiLM is nearly free. The recommended conditioner \textsc{local} is a
 $1.67$M-parameter model---only $+0.26$M ($+18.6\%$) over the STFlow backbone, and $1$--$2$ orders
-of magnitude smaller than HisToGene ($149$M). \textsc{meta} adds ${<}\,1.2$k parameters; only the
-unhelpful \textsc{moe} inflates the model ($3.0$M). Our best configuration scales the backbone to
+of magnitude smaller than HisToGene ($149$M). \textsc{meta} adds ${<}\,1.2$k parameters. Our best configuration scales the backbone to
 $8.1$M parameters for a further $+0.010$ LOOO, still an order of magnitude below HisToGene.
 
 \paragraph{Equivariance is preserved.} We verify the guardrail directly: under a random SE(2)
@@ -653,7 +644,7 @@ We presented STFiLM, an equivariance-safe FiLM/adaLN-Zero conditioning of the ST
 whole-slide flow-matching model, and the first leakage-safe cross-organ study of
 histology-to-ST prediction. Conditioning on an inference-available, continuous histology
 descriptor---especially a per-spot local one---significantly improves cross-organ transfer,
-while organ-id metadata and a morphology mixture-of-experts do not. We also showed that
+while organ-id metadata does not. We also showed that
 apparent failures on three organs are a metric artifact of leakage-safe panels, not model
 limitations. The practical recipe is simple: condition on continuous, inference-available
 morphology and keep the geometric backbone equivariant.
