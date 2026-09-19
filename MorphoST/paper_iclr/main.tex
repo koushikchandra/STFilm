@@ -652,6 +652,30 @@ ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again lead
 ($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
 all methods because the retained genes are the most variable, and hence the most predictable.
 
+\begin{table}[H]
+\centering
+\caption{\textbf{Cross-organ LOOO transfer on a five-organ subset} (kidney, breast, lung, prostate,
+skin; COAD and PAAD excluded), per-cohort Pearson $\uparrow$. Self-contained leave-one-organ-out:
+each fold trains on the other four organs of the subset, with leakage-safe per-fold gene panels.
+Identical frozen UNI\,+\,CONCH features (1536-dim); mean$_{\text{std}}$ over three seeds; best per
+row in \best{bold}.}
+\label{tab:looo_5organ}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+\midrule
+CCRCC~\tiny{Kidney}     &  $0.099{\pm}0.01$  &  $0.095{\pm}0.00$  &  $0.061{\pm}0.01$  &  $0.032{\pm}0.02$  &  \best{$0.120{\pm}0.00$} \\
+IDC~\tiny{Breast}       &  $0.236{\pm}0.03$  &  $0.320{\pm}0.01$  &  \best{$0.458{\pm}0.00$}  &  $0.293{\pm}0.00$  &  $0.356{\pm}0.07$ \\
+LUNG~\tiny{Lung}        &  $0.488{\pm}0.12$  &  $0.547{\pm}0.05$  &  $0.706{\pm}0.01$  &  $0.380{\pm}0.13$  &  \best{$0.722{\pm}0.02$} \\
+PRAD~\tiny{Prostate}    &  $0.056{\pm}0.01$  &  $0.047{\pm}0.00$  &  $0.052{\pm}0.01$  &  $0.020{\pm}0.01$  &  \best{$0.075{\pm}0.01$} \\
+SKCM~\tiny{Skin}        &  $0.459{\pm}0.08$  &  $0.411{\pm}0.19$  &  $0.716{\pm}0.02$  &  $0.385{\pm}0.14$  &  \best{$0.723{\pm}0.02$} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
 \FloatBarrier
 \medskip
 \subsection{Results for RQ2: Cross-organ transfer}
@@ -735,32 +759,6 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 
 
-
-\begin{table*}[t]
-\centering
-\caption{\textbf{Cross-organ LOOO transfer on a five-organ subset} (kidney, breast, lung, prostate,
-skin; COAD and PAAD excluded), per-cohort Pearson $\uparrow$. Self-contained leave-one-organ-out:
-each fold trains on the other four organs of the subset, with leakage-safe per-fold gene panels.
-Identical frozen UNI\,+\,CONCH features (1536-dim); mean$_{\text{std}}$ over three seeds; best per
-row in \best{bold}.}
-\label{tab:looo_5organ}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l cc cc c}
-\toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
-\midrule
-CCRCC~\tiny{Kidney}     &  $0.099{\pm}0.01$  &  $0.095{\pm}0.00$  &  $0.061{\pm}0.01$  &  $0.032{\pm}0.02$  &  \best{$0.120{\pm}0.00$} \\
-IDC~\tiny{Breast}       &  $0.236{\pm}0.03$  &  $0.320{\pm}0.01$  &  \best{$0.458{\pm}0.00$}  &  $0.293{\pm}0.00$  &  $0.356{\pm}0.07$ \\
-LUNG~\tiny{Lung}        &  $0.488{\pm}0.12$  &  $0.547{\pm}0.05$  &  $0.706{\pm}0.01$  &  $0.380{\pm}0.13$  &  \best{$0.722{\pm}0.02$} \\
-PRAD~\tiny{Prostate}    &  $0.056{\pm}0.01$  &  $0.047{\pm}0.00$  &  $0.052{\pm}0.01$  &  $0.020{\pm}0.01$  &  \best{$0.075{\pm}0.01$} \\
-SKCM~\tiny{Skin}        &  $0.459{\pm}0.08$  &  $0.411{\pm}0.19$  &  $0.716{\pm}0.02$  &  $0.385{\pm}0.14$  &  \best{$0.723{\pm}0.02$} \\
-\midrule
-\textbf{Average}        &  $0.267$  &  $0.284$  &  $0.399$  &  $0.222$  &  \best{$0.399$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table*}
 
 \begin{table*}[t]
 \centering
