@@ -728,16 +728,16 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)               & $0.643_{0.01}$ & $0.594_{
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.98\linewidth]{figures/fig_ablation4.png}
-\caption{\textbf{Ablation study.} \textbf{(a,\,b,\,h)}~Architectural stream ablations (intra-cohort,
-SKCM\,+\,LUNG, three seeds): full \morph{} versus removing the \textbf{(a)}~local-attention,
-\textbf{(b)}~slide-token, or \textbf{(h)}~global-attention stream, each across Pearson (PCC),
-Spearman (SCC), and concordance (CCC) correlation. Local attention is the dominant contributor
-($+0.032$ PCC); slide and global add little ($\le\!0.005$ PCC), consistent with
-Table~\ref{tab:ablation}. \textbf{(g)}~Feature-encoder ablation on cross-organ POOLED (11-gene
-leakage-safe panel): UNI, CONCH, and UNI\,+\,CONCH frozen features; UNI\,+\,CONCH is best overall
-($0.774$; $+0.014$ over UNI, $+0.056$ over CONCH). Orange marks the full model / best encoder;
-error bars are std over three seeds.}
+\includegraphics[width=0.98\linewidth]{figures/fig_ablation_pccmse.png}
+\caption{\textbf{Ablation study}, each panel reported in both Pearson correlation (PCC\,$\uparrow$)
+and mean-squared error (MSE\,$\downarrow$). \textbf{(a)}~Architectural ablation (intra-cohort,
+SKCM\,+\,LUNG, three seeds): the eight factorial combinations of the local (L), global (G), and
+slide (S) streams. Turning on local attention is the dominant contributor (PCC $0.608\!\to\!0.640$,
+MSE $1.58\!\to\!1.48$) while global and slide add little; the full model (L+G+S) is best on both
+metrics, consistent with Table~\ref{tab:ablation}. \textbf{(b)}~Feature-encoder ablation
+(cross-organ POOLED, 11-gene leakage-safe panel): UNI, CONCH, and UNI\,+\,CONCH frozen features;
+UNI\,+\,CONCH is best on both PCC ($0.774$) and MSE ($0.421$). Orange marks the full model / best
+encoder; error bars are std over three seeds.}
 \label{fig:encoder}
 \label{fig:ablation}
 \end{figure*}
