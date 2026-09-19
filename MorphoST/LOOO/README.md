@@ -10,42 +10,74 @@
 Pooled leave-patient-out over the 5 organs above: every organ appears in train **and** test of
 every fold, so this measures in-distribution generalization (contrast with LOOO, which holds a
 whole organ out). Splits: `cross_organ_splits5_nocp/POOLED/` (5 folds, leakage-safe 10-gene panel
-= the genes measured in all 5 cohorts). Frozen UNI+CONCH features (1536-dim). Same five models.
+= the genes measured in all 5 cohorts). Frozen UNI+CONCH features (1536-dim). Same five models
+(`ST-Net=stnet`, `Hist2ST=hist2st`, `BLEEP=bleep`, `STEM=stem` via `baselines/baseline_spatial.py`;
+**`MIST`** (ours) via `train.py`).
 
-**Seeds vs. folds (both, not either):** the run is **5-fold** CV repeated over **3 seeds** →
-**3 × 5 = 15 fold-runs per model**. Seeds and folds are different axes:
-- *5 folds* = the CV splits (folds 0–4). **One training command runs all 5 folds internally** and
-  writes `results_kfold.json → pearson_mean` = the PCC averaged over the 5 folds. You never pass
-  `--folds` for POOLED.
-- *3 seeds* = repeat the whole 5-fold run with `--seed 1`, `2`, `3` for error bars.
+### 0. Prerequisites
+- **Python 3.10+** and a **GPU** (any non-Volta card — see the GPU note below — or CPU, slower).
+- Everything to run is in this directory: a vendored subset of `stflow/` is bundled, so **no
+  external STFlow repo is needed**. Only the HEST data lives outside (step 2).
 
-So each `.sbatch` array task = **one seed** (which then loops the 5 folds): `pooled5nocp_mist.sbatch`
-is `--array=0-2` (3 seeds); `pooled5nocp_baselines.sbatch` is `--array=0-11` (4 models × 3 seeds).
-**Final table cell = mean ± std over the 3 seeds** of each seed's 5-fold `pearson_mean`.
-
-**Cohorts needed:** `CCRCC  IDC  LUNG  PRAD  SKCM` (note: **not** COAD/PAAD). Get the data bundle
-from the **`pooled5-data`** GitHub Release — see [DATA.md](DATA.md) — then:
+### 1. Get the code
 ```bash
-export DATA_ROOT=~/pooled5_data/dataset
-export EMBED_ROOT=~/pooled5_data/embed_dataroot
+git clone https://github.com/koushikchandra/STFilm.git
+cd STFilm && git checkout POOLED
+cd MorphoST/LOOO
+pip install -r requirements.txt      # torch, torch_geometric, scanpy, timm, einops, pandas, scipy, h5py
 ```
 
-### On SLURM (any non-Volta GPU — A100/A40/L40s/H200/RTX all fine; **v100 fails under CUDA 13**)
+### 2. Get the data  (`pooled5-data` release — **not** `looo5-data`)
+The POOLED cohorts are `CCRCC  IDC  LUNG  PRAD  SKCM` (breast + skin, **not** COAD/PAAD), so they
+have their own bundle. Full detail in [DATA.md](DATA.md); in short:
+```bash
+gh release download pooled5-data --repo koushikchandra/STFilm --dir ~/pooled5_data
+cd ~/pooled5_data && cat pooled5_data.tar.gz.part-* > pooled5_data.tar.gz && tar xzf pooled5_data.tar.gz
+export DATA_ROOT=~/pooled5_data/dataset          # <COHORT>/adata/*.h5ad  + var_50genes.json
+export EMBED_ROOT=~/pooled5_data/embed_dataroot  # <COHORT>/uni_conch/fp32/*.h5  (frozen, 1536-dim)
+```
+Verify before running (both must list files):
+```bash
+ls $DATA_ROOT/IDC/adata/*.h5ad ; ls $EMBED_ROOT/SKCM/uni_conch/fp32/*.h5
+```
+No `gh`? Download the parts from the [release page](https://github.com/koushikchandra/STFilm/releases/tag/pooled5-data)
+and run the same `cat … > pooled5_data.tar.gz && tar xzf …`.
+
+### 3. Seeds vs. folds (you run BOTH, not either)
+The run is **5-fold** CV repeated over **3 seeds** → **3 × 5 = 15 fold-runs per model**:
+- *5 folds* = the CV splits (folds 0–4). **One training command runs all 5 folds internally** and
+  writes `results_kfold.json → pearson_mean` = the PCC averaged over the 5 folds. You never pass
+  `--folds` for POOLED (it defaults to `0 1 2 3 4`).
+- *3 seeds* = repeat the whole 5-fold run with `--seed 1`, `2`, `3` for error bars.
+
+Each `.sbatch` **array task = one seed** (which then loops the 5 folds): `pooled5nocp_mist.sbatch`
+is `--array=0-2` (3 seeds); `pooled5nocp_baselines.sbatch` is `--array=0-11` (4 models × 3 seeds =
+12 tasks). **Final table cell = mean ± std over the 3 seeds** of each seed's 5-fold `pearson_mean`.
+
+### 4a. Run on SLURM
 ```bash
 sbatch pooled5nocp_mist.sbatch                 # MIST (ours), 3 seeds
 sbatch baselines/pooled5nocp_baselines.sbatch  # ST-Net, Hist2ST, BLEEP, STEM (4 x 3 seeds)
 ```
-Both are `--requeue`-safe and skip already-finished folds, so a preemption just resumes.
+Both are `--requeue`-safe and **skip already-finished folds**, so a preemption/resubmit just resumes.
+`DATA_ROOT`/`EMBED_ROOT` are read from the environment (defaults point two levels up); export them, or
+edit the two lines at the top of each `.sbatch`.
 
-### Without a cluster (GPU if present, else CPU)
-MIST (POOLED auto-uses folds 0–4, so no `--folds`):
+> **⚠ Cluster-specific `#SBATCH` headers.** The two `.sbatch` files are tuned for **our** nova cluster:
+> `--partition=scavenger --account=weile-lab --qos=scavenger` and an `--exclude=…` list of Volta
+> (v100) nodes. **On any other cluster, edit those lines** — set your own partition/account/qos and
+> **remove the `--exclude` line** (or replace it with your own way of avoiding v100 / pre-sm_75 GPUs).
+> Keep `--gres=gpu:1`, `--cpus-per-task=8`, `--mem=64G`.
+
+### 4b. Run without a cluster (GPU if present, else CPU)
+MIST (no `--folds` — POOLED auto-runs folds 0–4):
 ```bash
 PYTHONPATH=$PWD python train.py --regime POOLED --version V3 --components 111 --seed 1 \
   --feature_encoder uni_conch --splits_root cross_organ_splits5_nocp \
   --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
   --save_root results_pooled5nocp_mist --epochs 100 --patience 20 --device cuda
 ```
-Baselines — set `MODEL` to `stnet`, `hist2st`, `bleep`, then `stem`:
+Baselines — loop the four models:
 ```bash
 for MODEL in stnet hist2st bleep stem; do
   PYTHONPATH=$PWD python baselines/baseline_spatial.py --model $MODEL --regime POOLED --seed 1 \
@@ -54,12 +86,53 @@ for MODEL in stnet hist2st bleep stem; do
     --save_root baselines/results_pooled5nocp_baselines --epochs 100 --patience 20 --device 0
 done
 ```
-Repeat with `--seed 2` and `--seed 3` for the 3-seed averages. Results land in
-`results_pooled5nocp_mist/POOLED_C111_seed*/` and
-`baselines/results_pooled5nocp_baselines/POOLED_<model>_seed*/` (per-fold JSON + `results_kfold.json`;
-each seed's `pearson_mean` is the pooled PCC).
+Then repeat everything with `--seed 2` and `--seed 3`. (`--device cuda`/`--device 0` = GPU; use
+`--device cpu`/omit CUDA to force CPU.)
 
-### Regenerate the POOLED splits (optional)
+### 5. Read & aggregate the results
+Output tree (one dir per seed; MIST tag is `C111`):
+```
+results_pooled5nocp_mist/POOLED_C111_seed{1,2,3}/
+    fold_{0..4}_results.json     # per-fold metrics
+    results_kfold.json           # -> "pearson_mean" = PCC averaged over the 5 folds (that seed)
+baselines/results_pooled5nocp_baselines/POOLED_{stnet,hist2st,bleep,stem}_seed{1,2,3}/  (same layout)
+```
+The reported POOLED PCC for a model = **mean ± std over the 3 seeds** of `pearson_mean`:
+```bash
+# one model, all 3 seeds -> mean and std
+python - <<'PY'
+import json, glob, numpy as np
+for tag in ["results_pooled5nocp_mist/POOLED_C111",
+            "baselines/results_pooled5nocp_baselines/POOLED_bleep"]:
+    v=[json.load(open(f))["pearson_mean"] for f in sorted(glob.glob(f"{tag}_seed*/results_kfold.json"))]
+    if v: print(f"{tag.split('/')[-1]:20s} PCC = {np.mean(v):.3f} ± {np.std(v):.3f}  (n={len(v)} seeds)")
+PY
+```
+`results_kfold.json` also carries `mse_mean` / `mae_mean` if you need the error metrics.
+
+### Runtime & resources
+~4–6 h wall-clock per array task on one modern GPU for the heavier models (BLEEP/STEM/MIST); ST-Net
+is faster. 15 tasks total; they can all run in parallel if you have the GPUs, or serially otherwise
+(resume-safe). Peak GPU memory is small (MIST is 4.88M params; features are precomputed) — a single
+16 GB card is plenty.
+
+### GPU compatibility note
+Runs on **any CUDA GPU with compute capability ≥ sm_75** — A100, A40, L40s, H200, RTX all work. It
+does **not** need an A100. **Avoid v100 / older Volta (sm_70)**: with a CUDA-13 / torch-2.12 build
+they fail at launch with `cudaErrorNoKernelImage`. CPU also works (slower); the trainers auto-detect
+the device.
+
+### Troubleshooting
+- **`EMBED_ROOT` empty / `FileNotFoundError` on a `.h5`** → you have expression but not the frozen
+  embeddings; re-download the bundle (step 2) — it contains `embed_dataroot/`.
+- **`cudaErrorNoKernelImage` / "no kernel image is available"** → you're on a v100; move to a
+  newer GPU or run on CPU.
+- **`ModuleNotFoundError: stflow`** → run from **this** directory with `PYTHONPATH=$PWD` (the
+  vendored `stflow/` shim is local; don't `pip install` the upstream STFlow).
+- **A fold errored midway** → just resubmit/rerun the same command; finished folds are skipped and
+  it continues from where it stopped.
+
+### Regenerate the POOLED splits (optional — already included)
 ```bash
 python make_splits_5nocp.py --regimes A --n_folds 5 --n_genes 50 \
     --gene_panel_mode union_topk --check_availability \
