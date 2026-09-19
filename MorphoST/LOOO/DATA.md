@@ -1,3 +1,26 @@
+# POOLED run — data bundle (`pooled5-data`)
+
+**For the POOLED experiment on this branch, use the `pooled5-data` Release** (not `looo5-data`).
+The POOLED cohorts are `CCRCC  IDC  LUNG  PRAD  SKCM` (breast + skin instead of COAD/PAAD), so
+they need their own bundle. Same layout/roots as below.
+
+```bash
+gh release download pooled5-data --repo koushikchandra/STFilm --dir ~/pooled5_data
+cd ~/pooled5_data
+cat pooled5_data.tar.gz.part-* > pooled5_data.tar.gz
+tar xzf pooled5_data.tar.gz          # -> ~/pooled5_data/dataset/ and ~/pooled5_data/embed_dataroot/
+export DATA_ROOT=~/pooled5_data/dataset
+export EMBED_ROOT=~/pooled5_data/embed_dataroot
+```
+Verify: `ls $DATA_ROOT/IDC/adata/*.h5ad` and `ls $EMBED_ROOT/SKCM/uni_conch/fp32/*.h5` should both
+list files. Then run the POOLED commands in [README.md](README.md#pooled-run-5-fold-pooled-cross-validation).
+
+Without `gh`: grab the parts from
+`https://github.com/koushikchandra/STFilm/releases/tag/pooled5-data`, then the same
+`cat ... > pooled5_data.tar.gz && tar xzf pooled5_data.tar.gz`.
+
+---
+
 # Downloading the data for the 5-organ LOOO test case
 
 The code, splits, and gene panels are in this repo. The **HEST data itself is not** (it is ~3.4 GB

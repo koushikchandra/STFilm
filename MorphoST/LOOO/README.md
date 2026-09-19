@@ -1,3 +1,62 @@
+# 5-Organ Cross-Organ POOLED + LOOO (self-contained test cases)
+
+> **This `POOLED` branch adds the 5-fold POOLED run** on the no-COAD/PAAD organ set
+> **CCRCC** (kidney), **IDC** (breast), **LUNG** (lung), **PRAD** (prostate), **SKCM** (skin).
+> See **[POOLED run](#pooled-run-5-fold-pooled-cross-validation)** below. The original LOOO
+> instructions follow after it and are unchanged.
+
+## POOLED run (5-fold pooled cross-validation)
+
+Pooled leave-patient-out over the 5 organs above: every organ appears in train **and** test of
+every fold, so this measures in-distribution generalization (contrast with LOOO, which holds a
+whole organ out). Splits: `cross_organ_splits5_nocp/POOLED/` (5 folds, leakage-safe 10-gene panel
+= the genes measured in all 5 cohorts). Frozen UNI+CONCH features (1536-dim). Same five models.
+
+**Cohorts needed:** `CCRCC  IDC  LUNG  PRAD  SKCM` (note: **not** COAD/PAAD). Get the data bundle
+from the **`pooled5-data`** GitHub Release — see [DATA.md](DATA.md) — then:
+```bash
+export DATA_ROOT=~/pooled5_data/dataset
+export EMBED_ROOT=~/pooled5_data/embed_dataroot
+```
+
+### On SLURM (any non-Volta GPU — A100/A40/L40s/H200/RTX all fine; **v100 fails under CUDA 13**)
+```bash
+sbatch pooled5nocp_mist.sbatch                 # MIST (ours), 3 seeds
+sbatch baselines/pooled5nocp_baselines.sbatch  # ST-Net, Hist2ST, BLEEP, STEM (4 x 3 seeds)
+```
+Both are `--requeue`-safe and skip already-finished folds, so a preemption just resumes.
+
+### Without a cluster (GPU if present, else CPU)
+MIST (POOLED auto-uses folds 0–4, so no `--folds`):
+```bash
+PYTHONPATH=$PWD python train.py --regime POOLED --version V3 --components 111 --seed 1 \
+  --feature_encoder uni_conch --splits_root cross_organ_splits5_nocp \
+  --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
+  --save_root results_pooled5nocp_mist --epochs 100 --patience 20 --device cuda
+```
+Baselines — set `MODEL` to `stnet`, `hist2st`, `bleep`, then `stem`:
+```bash
+for MODEL in stnet hist2st bleep stem; do
+  PYTHONPATH=$PWD python baselines/baseline_spatial.py --model $MODEL --regime POOLED --seed 1 \
+    --feature_encoder uni_conch --splits_root cross_organ_splits5_nocp \
+    --source_dataroot "$DATA_ROOT" --embed_dataroot "$EMBED_ROOT" \
+    --save_root baselines/results_pooled5nocp_baselines --epochs 100 --patience 20 --device 0
+done
+```
+Repeat with `--seed 2` and `--seed 3` for the 3-seed averages. Results land in
+`results_pooled5nocp_mist/POOLED_C111_seed*/` and
+`baselines/results_pooled5nocp_baselines/POOLED_<model>_seed*/` (per-fold JSON + `results_kfold.json`;
+each seed's `pearson_mean` is the pooled PCC).
+
+### Regenerate the POOLED splits (optional)
+```bash
+python make_splits_5nocp.py --regimes A --n_folds 5 --n_genes 50 \
+    --gene_panel_mode union_topk --check_availability \
+    --hest_root "$DATA_ROOT" --out_root cross_organ_splits5_nocp
+```
+
+---
+
 # 5-Organ Cross-Organ LOOO (self-contained test case)
 
 Leave-one-organ-out (LOOO) transfer on a **self-contained 5-organ pool**:

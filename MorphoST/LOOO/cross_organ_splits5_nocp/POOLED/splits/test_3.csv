@@ -1,0 +1,11 @@
+sample_id,patches_path,expr_path
+INT7,CCRCC/patches/INT7.h5,CCRCC/adata/INT7.h5ad
+INT5,CCRCC/patches/INT5.h5,CCRCC/adata/INT5.h5ad
+INT1,CCRCC/patches/INT1.h5,CCRCC/adata/INT1.h5ad
+INT21,CCRCC/patches/INT21.h5,CCRCC/adata/INT21.h5ad
+INT19,CCRCC/patches/INT19.h5,CCRCC/adata/INT19.h5ad
+TENX99,IDC/patches/TENX99.h5,IDC/adata/TENX99.h5ad
+MEND159,PRAD/patches/MEND159.h5,PRAD/adata/MEND159.h5ad
+MEND152,PRAD/patches/MEND152.h5,PRAD/adata/MEND152.h5ad
+MEND150,PRAD/patches/MEND150.h5,PRAD/adata/MEND150.h5ad
+MEND145,PRAD/patches/MEND145.h5,PRAD/adata/MEND145.h5ad
