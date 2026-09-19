@@ -12,6 +12,17 @@ every fold, so this measures in-distribution generalization (contrast with LOOO,
 whole organ out). Splits: `cross_organ_splits5_nocp/POOLED/` (5 folds, leakage-safe 10-gene panel
 = the genes measured in all 5 cohorts). Frozen UNI+CONCH features (1536-dim). Same five models.
 
+**Seeds vs. folds (both, not either):** the run is **5-fold** CV repeated over **3 seeds** →
+**3 × 5 = 15 fold-runs per model**. Seeds and folds are different axes:
+- *5 folds* = the CV splits (folds 0–4). **One training command runs all 5 folds internally** and
+  writes `results_kfold.json → pearson_mean` = the PCC averaged over the 5 folds. You never pass
+  `--folds` for POOLED.
+- *3 seeds* = repeat the whole 5-fold run with `--seed 1`, `2`, `3` for error bars.
+
+So each `.sbatch` array task = **one seed** (which then loops the 5 folds): `pooled5nocp_mist.sbatch`
+is `--array=0-2` (3 seeds); `pooled5nocp_baselines.sbatch` is `--array=0-11` (4 models × 3 seeds).
+**Final table cell = mean ± std over the 3 seeds** of each seed's 5-fold `pearson_mean`.
+
 **Cohorts needed:** `CCRCC  IDC  LUNG  PRAD  SKCM` (note: **not** COAD/PAAD). Get the data bundle
 from the **`pooled5-data`** GitHub Release — see [DATA.md](DATA.md) — then:
 ```bash
