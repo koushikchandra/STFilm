@@ -20,7 +20,7 @@
 
 set -u
 
-REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"  # the LOOO/ directory
+REPO_DIR="${SLURM_SUBMIT_DIR:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"  # dir you sbatch from (the LOOO/ dir)
 DATA_ROOT="${DATA_ROOT:-$REPO_DIR/../../dataset}"
 EMBED_ROOT="${EMBED_ROOT:-$REPO_DIR/../../embed_dataroot}"
 
