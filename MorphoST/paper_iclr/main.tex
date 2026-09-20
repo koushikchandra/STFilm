@@ -334,43 +334,21 @@ all genes in one pass.}
 \fi
 
 \section{Related Work}
-
-\noindent\textbf{Machine Learning Prediction of Gene Expression from Histology.}\quad
-ST-Net~\cite{he2020stnet} established patch-level regression. Hist2ST~\cite{zeng2022hist2st}
-adds spatial context through a graph over neighboring spots, while BLEEP~\cite{xie2023bleep}
-aligns image and expression embeddings for cross-modal retrieval. STEM~\cite{zhu2025diffusion}
-instead treats expression prediction as conditional generation. These methods use different
-features, gene panels, splits, and selection procedures, so their published scores do not isolate
-architectural gains; our comparisons therefore use a matched protocol. MIST is a deterministic
+\noindent\textbf{H\&E$\to$ST prediction.}\quad Prior models span patch-level regression
+(ST-Net~\cite{he2020stnet}), graph spatial context (Hist2ST~\cite{zeng2022hist2st}), cross-modal
+retrieval (BLEEP~\cite{xie2023bleep}), and conditional generation (STEM~\cite{zhu2025diffusion}).
+Because they differ in features, gene panels, splits, and selection, published scores conflate data
+choices with architecture; we therefore compare under a matched protocol. \morph{} is a deterministic
 point predictor and does not model the full conditional expression distribution.
 
 \medskip
-\noindent\textbf{Geometric Structure and Coordinate Invariance.}\quad
-Spatial prediction depends on the coordinate representation supplied to a model. Absolute position
-embeddings can encode location within a particular coordinate frame, but their output may change
-when an equivalent tissue layout is translated, rotated, or reflected. Geometric networks address
-this issue by constructing interactions from relative quantities \cite{satorras2021egnn}. MIST uses
-pairwise Euclidean distances, which are preserved by translations, rotations, and reflections. The
-guarantee applies to the spatial pathway for fixed histology features, not to rotations of the image
-encoder input.
-
-\medskip
-\noindent\textbf{Generalization across Samples and Organs.}\quad
-HEST-1k \cite{jaume2024hest} spans many cohorts and organs. Within-cohort evaluation can exploit
-organ-specific morphology or acquisition
-effects. We therefore distinguish pooled cross-validation, which holds out samples while retaining
-their organ types in training, from LOOO, which withholds an entire organ and provides a stricter test
-of anatomical transfer.
-
-\medskip
-\noindent\textbf{Positioning of \morph{}.}
-\morph{} connects these three research directions: it is an inductive-bias-explicit spatial
-transformer for direct regression, evaluated under a matched cross-cohort protocol. Unlike
-absolute position encodings or frame-averaging strategies, its coordinate pathway is invariant by
-construction. Unlike generative models, it does not represent expression uncertainty; its advantage
-is deterministic, single-pass inference with explicit geometric structure. Unlike prior evaluations
-that report within-cohort accuracy only, our controlled comparison separates interpolation from
-anatomical transfer, making the difficulty of organ shift directly measurable.
+\noindent\textbf{Geometry and generalization.}\quad Absolute position encodings can change when an
+equivalent tissue layout is translated, rotated, or reflected; geometric networks instead build
+interactions from relative quantities~\cite{satorras2021egnn}. \morph{} conditions its spatial
+pathway only on pairwise Euclidean distances, invariant to such frame changes for fixed histology
+features. For generalization we separate pooled cross-validation (organs seen, samples held out) from
+LOOO (an entire organ withheld) to isolate anatomical transfer on HEST-1k~\cite{jaume2024hest}. An
+extended discussion and positioning of \morph{} are in Appendix~\ref{app:related}.
 
 \section{Method}
 
@@ -1015,6 +993,42 @@ Table~\ref{tab:main}; all baselines score near zero on this cohort due to low sp
 gene-expression variance.
 \end{minipage}
 \end{table}
+
+\section{Extended Related Work}
+\label{app:related}
+
+\paragraph{Machine-learning prediction of gene expression from histology.}
+ST-Net~\cite{he2020stnet} established patch-level regression. Hist2ST~\cite{zeng2022hist2st} adds
+spatial context through a graph over neighboring spots, while BLEEP~\cite{xie2023bleep} aligns image
+and expression embeddings for cross-modal retrieval. STEM~\cite{zhu2025diffusion} instead treats
+expression prediction as conditional generation. These methods use different features, gene panels,
+splits, and selection procedures, so their published scores do not isolate architectural gains; our
+comparisons therefore use a matched protocol. \morph{} is a deterministic point predictor and does
+not model the full conditional expression distribution.
+
+\paragraph{Geometric structure and coordinate invariance.}
+Spatial prediction depends on the coordinate representation supplied to a model. Absolute position
+embeddings can encode location within a particular coordinate frame, but their output may change when
+an equivalent tissue layout is translated, rotated, or reflected. Geometric networks address this by
+constructing interactions from relative quantities~\cite{satorras2021egnn}. \morph{} uses pairwise
+Euclidean distances, which are preserved by translations, rotations, and reflections; the guarantee
+applies to the spatial pathway for fixed histology features, not to rotations of the image-encoder
+input.
+
+\paragraph{Generalization across samples and organs.}
+HEST-1k~\cite{jaume2024hest} spans many cohorts and organs. Within-cohort evaluation can exploit
+organ-specific morphology or acquisition effects. We therefore distinguish pooled cross-validation,
+which holds out samples while retaining their organ types in training, from LOOO, which withholds an
+entire organ and provides a stricter test of anatomical transfer.
+
+\paragraph{Positioning of \morph{}.}
+\morph{} connects these three directions: an inductive-bias-explicit spatial transformer for direct
+regression, evaluated under a matched cross-cohort protocol. Unlike absolute position encodings or
+frame-averaging strategies, its coordinate pathway is invariant by construction. Unlike generative
+models, it does not represent expression uncertainty; its advantage is deterministic, single-pass
+inference with explicit geometric structure. Unlike prior evaluations that report within-cohort
+accuracy only, our controlled comparison separates interpolation from anatomical transfer, making the
+difficulty of organ shift directly measurable.
 
 \section{Extended Experimental Setup}
 \label{app:extended_setup}
