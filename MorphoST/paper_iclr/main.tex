@@ -17,6 +17,10 @@
 \usepackage{placeins}
 \usepackage{tikz}
 \usetikzlibrary{arrows.meta,positioning,fit,backgrounds,calc}
+\usepackage[most]{tcolorbox}
+% LiME-style green callout box for key ideas / findings (bold label + italic body)
+\newtcolorbox{keybox}{colback=green!6,colframe=green!45!black,boxrule=0.5pt,arc=2pt,
+  left=5pt,right=5pt,top=3pt,bottom=3pt,before skip=6pt,after skip=6pt,fontupper=\small\itshape}
 \usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
 \usepackage{url}
 
@@ -372,6 +376,13 @@ MIST maps frozen spot-level histology features and measured spot coordinates to 
 expression map. Its method has three stages: coordinate-invariant distance encoding, a shared
 multi-context layer, and supervised prediction with a correlation-aware objective.
 
+\begin{keybox}
+\textbf{Core Idea:} MIST predicts a slide's spatial expression in a single forward pass by fusing
+three views of context---local distance-biased neighborhoods, global self-attention, and a slide-level
+token---over frozen histology features, made invariant to the spot coordinate frame (translation,
+rotation, reflection) so a single model transfers across slides without per-dataset retraining.
+\end{keybox}
+
 \subsection{Problem Setup}
 For a slide with $N$ spots, let
 $\mathbf{F}=[\mathbf{f}_1,\ldots,\mathbf{f}_N]^\top\in\mathbb{R}^{N\times d_{\mathrm{in}}}$
@@ -616,6 +627,12 @@ ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again lead
 ($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
 all methods because the retained genes are the most variable, and hence the most predictable.
 
+\begin{keybox}
+\textbf{Key Finding (RQ1):} On matched features and gene panels, \morph{} leads intra-cohort
+accuracy---mean PCC@50 of $0.470$ vs.\ $0.426$ for the strongest baseline (BLEEP), a $10.3\%$ relative
+gain---and wins on all seven cohorts.
+\end{keybox}
+
 \begin{table}[H]
 \centering
 \caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
@@ -666,6 +683,12 @@ between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining di
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
 experiment.
 
+\begin{keybox}
+\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop---$0.760$ with organs seen to $0.490$ with the
+organ held out---isolates unseen-organ transfer as the dominant remaining gap; pooled multi-organ
+accuracy is not a substitute for it.
+\end{keybox}
+
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/box_looo5_percohort.png}
@@ -692,6 +715,12 @@ LOOO ablation not reported here.
 Table~\ref{tab:invariance} numerically verifies the analytic invariance result. Differences under
 translation and rotation remain below $6\times10^{-5}$ and are attributable to floating-point
 evaluation; reflection is exact in this test.
+
+\begin{keybox}
+\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy---
+enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
+without it---and the predictor is provably invariant to spot translation, rotation, and reflection.
+\end{keybox}
 
 \begin{table}[t]
 \centering
