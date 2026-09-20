@@ -1038,19 +1038,6 @@ nested validation, and a correlation-aware objective; three seeds per configurat
 reported in Table~\ref{tab:scaling}, with feature extraction and disk I/O excluded.
 \end{itemize}
 
-\section{Limitations and Future Work}
-\label{app:limitations}
-Several limitations temper our conclusions. \textbf{(i)}~The cross-organ advantage is not uniform: on
-breast (IDC), BLEEP outperforms \morph{} under leave-one-organ-out transfer. \textbf{(ii)}~Two cohorts
-(lung, skin) contain only two slides each, so their per-cohort estimates carry high variance.
-\textbf{(iii)}~Leakage-safe cross-organ gene panels are small (7--14 genes), which caps the absolute
-correlations attainable and limits the resolution of the spatial-domain-recovery analysis, whose
-margins are small relative to slide-level variation. \textbf{(iv)}~The gap between pooled and
-leave-one-organ-out performance shows that predicting an \emph{entirely unseen} organ remains an open
-problem. Future work includes larger and imputation-based gene panels, categorical metadata
-conditioning (organ/platform via FiLM/adaLN), and extending the evaluation to more organs and to
-cross-species transfer.
-
 \section{Model complexity and inference scaling}
 
 \begin{table}[H]
