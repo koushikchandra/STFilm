@@ -1619,10 +1619,15 @@ SKCM~\tiny{Skin}  &  $1.015{\pm}0.023$  &  $1.056{\pm}0.015$  &  $0.926{\pm}0.01
 \end{table}
 
 
-\section{Per-Cohort MSE and MAE by Strategy and Panel Size}
+\section{Per-Cohort Breakdown of the Error Metrics (Table~\ref{tab:error_strategy})}
 \label{app:mse_mae_full}
 
-Tables~\ref{tab:mse_strategy}--\ref{tab:mae_size} give the per-cohort MSE and MAE breakdowns that mirror the Pearson Tables~\ref{tab:panel_strategy} (gene-selection strategies) and~\ref{tab:main} (gene-panel sizes), and underlie the averaged error metrics of Table~\ref{tab:error_strategy}. Same six cohorts, five models, frozen UNI\,+\,CONCH features, splits, and training budget; mean$_{\text{std}}$ over three seeds; best (lowest) per row in \best{bold}.
+Table~\ref{tab:error_strategy} reports MSE and MAE \emph{averaged over the six cohorts} for each
+gene-selection strategy and panel size. Tables~\ref{tab:mse_strategy}--\ref{tab:mae_size} give the
+per-cohort values behind those averages: the mean of each column here equals the corresponding entry
+of Table~\ref{tab:error_strategy}. Same six cohorts, five models, frozen UNI\,+\,CONCH features,
+splits, and training budget as the Pearson Tables~\ref{tab:panel_strategy} and~\ref{tab:main};
+mean$_{\text{std}}$ over three seeds; best (lowest) per row in \best{bold}.
 
 \begin{table}[H]
 \centering
