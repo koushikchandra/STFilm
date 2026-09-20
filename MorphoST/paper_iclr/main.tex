@@ -841,6 +841,35 @@ STEM~\cite{zhu2025diffusion}   & $0.096_{0.12}$ & $0.131_{0.14}$ \\
 \end{tabular}
 \end{table}
 
+Under \emph{pooled} cross-organ evaluation on the same six-organ subset---slide-level holdout with all
+organs seen in training (5-fold, 3 seeds; Table~\ref{tab:pooled6})---\morph{} attains the best PCC
+($0.599$), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$); BLEEP obtains the lowest error metrics.
+The gap between this pooled setting and the harder leave-one-organ-out transfer
+(Table~\ref{tab:looo_6organ}) reflects the difficulty of predicting an entirely unseen organ.
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Cross-organ POOLED on the six-organ subset} (kidney, breast, lung, pancreas,
+prostate, skin; COAD excluded). 5-fold pooled cross-validation (slide-level holdout, all organs seen);
+mean$_{\text{std}}$ over three seeds; best per metric in \best{bold}.}
+\label{tab:pooled6}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l cccc}
+\toprule
+Method & PCC $\uparrow$ & MSE $\downarrow$ & RMSE $\downarrow$ & MAE $\downarrow$ \\
+\midrule
+ST-Net~\cite{he2020stnet} (NBE'20)       & $0.351_{0.02}$ & $0.747$ & $0.865$ & $0.574$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.556_{0.01}$ & $0.506$ & $0.711$ & $0.424$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & $0.587_{0.00}$ & \best{$0.431$} & \best{$0.657$} & \best{$0.365$} \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ & $0.934$ & $0.966$ & $0.493$ \\
+\midrule
+\morph{}                                 & \best{$0.599_{0.01}$} & $0.470$ & $0.685$ & $0.411$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
 \FloatBarrier
 \medskip
 \subsection{Results for RQ5: Computational efficiency}
