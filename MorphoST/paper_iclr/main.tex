@@ -516,7 +516,7 @@ gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extend
 \label{sec:results}
 
 \medskip
-\subsection{Results for RQ1: Predictive performance across diverse organs}
+\subsection{RQ1: Predictive performance across diverse organs}
 \label{sec:rq1}
 We first establish accuracy on organs the model has \emph{seen}, both when a model is trained
 per cohort (intra-cohort) and when a \emph{single} model is trained jointly across organs (pooled).
@@ -683,7 +683,7 @@ unnecessary when the organ is represented in training.
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ2: Cross-organ transfer to an unseen organ}
+\subsection{RQ2: Cross-organ transfer to an unseen organ}
 \label{sec:transfer}
 Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ1 because the target
 anatomy is \emph{absent} from training. On the six-organ subset \morph{} attains the best mean PCC
@@ -738,7 +738,7 @@ SKCM~\tiny{Skin}       & $0.500{\pm}0.09$ & $0.694{\pm}0.02$ & $0.708{\pm}0.01$ 
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ3: What drives accuracy and coordinate invariance?}
+\subsection{RQ3: What drives accuracy and coordinate invariance?}
 \label{sec:design}
 The factorial study evaluates all eight combinations of local (L),
 global (G), and slide-level (S) context on SKCM and LUNG. Local attention provides the largest
@@ -825,7 +825,7 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 
 
-\subsection{Results for RQ4: Spatial structure preservation}
+\subsection{RQ4: Spatial structure preservation}
 \label{sec:structure}
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
 (KMeans, $k{=}6$ domains) using either predicted or measured expression and compare the induced spatial
@@ -861,7 +861,7 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ5: Computational efficiency}
+\subsection{RQ5: Computational efficiency}
 \label{sec:efficiency}
 \morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
 (Appendix~Table~\ref{tab:complexity}). Its advantage over the baselines is not minimum parameter count:
