@@ -1048,6 +1048,64 @@ nested validation, and a correlation-aware objective; three seeds per configurat
 reported in Table~\ref{tab:scaling}, with feature extraction and disk I/O excluded.
 \end{itemize}
 
+\section{Encoder Ablation}
+\label{app:encoder}
+We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{tab:main}, which uses
+the concatenated UNI\,+\,CONCH features) with each foundation encoder \emph{in isolation}:
+UNI only (ViT-L/16, 1024-d; Table~\ref{tab:enc_uni}) and CONCH only (512-d; Table~\ref{tab:enc_conch}).
+Everything else---models, cohorts, gene panels, splits, and training budget---is held fixed.
+\textcolor{gray}{\textit{---}} entries are still training.
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Intra-cohort PCC@50 with \emph{UNI-only} features (1024-d).} Same six cohorts,
+models, and protocol as Table~\ref{tab:main}; mean$_{\text{std}}$ over three seeds; best per row in
+\best{bold}.}
+\label{tab:enc_uni}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccccc}
+\toprule
+Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
+\midrule
+IDC~\tiny{Breast}    & \running & \running & \running & \running & \running \\
+CCRCC~\tiny{Kidney}  & \running & \running & \running & \running & \running \\
+LUNG~\tiny{Lung}     & \running & \running & \running & \running & \running \\
+PAAD~\tiny{Pancreas} & \running & \running & \running & \running & \running \\
+PRAD~\tiny{Prostate} & \running & \running & \running & \running & \running \\
+SKCM~\tiny{Skin}     & \running & \running & \running & \running & \running \\
+\midrule
+\textbf{Average}     & \running & \running & \running & \running & \running \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Intra-cohort PCC@50 with \emph{CONCH-only} features (512-d).} Same six cohorts,
+models, and protocol as Table~\ref{tab:main}; mean$_{\text{std}}$ over three seeds; best per row in
+\best{bold}.}
+\label{tab:enc_conch}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccccc}
+\toprule
+Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
+\midrule
+IDC~\tiny{Breast}    & \running & \running & \running & \running & \running \\
+CCRCC~\tiny{Kidney}  & \running & \running & \running & \running & \running \\
+LUNG~\tiny{Lung}     & \running & \running & \running & \running & \running \\
+PAAD~\tiny{Pancreas} & \running & \running & \running & \running & \running \\
+PRAD~\tiny{Prostate} & \running & \running & \running & \running & \running \\
+SKCM~\tiny{Skin}     & \running & \running & \running & \running & \running \\
+\midrule
+\textbf{Average}     & \running & \running & \running & \running & \running \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
 \section{Model complexity and inference scaling}
 
 \begin{table}[H]
