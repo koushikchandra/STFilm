@@ -511,6 +511,41 @@ The main model enables all three context pathways. Our factorial ablation indepe
 local (L), global (G), and slide-level (S) pathways, avoiding conclusions tied to a particular order
 of architectural additions.
 
+
+
+
+
+
+\section{Experimental Setup}
+\label{sec:setup}
+We evaluate on \textbf{HEST-1k} \cite{jaume2024hest} with frozen UNI+CONCH patch features and
+$\log(1+x)$ targets; unless stated otherwise the target is the 50-gene HEST HVG panel. Cross-organ
+experiments use the six retained cohorts of Appendix~\ref{app:cohort_stats} (HCC, LYMPH\_IDC, and
+READ excluded). We study three regimes: \emph{intra-cohort} (a model per organ), \emph{pooled}
+(train across organs, hold out slide-level samples; organ identity is not a model input), and
+\emph{LOOO} (train on all-but-one organ, test the held-out organ). We report PCC---and MSE/MAE where
+noted---over outer folds and three seeds, with checkpoints chosen on inner validation and evaluated
+once on the outer fold. Baselines ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP
+\cite{xie2023bleep}, and STEM \cite{zhu2025diffusion} use matched features, panels, splits, budgets,
+and selection. \morph{} has 4.88M parameters (four layers, width 256, eight neighbors). Full dataset,
+gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extended_setup}.
+
+\section{Results}
+\label{sec:results}
+
+\medskip
+\subsection{Results for RQ1: Intra-cohort prediction}
+\label{sec:rq1}
+Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
+($0.470$), compared with $0.426$ for BLEEP, the strongest baseline, a $10.3\%$ relative improvement.
+It leads on all seven cohorts, though the margin is not uniform: it is widest on kidney and breast
+($+0.068$ and $+0.062$ over the best baseline) and narrowest on colorectal ($+0.004$).
+The same ranking holds under a smaller \textbf{10-gene} panel
+(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
+ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
+($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
+all methods because the retained genes are the most variable, and hence the most predictable.
+
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!t]
 \centering
@@ -518,7 +553,7 @@ of architectural additions.
 \label{tab:panel_strategy}
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{0.85}
-\resizebox{0.8\linewidth}{!}{%
+\resizebox{0.68\linewidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 Panel & Cohort & ST-Net & Hist2ST
@@ -556,7 +591,7 @@ Panel & Cohort & ST-Net & Hist2ST
 \label{tab:main_g100}
 \setlength{\tabcolsep}{3pt}
 \renewcommand{\arraystretch}{0.85}
-\resizebox{0.8\linewidth}{!}{%
+\resizebox{0.68\linewidth}{!}{%
 \begin{tabular}{llccccc}
 \toprule
 Metric & Cohort & ST-Net & Hist2ST
@@ -587,53 +622,6 @@ Metric & Cohort & ST-Net & Hist2ST
 }
 \end{table*}
 
-
-
-
-\section{Experimental Setup}
-
-\subsection{Dataset and preprocessing}
-\label{sec:datasets}
-We evaluate on \textbf{HEST-1k} \cite{jaume2024hest} using the controlled cohorts in
-Appendix~\ref{app:cohort_stats}; HCC, LYMPH\_IDC, and READ are excluded under the documented
-quality and split criteria. We use the provided patient-stratified folds, $\log(1+x)$ normalization,
-and frozen UNI+CONCH features. Unless stated otherwise, targets are the 50-gene HEST HVG panel.
-The panel study uses matched 50-gene HVG, DEG (Wilcoxon selection across Leiden clusters), and
-HMHVG (mean-and-variability selection after variance filtering) panels (Table~\ref{tab:panel_strategy}).
-
-\subsection{Evaluation protocol}
-\label{sec:setup}
-Intra-cohort training fits a model within each cohort. Pooled five-fold validation trains across organs
-while holding out slide-level samples; organ identity defines the protocol but is not a model input.
-LOOO trains on six organs and tests the seventh unseen organ. We report PCC, SCC, and MSE averaged
-over outer folds and three seeds. Checkpoints are selected on inner validation and evaluated once on
-the outer test fold; single-slide folds use disjoint spots for inner validation. Patient-level
-disjointness is not guaranteed where identifiers are unavailable.
-
-\subsection{Baselines and implementation}
-We compare with ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP
-\cite{xie2023bleep}, and STEM \cite{zhu2025diffusion} under matched features, panels, splits,
-budgets, and checkpoint selection. MCToGene uses a different ten-cohort protocol and appears in
-Appendix~\ref{app:published}. \morph{} uses four layers, width 256, four heads, eight neighbors,
-16 radial bases, and 4.88M parameters. AdamW training uses learning rate $10^{-3}$, weight decay
-$10^{-2}$, cosine decay, gradient clipping, 100 epochs maximum, patience 20, and at most 3,000
-spots per step on one NVIDIA A100.
-
-\section{Results}
-\label{sec:results}
-
-\medskip
-\subsection{Results for RQ1: Intra-cohort prediction}
-\label{sec:rq1}
-Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
-($0.470$), compared with $0.426$ for BLEEP, the strongest baseline, a $10.3\%$ relative improvement.
-It leads on all seven cohorts, though the margin is not uniform: it is widest on kidney and breast
-($+0.068$ and $+0.062$ over the best baseline) and narrowest on colorectal ($+0.004$).
-The same ranking holds under a smaller \textbf{10-gene} panel
-(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
-ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
-($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
-all methods because the retained genes are the most variable, and hence the most predictable.
 
 \begin{keybox}
 \textbf{Key Finding (RQ1):} On matched features and gene panels, \morph{} leads intra-cohort
@@ -1031,6 +1019,34 @@ Table~\ref{tab:main}; all baselines score near zero on this cohort due to low sp
 gene-expression variance.
 \end{minipage}
 \end{table}
+
+\section{Extended Experimental Setup}
+\label{app:extended_setup}
+
+\paragraph{Dataset and preprocessing.}
+We evaluate on HEST-1k \cite{jaume2024hest} using the cohorts of Table~\ref{tab:cohort_stats}; HCC,
+LYMPH\_IDC, and READ are excluded under the documented quality and split criteria, and the six
+cohorts marked in that table (CCRCC, IDC, LUNG, PAAD, PRAD, SKCM) form the cross-organ set. We use the
+provided patient-stratified folds, $\log(1+x)$ normalization, and frozen UNI+CONCH features (1536-d).
+Unless stated otherwise, targets are the 50-gene HEST HVG panel. The panel study additionally uses
+matched 50-gene DEG (Wilcoxon selection across Leiden clusters) and HMHVG (mean-and-variability
+selection after variance filtering) panels (Table~\ref{tab:panel_strategy}).
+
+\paragraph{Evaluation protocol.}
+Intra-cohort training fits a model within each cohort. Pooled five-fold validation trains across
+organs while holding out slide-level samples; organ identity defines the protocol but is not a model
+input. LOOO trains on all-but-one organ and tests the held-out organ. We report PCC, SCC, and MSE
+averaged over outer folds and three seeds. Checkpoints are selected on inner validation and evaluated
+once on the outer test fold; single-slide folds use disjoint spots for inner validation. Patient-level
+disjointness is not guaranteed where identifiers are unavailable.
+
+\paragraph{Baselines and implementation.}
+We compare with ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP \cite{xie2023bleep},
+and STEM \cite{zhu2025diffusion} under matched features, panels, splits, budgets, and checkpoint
+selection. MCToGene uses a different ten-cohort protocol and appears in Appendix~\ref{app:published}.
+\morph{} uses four layers, width 256, four heads, eight neighbors, 16 radial bases, and 4.88M
+parameters. AdamW training uses learning rate $10^{-3}$, weight decay $10^{-2}$, cosine decay,
+gradient clipping, 100 epochs maximum, patience 20, and at most 3,000 spots per step.
 
 \section{Computation Resources and Inference Tools}
 \label{app:compute}
