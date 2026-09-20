@@ -956,9 +956,51 @@ take responsibility for the final content of this work.
 \clearpage
 \appendix
 
-% Keep all three gene-panel comparisons in one indivisible float.
+\section{Dataset: HEST-1k Cohort Statistics}
+\label{app:cohort_stats}
 
+Table~\ref{tab:cohort_stats} lists the number of samples, total spots, and cross-validation folds
+for each HEST-1k cohort.
+Two organ groups in HEST-1k contain multiple cohorts: breast (IDC + LYMPH\_IDC) and
+colorectal (COAD + READ).
+Within each group the constituent cohorts differ substantially in size: IDC has $2.25\times$ more
+spots than LYMPH\_IDC (44{,}974 vs.\ 19{,}964), and COAD has $2.2\times$ more spots than READ
+(18{,}523 vs.\ 8{,}407).
+To avoid misrepresentation from unweighted averaging over unequal cohorts, Table~\ref{tab:main}
+uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the representative
+colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
+organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
 
+\begin{table}[H]
+\centering
+\caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
+of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
+Table~\ref{tab:main} due to its near-zero signal floor.}
+\label{tab:cohort_stats}
+\small
+\begin{tabular}{l l r r r}
+\toprule
+Cohort & Organ & Samples & Spots & Folds \\
+\midrule
+IDC          & Breast      & 4 & 44{,}974 & 4 \\
+LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 \\
+COAD         & Colorectal  & 4 & 18{,}523 & 2 \\
+READ         & Colorectal  & 4 &  8{,}407 & 2 \\
+CCRCC        & Kidney      & 24 & 74{,}220 & 6 \\
+HCC          & Liver$^*$   &  2 &  4{,}248 & 2 \\
+LUNG         & Lung        &  2 &  7{,}505 & 2 \\
+PAAD         & Pancreas    &  3 &  9{,}793 & 3 \\
+PRAD         & Prostate    & 23 & 62{,}710 & 2 \\
+SKCM         & Skin        &  2 &  5{,}716 & 2 \\
+\bottomrule
+\end{tabular}
+\begin{minipage}{\linewidth}
+\vspace{2pt}
+\footnotesize $^*$HCC (liver) is included here for completeness but excluded from
+Table~\ref{tab:main}; all baselines score near zero on this cohort due to low spatial
+gene-expression variance.
+\end{minipage}
+\end{table}
 
 \section{Model complexity and inference scaling}
 
@@ -1322,52 +1364,6 @@ Panel & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} \\
 \bottomrule
 \end{tabular}%
 }
-\end{table}
-
-\section{HEST-1k Cohort Statistics}
-\label{app:cohort_stats}
-
-Table~\ref{tab:cohort_stats} lists the number of samples, total spots, and cross-validation folds
-for each HEST-1k cohort.
-Two organ groups in HEST-1k contain multiple cohorts: breast (IDC + LYMPH\_IDC) and
-colorectal (COAD + READ).
-Within each group the constituent cohorts differ substantially in size: IDC has $2.25\times$ more
-spots than LYMPH\_IDC (44{,}974 vs.\ 19{,}964), and COAD has $2.2\times$ more spots than READ
-(18{,}523 vs.\ 8{,}407).
-To avoid misrepresentation from unweighted averaging over unequal cohorts, Table~\ref{tab:main}
-uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the representative
-colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
-organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
-of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
-Table~\ref{tab:main} due to its near-zero signal floor.}
-\label{tab:cohort_stats}
-\small
-\begin{tabular}{l l r r r}
-\toprule
-Cohort & Organ & Samples & Spots & Folds \\
-\midrule
-IDC          & Breast      & 4 & 44{,}974 & 4 \\
-LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 \\
-COAD         & Colorectal  & 4 & 18{,}523 & 2 \\
-READ         & Colorectal  & 4 &  8{,}407 & 2 \\
-CCRCC        & Kidney      & 24 & 74{,}220 & 6 \\
-HCC          & Liver$^*$   &  2 &  4{,}248 & 2 \\
-LUNG         & Lung        &  2 &  7{,}505 & 2 \\
-PAAD         & Pancreas    &  3 &  9{,}793 & 3 \\
-PRAD         & Prostate    & 23 & 62{,}710 & 2 \\
-SKCM         & Skin        &  2 &  5{,}716 & 2 \\
-\bottomrule
-\end{tabular}
-\begin{minipage}{\linewidth}
-\vspace{2pt}
-\footnotesize $^*$HCC (liver) is included here for completeness but excluded from
-Table~\ref{tab:main}; all baselines score near zero on this cohort due to low spatial
-gene-expression variance.
-\end{minipage}
 \end{table}
 
 \clearpage
