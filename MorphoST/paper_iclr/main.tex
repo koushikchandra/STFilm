@@ -972,28 +972,34 @@ To avoid misrepresentation from unweighted averaging over unequal cohorts, Table
 uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the representative
 colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
 organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
+Our cross-organ experiments (leave-one-organ-out and pooled) use the \textbf{six} cohorts marked in
+Table~\ref{tab:cohort_stats}: CCRCC (kidney, 24 samples / 74{,}220 spots), IDC (breast, 4 / 44{,}974),
+LUNG (lung, 2 / 7{,}505), PAAD (pancreas, 3 / 9{,}793), PRAD (prostate, 23 / 62{,}710), and SKCM
+(skin, 2 / 5{,}716); COAD, READ, LYMPH\_IDC, and HCC are not used in the cross-organ setting.
 
 \begin{table}[H]
 \centering
 \caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
-of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
-Table~\ref{tab:main} due to its near-zero signal floor.}
+of train/test splits in the per-cohort cross-validation. The six cohorts marked \checkmark
+(CCRCC, IDC, LUNG, PAAD, PRAD, SKCM) form the no-COAD cross-organ evaluation set used in our
+leave-one-organ-out and pooled experiments; LYMPH\_IDC, COAD, READ, and HCC (liver) are not used
+there (HCC has a near-zero signal floor).}
 \label{tab:cohort_stats}
 \small
-\begin{tabular}{l l r r r}
+\begin{tabular}{l l r r r c}
 \toprule
-Cohort & Organ & Samples & Spots & Folds \\
+Cohort & Organ & Samples & Spots & Folds & 6-organ set \\
 \midrule
-IDC          & Breast      & 4 & 44{,}974 & 4 \\
-LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 \\
-COAD         & Colorectal  & 4 & 18{,}523 & 2 \\
-READ         & Colorectal  & 4 &  8{,}407 & 2 \\
-CCRCC        & Kidney      & 24 & 74{,}220 & 6 \\
-HCC          & Liver$^*$   &  2 &  4{,}248 & 2 \\
-LUNG         & Lung        &  2 &  7{,}505 & 2 \\
-PAAD         & Pancreas    &  3 &  9{,}793 & 3 \\
-PRAD         & Prostate    & 23 & 62{,}710 & 2 \\
-SKCM         & Skin        &  2 &  5{,}716 & 2 \\
+IDC          & Breast      & 4 & 44{,}974 & 4 & \checkmark \\
+LYMPH\_IDC   & Breast      & 4 & 19{,}964 & 4 &            \\
+COAD         & Colorectal  & 4 & 18{,}523 & 2 &            \\
+READ         & Colorectal  & 4 &  8{,}407 & 2 &            \\
+CCRCC        & Kidney      & 24 & 74{,}220 & 6 & \checkmark \\
+HCC          & Liver$^*$   &  2 &  4{,}248 & 2 &            \\
+LUNG         & Lung        &  2 &  7{,}505 & 2 & \checkmark \\
+PAAD         & Pancreas    &  3 &  9{,}793 & 3 & \checkmark \\
+PRAD         & Prostate    & 23 & 62{,}710 & 2 & \checkmark \\
+SKCM         & Skin        &  2 &  5{,}716 & 2 & \checkmark \\
 \bottomrule
 \end{tabular}
 \begin{minipage}{\linewidth}
