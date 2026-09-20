@@ -654,13 +654,13 @@ all methods because the retained genes are the most variable, and hence the most
 
 \begin{figure}[H]
 \centering
-\includegraphics[width=\linewidth]{figures/box_looo5_grouped.png}
+\includegraphics[width=\linewidth]{figures/box_looo5_percohort.png}
 \caption{\textbf{Per-cohort distribution of cross-organ LOOO accuracy} (five-organ subset,
-frozen UNI+CONCH). Boxes are grouped by held-out cohort (x-axis) and colored by model (legend);
-each box is the per-gene PCC pooled over the three seeds and the fold's leakage-safe panel genes,
-with the mean marked ($\Diamond$). \morph{} (orange) is best or tied on kidney, lung, prostate, and
-skin, and competitive on breast. Self-contained five-organ leave-one-organ-out; each fold trains on
-the other four organs with leakage-safe per-fold panels.}
+frozen UNI+CONCH). One panel per held-out cohort; each box is the per-gene PCC pooled over the
+three seeds and the fold's leakage-safe panel genes, with the mean marked ($\Diamond$).
+\morph{} (orange, leftmost) is best or tied on kidney, lung, prostate, and skin, and competitive on
+breast. Self-contained five-organ leave-one-organ-out; each fold trains on the other four organs
+with leakage-safe per-fold panels.}
 \label{fig:box_looo5}
 \end{figure}
 
