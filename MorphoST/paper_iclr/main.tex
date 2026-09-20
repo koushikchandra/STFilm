@@ -1623,11 +1623,12 @@ SKCM~\tiny{Skin}  &  $1.015{\pm}0.023$  &  $1.056{\pm}0.015$  &  $0.926{\pm}0.01
 \label{app:mse_mae_full}
 
 Table~\ref{tab:error_strategy} reports MSE and MAE \emph{averaged over the six cohorts} for each
-gene-selection strategy and panel size. Tables~\ref{tab:mse_strategy}--\ref{tab:mae_size} give the
-per-cohort values behind those averages: the mean of each column here equals the corresponding entry
-of Table~\ref{tab:error_strategy}. Same six cohorts, five models, frozen UNI\,+\,CONCH features,
-splits, and training budget as the Pearson Tables~\ref{tab:panel_strategy} and~\ref{tab:main};
-mean$_{\text{std}}$ over three seeds; best (lowest) per row in \best{bold}.
+gene-selection strategy and panel size. Table~\ref{tab:mse_strategy} (MSE across selection strategies)
+and Table~\ref{tab:mae_size} (MAE across panel sizes) give the per-cohort values behind those averages:
+the mean of each column equals the corresponding entry of Table~\ref{tab:error_strategy}. Same six
+cohorts, five models, frozen UNI\,+\,CONCH features, splits, and training budget as the Pearson
+Tables~\ref{tab:panel_strategy} and~\ref{tab:main}; mean$_{\text{std}}$ over three seeds; best (lowest)
+per row in \best{bold}.
 
 \begin{table}[H]
 \centering
@@ -1659,76 +1660,6 @@ Panel & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
  & PAAD~\tiny{Pancreas} & $2.58{\pm}0.26$ & $1.37{\pm}0.28$ & \best{$1.21{\pm}0.23$} & $1.76{\pm}0.22$ & $1.24{\pm}0.19$ \\
  & PRAD~\tiny{Prostate} & $1.52{\pm}0.15$ & \best{$1.35{\pm}0.02$} & $1.40{\pm}0.07$ & $1.89{\pm}0.15$ & $1.52{\pm}0.35$ \\
  & SKCM~\tiny{Skin} & $6.71{\pm}0.41$ & $2.90{\pm}0.91$ & $1.80{\pm}0.26$ & $2.47{\pm}0.64$ & \best{$1.10{\pm}0.03$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Intra-cohort MSE $\downarrow$ across gene-panel sizes, per cohort.}}
-\label{tab:mse_size}
-\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{0.9}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{llccccc}
-\toprule
-Genes & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
-\midrule
-\multirow{6}{*}{\textbf{10}} & IDC~\tiny{Breast} & $11.00{\pm}1.47$ & $5.23{\pm}0.58$ & $5.49{\pm}0.09$ & $5.66{\pm}0.05$ & \best{$5.02{\pm}0.49$} \\
- & CCRCC~\tiny{Kidney} & $1.05{\pm}0.01$ & \best{$0.90{\pm}0.03$} & $0.93{\pm}0.03$ & $1.11{\pm}0.04$ & $0.90{\pm}0.03$ \\
- & LUNG~\tiny{Lung} & $8.61{\pm}0.29$ & $4.13{\pm}0.09$ & $3.07{\pm}0.05$ & $3.53{\pm}0.29$ & \best{$2.93{\pm}0.07$} \\
- & PAAD~\tiny{Pancreas} & $6.85{\pm}1.05$ & $3.09{\pm}0.77$ & \best{$2.54{\pm}0.73$} & $3.14{\pm}0.80$ & $2.79{\pm}1.01$ \\
- & PRAD~\tiny{Prostate} & $1.57{\pm}0.23$ & $1.21{\pm}0.01$ & $1.25{\pm}0.03$ & $1.46{\pm}0.02$ & \best{$1.17{\pm}0.06$} \\
- & SKCM~\tiny{Skin} & $7.44{\pm}0.12$ & $5.23{\pm}0.34$ & $3.87{\pm}0.03$ & $4.18{\pm}0.29$ & \best{$2.91{\pm}0.16$} \\
-\midrule
-\multirow{6}{*}{\textbf{50}} & IDC~\tiny{Breast} & $2.98{\pm}0.28$ & $2.86{\pm}0.39$ & $2.43{\pm}0.04$ & $2.80{\pm}0.06$ & \best{$2.24{\pm}0.03$} \\
- & CCRCC~\tiny{Kidney} & $0.59{\pm}0.01$ & $0.57{\pm}0.01$ & $0.60{\pm}0.01$ & $0.80{\pm}0.04$ & \best{$0.55{\pm}0.02$} \\
- & LUNG~\tiny{Lung} & $3.32{\pm}0.03$ & $1.80{\pm}0.06$ & \best{$1.62{\pm}0.04$} & $2.10{\pm}0.09$ & $1.67{\pm}0.04$ \\
- & PAAD~\tiny{Pancreas} & $2.04{\pm}0.27$ & $1.34{\pm}0.21$ & \best{$1.13{\pm}0.26$} & $1.71{\pm}0.21$ & $1.17{\pm}0.17$ \\
- & PRAD~\tiny{Prostate} & $0.63{\pm}0.03$ & $0.56{\pm}0.00$ & $0.57{\pm}0.02$ & $0.82{\pm}0.01$ & \best{$0.54{\pm}0.03$} \\
- & SKCM~\tiny{Skin} & $2.41{\pm}0.08$ & $2.24{\pm}0.08$ & $1.55{\pm}0.05$ & $2.25{\pm}0.17$ & \best{$1.23{\pm}0.03$} \\
-\midrule
-\multirow{6}{*}{\textbf{100}} & IDC~\tiny{Breast} & $4.22{\pm}0.27$ & $2.33{\pm}0.24$ & $2.04{\pm}0.16$ & $2.47{\pm}0.29$ & \best{$2.02{\pm}0.04$} \\
- & CCRCC~\tiny{Kidney} & $1.55{\pm}0.07$ & $1.12{\pm}0.05$ & $1.22{\pm}0.01$ & $1.45{\pm}0.02$ & \best{$1.11{\pm}0.02$} \\
- & LUNG~\tiny{Lung} & $4.38{\pm}0.05$ & $1.79{\pm}0.04$ & \best{$1.38{\pm}0.00$} & $1.84{\pm}0.03$ & $1.47{\pm}0.02$ \\
- & PAAD~\tiny{Pancreas} & $1.79{\pm}0.23$ & $1.09{\pm}0.19$ & \best{$0.96{\pm}0.18$} & $1.47{\pm}0.14$ & $1.00{\pm}0.12$ \\
- & PRAD~\tiny{Prostate} & $1.58{\pm}0.17$ & $1.60{\pm}0.09$ & \best{$1.47{\pm}0.05$} & $1.80{\pm}0.07$ & $1.60{\pm}0.25$ \\
- & SKCM~\tiny{Skin} & $6.40{\pm}0.13$ & $3.13{\pm}0.36$ & $2.28{\pm}0.08$ & $2.36{\pm}0.03$ & \best{$1.55{\pm}0.04$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Intra-cohort MAE $\downarrow$ across 50-gene selection strategies, per cohort.}}
-\label{tab:mae_strategy}
-\setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{0.9}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{llccccc}
-\toprule
-Panel & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
-\midrule
-\multirow{6}{*}{\textbf{HVG}} & IDC~\tiny{Breast} & $1.28{\pm}0.06$ & $1.27{\pm}0.09$ & $1.12{\pm}0.01$ & $1.21{\pm}0.02$ & \best{$1.10{\pm}0.01$} \\
- & CCRCC~\tiny{Kidney} & $0.58{\pm}0.00$ & $0.57{\pm}0.00$ & $0.58{\pm}0.00$ & $0.63{\pm}0.02$ & \best{$0.57{\pm}0.01$} \\
- & LUNG~\tiny{Lung} & $1.36{\pm}0.01$ & $1.01{\pm}0.02$ & \best{$0.95{\pm}0.01$} & $1.06{\pm}0.03$ & $0.96{\pm}0.01$ \\
- & PAAD~\tiny{Pancreas} & $1.01{\pm}0.06$ & $0.87{\pm}0.07$ & \best{$0.79{\pm}0.09$} & $0.94{\pm}0.05$ & $0.80{\pm}0.05$ \\
- & PRAD~\tiny{Prostate} & $0.57{\pm}0.02$ & $0.56{\pm}0.01$ & \best{$0.55{\pm}0.01$} & $0.62{\pm}0.01$ & $0.55{\pm}0.02$ \\
- & SKCM~\tiny{Skin} & $1.02{\pm}0.02$ & $1.06{\pm}0.02$ & $0.92{\pm}0.02$ & $1.06{\pm}0.04$ & \best{$0.79{\pm}0.00$} \\
-\midrule
-\multirow{6}{*}{\textbf{DEG}} & IDC~\tiny{Breast} & $2.02{\pm}0.07$ & $1.21{\pm}0.20$ & \best{$1.03{\pm}0.07$} & $1.07{\pm}0.08$ & $1.04{\pm}0.06$ \\
- & CCRCC~\tiny{Kidney} & $1.13{\pm}0.03$ & \best{$0.98{\pm}0.01$} & $1.00{\pm}0.00$ & $1.05{\pm}0.02$ & $0.99{\pm}0.04$ \\
- & LUNG~\tiny{Lung} & $1.57{\pm}0.01$ & $1.09{\pm}0.00$ & \best{$1.05{\pm}0.00$} & $1.19{\pm}0.01$ & $1.05{\pm}0.01$ \\
- & PAAD~\tiny{Pancreas} & $1.47{\pm}0.09$ & $0.96{\pm}0.08$ & \best{$0.88{\pm}0.10$} & $1.07{\pm}0.10$ & $0.90{\pm}0.08$ \\
- & PRAD~\tiny{Prostate} & $1.17{\pm}0.08$ & $0.96{\pm}0.01$ & $0.93{\pm}0.01$ & $1.07{\pm}0.02$ & \best{$0.89{\pm}0.02$} \\
- & SKCM~\tiny{Skin} & $1.40{\pm}0.02$ & $0.92{\pm}0.01$ & $0.78{\pm}0.03$ & $0.88{\pm}0.04$ & \best{$0.70{\pm}0.00$} \\
-\midrule
-\multirow{6}{*}{\textbf{HMHVG}} & IDC~\tiny{Breast} & $1.84{\pm}0.14$ & $1.14{\pm}0.13$ & $1.04{\pm}0.08$ & $1.11{\pm}0.05$ & \best{$1.00{\pm}0.06$} \\
- & CCRCC~\tiny{Kidney} & $0.95{\pm}0.01$ & $0.87{\pm}0.03$ & $0.85{\pm}0.01$ & $0.91{\pm}0.01$ & \best{$0.83{\pm}0.03$} \\
- & LUNG~\tiny{Lung} & $1.72{\pm}0.00$ & $1.08{\pm}0.01$ & $1.00{\pm}0.00$ & $1.09{\pm}0.00$ & \best{$0.98{\pm}0.00$} \\
- & PAAD~\tiny{Pancreas} & $1.21{\pm}0.05$ & $0.91{\pm}0.09$ & \best{$0.84{\pm}0.08$} & $0.99{\pm}0.06$ & $0.84{\pm}0.05$ \\
- & PRAD~\tiny{Prostate} & $0.92{\pm}0.04$ & \best{$0.88{\pm}0.01$} & $0.88{\pm}0.03$ & $1.00{\pm}0.05$ & $0.94{\pm}0.13$ \\
- & SKCM~\tiny{Skin} & $2.18{\pm}0.05$ & $1.38{\pm}0.29$ & $1.00{\pm}0.07$ & $1.19{\pm}0.17$ & \best{$0.81{\pm}0.01$} \\
 \bottomrule
 \end{tabular}%
 }
