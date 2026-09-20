@@ -642,9 +642,9 @@ gain---and wins on all seven cohorts.
 \begin{table}[H]
 \centering
 \caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
-Mean$_{\text{std}}$ over three seeds with nested-validation; lower values are better and the
-best result in each row is in \best{bold}. The models, features, splits, and training budget
-match Tables~\ref{tab:panel_strategy} and~\ref{tab:main}.}
+Mean over three seeds, averaged over the same six cohorts as Tables~\ref{tab:panel_strategy}
+and~\ref{tab:main} (IDC, CCRCC, LUNG, PAAD, PRAD, SKCM); lower values are better and the best
+result in each row is in \best{bold}. Models, features, splits, and training budget are matched.}
 \label{tab:error_strategy}
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.12}
@@ -656,20 +656,20 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
         & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
 \midrule
 \multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{selection}\\\textit{strategy}}}}
-& HVG   & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
-         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
-& DEG   & $3.853$ & $1.961$ & $1.783$ & $2.172$ & \best{$1.724$}
-         & $1.548$ & $1.071$ & $1.003$ & $1.105$ & \best{$0.989$} \\
-& HMHVG & $4.005$ & $1.977$ & $1.754$ & $2.158$ & \best{$1.622$}
-         & $1.549$ & $1.079$ & $0.987$ & $1.094$ & \best{$0.959$} \\
+& HVG   & $1.995$ & $1.561$ & $1.318$ & $1.747$ & \best{$1.233$}
+         & $0.969$ & $0.890$ & $0.819$ & $0.920$ & \best{$0.794$} \\
+& DEG   & $3.336$ & $1.757$ & $1.557$ & $1.958$ & \best{$1.477$}
+         & $1.457$ & $1.021$ & $0.945$ & $1.054$ & \best{$0.928$} \\
+& HMHVG & $3.589$ & $1.832$ & $1.566$ & $1.976$ & \best{$1.393$}
+         & $1.470$ & $1.042$ & $0.936$ & $1.049$ & \best{$0.901$} \\
 \midrule
 \multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{panel}\\\textit{size}}}}
-& 10  & $6.119$ & $3.653$ & $3.334$ & $3.647$ & \best{$3.105$}
-         & $1.897$ & $1.439$ & $1.332$ & $1.397$ & \best{$1.306$} \\
-& 50  & $2.041$ & $1.653$ & $1.445$ & $1.874$ & \best{$1.388$}
-         & $0.972$ & $0.907$ & $0.843$ & $0.944$ & \best{$0.829$} \\
-& 100 & $3.650$ & $1.943$ & $1.690$ & $2.066$ & \best{$1.606$}
-         & $1.411$ & $1.034$ & $0.948$ & $1.040$ & \best{$0.929$} \\
+& 10  & $6.087$ & $3.297$ & $2.859$ & $3.181$ & \best{$2.620$}
+         & $1.908$ & $1.374$ & $1.243$ & $1.310$ & \best{$1.211$} \\
+& 50  & $1.995$ & $1.561$ & $1.318$ & $1.747$ & \best{$1.233$}
+         & $0.969$ & $0.890$ & $0.819$ & $0.920$ & \best{$0.794$} \\
+& 100 & $3.320$ & $1.843$ & $1.558$ & $1.899$ & \best{$1.458$}
+         & $1.354$ & $1.011$ & $0.915$ & $1.001$ & \best{$0.894$} \\
 \bottomrule
 \end{tabular}
 }%
