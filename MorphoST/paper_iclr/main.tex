@@ -23,6 +23,7 @@
   left=5pt,right=5pt,top=3pt,bottom=3pt,before skip=6pt,after skip=6pt,fontupper=\small\itshape}
 \usepackage[pagebackref,breaklinks,colorlinks]{hyperref}
 \usepackage{url}
+\usepackage{etoc}   % appendix-only table of contents (Supplementary Material)
 
 % ICLR 2027 submission
 
@@ -84,6 +85,7 @@ With $4.88$M parameters and model-only inference of $64.7$\,ms for 10,000 spots 
 generalization to unseen organs remains a challenge.
 \end{abstract}
 
+\etocdepthtag.toc{mainbody}
 \section{Introduction}
 Spatial transcriptomics (ST) measures gene expression together with tissue location, enabling the
 study of spatial heterogeneity, tissue organization, and cellular interactions
@@ -955,6 +957,18 @@ take responsibility for the final content of this work.
 
 \clearpage
 \appendix
+\etocdepthtag.toc{supp}
+\clearpage
+\begin{center}
+{\LARGE\scshape Supplementary Material}\\[1.2em]
+{\large\scshape Table of Contents}
+\end{center}
+\vspace{0.8em}
+\etocsettagdepth{mainbody}{none}
+\etocsettagdepth{supp}{subsection}
+\etocsettocstyle{}{}
+\tableofcontents
+\clearpage
 
 \section{Appendix}
 
