@@ -960,9 +960,9 @@ take responsibility for the final content of this work.
 
 
 
-\section{Mouse cross-organ diagnostic}
+\section{Model complexity and inference scaling}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{\textbf{Model complexity.} Parameter counts and inference mechanisms.}
 \label{tab:complexity}
@@ -982,7 +982,7 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)    & 34.16 & iterative \\
 \end{tabular}
 \end{table}
 
-\begin{table}[t]
+\begin{table}[H]
 \centering
 \caption{\textbf{\morph{} inference scaling on an NVIDIA A100 80GB.} Median model-only latency and
 peak allocated GPU memory over synthetic slides; feature extraction and disk I/O are excluded.}
@@ -1000,12 +1000,14 @@ Spots & Latency (ms) & Memory (MiB) \\
 \bottomrule
 \end{tabular}
 \end{table}
+
+\section{Mouse cross-organ diagnostic}
 \label{app:mouse}
 We evaluate 59 mouse Visium slides spanning seven organs with mouse-specific 50-gene panels. Pooled
 performance reaches $0.887$, whereas every method remains near the floor under LOOO; we therefore do
 not interpret the latter as evidence of successful cross-species organ transfer.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: five-fold pooled cross-validation.
@@ -1033,7 +1035,7 @@ panels do not transfer reliably.
 
 \section{Spatial-domain recovery}
 \label{app:spatial}
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Spatial-domain recovery (all seven cohorts).} ARI/NMI between domains clustered
 (KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of all seven retained
@@ -1062,7 +1064,7 @@ Table~\ref{tab:percohort} gives the per-cohort breakdown for all seven retained 
 (HCC/liver, LYMPH\_IDC, and READ excluded; see Appendix~\ref{app:cohort_stats}) across all
 six baselines and \morph{}.
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{\textbf{Full per-cohort intra-cohort results on HEST-1k} (Pearson mean$_{\text{std}}$ over three
 seeds; nested-validation). All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels,
@@ -1091,7 +1093,7 @@ SKCM~\tiny{Skin}        &  $0.665{\pm}0.01$  &  $0.522{\pm}0.03$  &  $0.645{\pm}
 \footnotesize
 \morph{} (V3) uses UNI (1024-dim); all other methods use UNI\,+\,CONCH (1536-dim). STEM: corrected DiT (T=1000, 34M params).
 \end{minipage}
-\end{table*}
+\end{table}
 
 \section{Cross-organ LOOO transfer, expanded baselines (UNI\,+\,CONCH)}
 \label{app:percohort_uniconch}
@@ -1100,7 +1102,7 @@ Table~\ref{tab:percohort_uniconch} extends Table~\ref{tab:looo_main} with M2OST 
 same UNI+CONCH protocol. EGN attains the highest mean PCC ($0.500$), followed by \morph{} at
 $0.490$; their per-cohort ranking varies.
 
-\begin{table*}[tp]
+\begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ LOOO transfer, per-cohort Pearson $\uparrow$ (HEST-1k).}
 Mean$_{\text{std}}$ over three seeds; nested-validation.
@@ -1130,9 +1132,9 @@ SKCM~\tiny{Skin}        &  $0.520{\pm}0.16$  &  $0.736{\pm}0.01$  &  \best{$0.74
 \vspace{2pt}\footnotesize
 STEM: corrected DiT ($T=1000$, 34M params), three seeds.
 \end{minipage}
-\end{table*}
+\end{table}
 
-\begin{table*}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ LOOO transfer, expanded baselines, per-cohort Pearson $\uparrow$ (HEST-1k)} (Pearson
 mean$_{\text{std}}$ over three seeds; nested-validation; liver excluded).
@@ -1161,7 +1163,7 @@ SKCM~\tiny{Skin}        &  $0.520{\pm}0.16$  &  $0.736{\pm}0.01$  &  $0.748{\pm}
 \begin{minipage}{\linewidth}
 \vspace{2pt}\footnotesize
 \end{minipage}
-\end{table*}
+\end{table}
 
 \section{Cross-organ LOOO transfer with UNI features}
 \label{app:looo_expanded}
@@ -1171,7 +1173,7 @@ the highest mean PCC ($0.493$), while \morph{} reaches $0.477$. M2OST narrowly l
 ($0.667$ versus $0.666$). STEM uses the corrected DiT configuration with $T=1000$; its SKCM entry
 contains one completed seed and is marked accordingly.
 
-\begin{table*}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ LOOO transfer with UNI features} (Pearson mean$_{\text{std}}$
 over three seeds; nested-validation; HCC, LYMPH\_IDC, and READ excluded).
@@ -1200,12 +1202,12 @@ SKCM~\tiny{Skin}        &  $0.402{\pm}0.08$  &  $0.652{\pm}0.08$  &  $0.745{\pm}
 \vspace{2pt}\footnotesize
 $^\dagger$STEM DiT (corrected, T=1000, 100 epochs) LOOO: SKCM (skin) has only 1 seed complete; all other organs use 3 seeds. Average marked $^\dagger$ accordingly.
 \end{minipage}
-\end{table*}
+\end{table}
 
 \section{Published Per-Cohort Comparison}
 \label{app:published}
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Published per-cohort accuracy on the standard HEST-1k splits}, mean PCC$\uparrow$
 as reported in respective papers (ten cohorts, no organ grouping). Shown for context
@@ -1247,7 +1249,7 @@ highest mean for every method tested.
 $0.595$ for BLEEP) and consistent across DEG ($0.624$ vs.\ $0.571$) and HVG ($0.471$ vs.\
 $0.427$).
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Gene panel comparison: intra-cohort mean PCC$\uparrow$ (HEST-1k).}
 Mean$_{\mathrm{std}}$ over three seeds; per-seed value is the average over seven cohorts.
@@ -1274,7 +1276,7 @@ Table~\ref{tab:panel_percohort} gives the per-cohort breakdown.
 \morph{} leads on 6 of 7 cohorts under HVG (BLEEP is stronger on COAD) and on all 7 cohorts under
 both DEG and HMHVG.
 
-\begin{table*}[!p]
+\begin{table}[H]
 \centering
 \caption{\textbf{Per-cohort gene panel comparison: intra-cohort PCC$\uparrow$ (HEST-1k).}
 Mean$_{\mathrm{std}}$ over three seeds. All methods use UNI\,+\,CONCH (1536-dim) and nested-validation.
@@ -1320,7 +1322,7 @@ Panel & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} \\
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 \section{HEST-1k Cohort Statistics}
 \label{app:cohort_stats}
@@ -1337,7 +1339,7 @@ uses \textbf{IDC} as the representative breast cohort and \textbf{COAD} as the r
 colorectal cohort, discarding the smaller partner cohorts (LYMPH\_IDC and READ) from the
 organ-level rows. This choice maximises statistical reliability of each organ-level estimate.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
 of train/test splits in the per-cohort cross-validation. HCC (liver) is excluded from
@@ -1409,7 +1411,7 @@ Proposition~\ref{prop:permutation_equivariance}.
 Table~\ref{tab:metrics} extends the intra-cohort comparison with Spearman correlation (SCC) and
 mean squared error (MSE) alongside PCC, averaged over seven organ groups.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Intra-cohort three-metric summary} (HEST-1k, averaged over seven organ groups;
 three seeds; UNI\,+\,CONCH features). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}.}
@@ -1439,7 +1441,7 @@ comparison in Table~\ref{tab:main}. \morph{} attains the best average on both er
 (MSE $1.389$, MAE $0.829$), consistent with its Pearson result; per-cohort leadership is less uniform
 than on Pearson, as the training objective couples MSE with a correlation term.
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{\textbf{Intra-cohort MSE $\downarrow$ on HEST-1k, per cohort.} Mean$_{\text{std}}$ over three
 seeds with nested-validation; best (lowest) per row in \best{bold}. Same models, cohorts, features
@@ -1463,9 +1465,9 @@ SKCM~\tiny{Skin}  &  $2.387{\pm}0.085$  &  $2.176{\pm}0.016$  &  $1.570{\pm}0.03
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
-\begin{table*}[t]
+\begin{table}[H]
 \centering
 \caption{\textbf{Intra-cohort MAE $\downarrow$ on HEST-1k, per cohort.} Mean$_{\text{std}}$ over three
 seeds with nested-validation; best (lowest) per row in \best{bold}. Same models, cohorts, features
@@ -1489,7 +1491,7 @@ SKCM~\tiny{Skin}  &  $1.015{\pm}0.023$  &  $1.056{\pm}0.015$  &  $0.926{\pm}0.01
 \bottomrule
 \end{tabular}%
 }
-\end{table*}
+\end{table}
 
 \section{Cross-Organ Generalization: PCC and MSE}
 \label{app:crossorgan}
@@ -1497,7 +1499,7 @@ SKCM~\tiny{Skin}  &  $1.015{\pm}0.023$  &  $1.056{\pm}0.015$  &  $0.926{\pm}0.01
 Table~\ref{tab:crossorgan} reports both PCC and MSE for the LOOO and POOLED cross-organ regimes,
 complementing the PCC-only summaries in the main paper.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ generalization: PCC and MSE} (three seeds, mean$_{\text{std}}$).
 \textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: 5-fold pooled cross-validation.
@@ -1528,7 +1530,7 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)    & $0.322_{0.01}$ & $1.274_{0.00}$ & $0
 Table~\ref{tab:intra_uniconch} extends the intra-cohort comparison to include M2OST and EGN
 under the same UNI\,+\,CONCH feature protocol.
 
-\begin{table*}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Intra-cohort results using UNI\,+\,CONCH features, extended baselines} (Pearson
 mean$_{\text{std}}$ over three seeds; nested-validation). All methods use identical frozen
@@ -1557,7 +1559,7 @@ SKCM~\tiny{Skin}        &  $0.665{\pm}0.01$  &  $0.522{\pm}0.03$  &  $0.645{\pm}
 \footnotesize
 All entries use three completed seeds. STEM uses the corrected DiT configuration ($T=1000$, 100 epochs).
 \end{minipage}
-\end{table*}
+\end{table}
 
 \section{Training Objective Ablation}
 \label{app:lossdata}
@@ -1566,7 +1568,7 @@ Table~\ref{tab:lossdata} isolates the contribution of the Pearson correlation te
 training objective from the architectural design, confirming that the accuracy gap over baselines
 is not attributable to the loss function alone.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \caption{\textbf{Objective ablation (HEST-1k).} Effect of adding the Pearson correlation term
 to the MSE objective; averaged over seven organ groups, three seeds.}
