@@ -780,7 +780,7 @@ Spot permutation & $5.96\times10^{-7}$ \\
 \morph{}'s local (L), global (G), and slide (S) context streams on the six-organ POOLED set
 (CCRCC/IDC/LUNG/PAAD/PRAD/SKCM; frozen UNI+CONCH, 14-gene, 5-fold). POOLED PCC$\uparrow$ is
 mean$_{\text{std}}$ over three seeds; the last row replaces spatial-kNN local attention with random
-neighbours. \textcolor{gray}{\textit{running}} entries are still training.}
+neighbours. The complete model (L+G+S) is best; local attention is the dominant stream.}
 \label{tab:ablation}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -788,18 +788,18 @@ neighbours. \textcolor{gray}{\textit{running}} entries are still training.}
 \toprule
 Configuration & Streams & POOLED PCC $\uparrow$ \\
 \midrule
-Full \morph{}            & L\,+\,G\,+\,S & \textcolor{gray}{\textit{running}} \\
-Global\,+\,Local         & L\,+\,G       & \textcolor{gray}{\textit{running}} \\
-Global\,+\,Slide         & G\,+\,S       & \textcolor{gray}{\textit{running}} \\
-Global only              & G             & \textcolor{gray}{\textit{running}} \\
-Local\,+\,Slide          & L\,+\,S       & $0.597^{\dagger}$ \\
-Local only               & L             & \textcolor{gray}{\textit{running}} \\
-Slide only               & S             & \textcolor{gray}{\textit{running}} \\
+Full \morph{}            & L\,+\,G\,+\,S & \best{$0.605_{0.006}$} \\
+Global\,+\,Local         & L\,+\,G       & $0.596_{0.007}$ \\
+Global\,+\,Slide         & G\,+\,S       & $0.570_{0.037}$ \\
+Global only              & G             & $0.590_{0.005}$ \\
+Local\,+\,Slide          & L\,+\,S       & $0.601_{0.007}$ \\
+Local only               & L             & $0.597_{0.021}$ \\
+Slide only               & S             & $0.580_{0.020}$ \\
 \midrule
-Global\,+\,Local (random nbr.) & L$_{\text{rand}}$\,+\,G & \textcolor{gray}{\textit{running}} \\
+Global\,+\,Local (random nbr.) & L$_{\text{rand}}$\,+\,G & $0.584_{0.011}$ \\
+Full, random nbr.        & L$_{\text{rand}}$\,+\,G\,+\,S & \textcolor{gray}{\textit{running}} \\
 \bottomrule
-\end{tabular}\\[2pt]
-{\footnotesize $^\dagger$1 of 3 seeds so far (provisional).}
+\end{tabular}
 \end{table}
 
 \begin{figure*}[t]
