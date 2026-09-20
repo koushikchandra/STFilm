@@ -774,6 +774,34 @@ Spot permutation & $5.96\times10^{-7}$ \\
 \end{tabular}
 \end{table}
 
+\begin{table}[H]
+\centering
+\caption{\textbf{Context-stream ablation (six-organ POOLED, no COAD).} Each row toggles a subset of
+\morph{}'s local (L), global (G), and slide (S) context streams on the six-organ POOLED set
+(CCRCC/IDC/LUNG/PAAD/PRAD/SKCM; frozen UNI+CONCH, 14-gene, 5-fold). POOLED PCC$\uparrow$ is
+mean$_{\text{std}}$ over three seeds; the last row replaces spatial-kNN local attention with random
+neighbours. \textcolor{gray}{\textit{running}} entries are still training.}
+\label{tab:ablation}
+\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{ll c}
+\toprule
+Configuration & Streams & POOLED PCC $\uparrow$ \\
+\midrule
+Full \morph{}            & L\,+\,G\,+\,S & \textcolor{gray}{\textit{running}} \\
+Global\,+\,Local         & L\,+\,G       & \textcolor{gray}{\textit{running}} \\
+Global\,+\,Slide         & G\,+\,S       & \textcolor{gray}{\textit{running}} \\
+Global only              & G             & \textcolor{gray}{\textit{running}} \\
+Local\,+\,Slide          & L\,+\,S       & $0.597^{\dagger}$ \\
+Local only               & L             & \textcolor{gray}{\textit{running}} \\
+Slide only               & S             & \textcolor{gray}{\textit{running}} \\
+\midrule
+Global\,+\,Local (random nbr.) & L$_{\text{rand}}$\,+\,G & \textcolor{gray}{\textit{running}} \\
+\bottomrule
+\end{tabular}\\[2pt]
+{\footnotesize $^\dagger$1 of 3 seeds so far (provisional).}
+\end{table}
+
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.98\linewidth]{figures/fig_ablation_pccmse.png}
