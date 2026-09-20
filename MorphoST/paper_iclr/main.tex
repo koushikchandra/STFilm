@@ -142,7 +142,7 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{table}
 
 \medskip
-\noindent We investigate six questions: \textbf{RQ1 (Accuracy)} across panel sizes and selection strategies; \textbf{RQ2 (Multi-organ)} whether a single pooled model predicts across diverse organs at once; \textbf{RQ3 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ4 (Design)} for encoder, context streams, and neighborhood definition; \textbf{RQ5 (Structure)} for spatial-domain recovery; and \textbf{RQ6 (Efficiency)} for whole-slide inference.
+\noindent We investigate five questions: \textbf{RQ1 (Performance)} accuracy across diverse organs, both per-organ and with a single pooled model; \textbf{RQ2 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ3 (Design)} the effect of encoder, context streams, and neighborhood definition; \textbf{RQ4 (Structure)} spatial-domain recovery; and \textbf{RQ5 (Efficiency)} whole-slide inference.
 
 \medskip
 \noindent\textbf{Contributions.}
@@ -538,8 +538,10 @@ gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extend
 \label{sec:results}
 
 \medskip
-\subsection{Results for RQ1: Intra-cohort prediction}
+\subsection{Results for RQ1: Predictive performance across diverse organs}
 \label{sec:rq1}
+We first establish accuracy on organs the model has \emph{seen}, both when a model is trained
+per cohort (intra-cohort) and when a \emph{single} model is trained jointly across organs (pooled).
 Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
 ($0.470$), compared with $0.426$ for BLEEP, the strongest baseline, a $10.3\%$ relative improvement.
 It leads on all seven cohorts, though the margin is not uniform: it is widest on kidney and breast
@@ -626,13 +628,6 @@ Metric & Cohort & ST-Net & Hist2ST
 }
 \end{table*}
 
-
-\begin{keybox}
-\textbf{Key Finding (RQ1):} On matched features and gene panels, \morph{} leads intra-cohort
-accuracy---mean PCC@50 of $0.470$ vs.\ $0.426$ for the strongest baseline (BLEEP), a $10.3\%$ relative
-gain---and wins on all seven cohorts.
-\end{keybox}
-
 \begin{table}[H]
 \centering
 \caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
@@ -669,24 +664,15 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
 }%
 \end{table}
 
-\FloatBarrier
 \medskip
-\subsection{Results for RQ2: Unified multi-organ prediction}
-\label{sec:multiorgan}
-A single \morph{}, trained jointly on all organs pooled (leave-slide-out cross-validation; no
-per-organ specialisation and no organ labels), predicts spatial expression across the diverse organs
+Beyond per-organ models, a \emph{single} \morph{} trained jointly on all organs pooled (leave-slide-out
+cross-validation; no per-organ specialisation and no organ labels) predicts across the diverse organs
 at once, adapting to each slide through its shared local, global, and slide-level context rather than a
 dedicated per-tissue model. On the six-organ subset it attains the best mean PCC ($0.599$;
-Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$); on the full seven-organ HEST
-panel it reaches $0.760$, narrowly above BLEEP ($0.758$). BLEEP obtains the lowest absolute error.
-Thus one shared model serves many organs at once---without the per-organ training of RQ1---provided
-each organ is represented during training.
-
-\begin{keybox}
-\textbf{Key Finding (RQ2):} A single pooled \morph{} predicts expression across all six organs
-simultaneously (best mean PCC $0.599$; $0.760$ on full HEST), so a separate model per organ is
-unnecessary when the organ is represented in training.
-\end{keybox}
+Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$), and reaches $0.760$ on the
+full seven-organ HEST panel (BLEEP $0.758$); BLEEP obtains the lowest absolute error. Thus one shared
+model serves many organs at once, without per-organ retraining, provided each organ is represented
+during training.
 
 \begin{table}[H]
 \centering
@@ -711,11 +697,18 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ & $0.934$ & 
 }
 \end{table}
 
+\begin{keybox}
+\textbf{Key Finding (RQ1):} \morph{} gives the best accuracy across diverse organs both \emph{per
+organ} (intra-cohort PCC@50 $0.470$ vs.\ $0.426$ for BLEEP, winning all seven cohorts) and as a
+\emph{single pooled} model ($0.599$ six-organ / $0.760$ full HEST), so a separate model per tissue is
+unnecessary when the organ is represented in training.
+\end{keybox}
+
 \FloatBarrier
 \medskip
-\subsection{Results for RQ3: Cross-organ transfer to an unseen organ}
+\subsection{Results for RQ2: Cross-organ transfer to an unseen organ}
 \label{sec:transfer}
-Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ2 because the target
+Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ1 because the target
 anatomy is \emph{absent} from training. On the six-organ subset \morph{} attains the best mean PCC
 ($0.422$; Table~\ref{tab:looo_6organ}) and wins every held-out organ. On the full seven-organ HEST
 panel it reaches $0.490$ (Appendix~Table~\ref{tab:looo_main}) versus $0.473$ for BLEEP, the strongest
@@ -723,7 +716,7 @@ baseline; BLEEP is stronger on IDC and SKCM there. Appendix~\ref{app:mouse} repo
 seven-organ mouse experiment.
 
 \begin{keybox}
-\textbf{Key Finding (RQ3):} The pooled$\to$LOOO drop---from $0.760$ with the organ seen (RQ2) to
+\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop---from $0.760$ with the organ seen (RQ1) to
 $0.490$ with the organ held out---isolates unseen-organ transfer as the dominant remaining gap;
 predicting seen organs well does not by itself transfer to a new organ.
 \end{keybox}
@@ -768,7 +761,7 @@ SKCM~\tiny{Skin}       & $0.500{\pm}0.09$ & $0.694{\pm}0.02$ & $0.708{\pm}0.01$ 
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ4: What drives accuracy and coordinate invariance?}
+\subsection{Results for RQ3: What drives accuracy and coordinate invariance?}
 \label{sec:design}
 The factorial study evaluates all eight combinations of local (L),
 global (G), and slide-level (S) context on SKCM and LUNG. Local attention provides the largest
@@ -785,7 +778,7 @@ translation and rotation remain below $6\times10^{-5}$ and are attributable to f
 evaluation; reflection is exact in this test.
 
 \begin{keybox}
-\textbf{Key Finding (RQ4):} Local distance-biased attention is the primary driver of accuracy---
+\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy---
 enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
 without it---and the predictor is provably invariant to spot translation, rotation, and reflection.
 \end{keybox}
@@ -850,13 +843,12 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 \FloatBarrier
 \medskip
-% ---- LOOO/POOLED/error tables moved here so RQ1-RQ3 text keeps page 7 ----
 
 
 
 
 
-\subsection{Results for RQ5: Spatial structure preservation}
+\subsection{Results for RQ4: Spatial structure preservation}
 \label{sec:structure}
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
 (KMeans, $k{=}6$ domains) using either predicted or measured expression and compare the induced spatial
@@ -892,7 +884,7 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ6: Computational efficiency}
+\subsection{Results for RQ5: Computational efficiency}
 \label{sec:efficiency}
 \morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
 (Appendix~Table~\ref{tab:complexity}). Its advantage over the baselines is not minimum parameter count:
