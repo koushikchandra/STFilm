@@ -603,6 +603,19 @@ spots per step on one NVIDIA A100.
 \section{Results}
 \label{sec:results}
 
+\medskip
+\subsection{Results for RQ1: Intra-cohort prediction}
+\label{sec:rq1}
+Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
+($0.470$), compared with $0.426$ for BLEEP, the strongest baseline, a $10.3\%$ relative improvement.
+It leads on all seven cohorts, though the margin is not uniform: it is widest on kidney and breast
+($+0.068$ and $+0.062$ over the best baseline) and narrowest on colorectal ($+0.004$).
+The same ranking holds under a smaller \textbf{10-gene} panel
+(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
+ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
+($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
+all methods because the retained genes are the most variable, and hence the most predictable.
+
 \begin{table}[H]
 \centering
 \caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
@@ -639,31 +652,6 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
 }%
 \end{table}
 
-\medskip
-\subsection{Results for RQ1: Intra-cohort prediction}
-\label{sec:rq1}
-Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
-($0.470$), compared with $0.426$ for BLEEP, the strongest baseline, a $10.3\%$ relative improvement.
-It leads on all seven cohorts, though the margin is not uniform: it is widest on kidney and breast
-($+0.068$ and $+0.062$ over the best baseline) and narrowest on colorectal ($+0.004$).
-The same ranking holds under a smaller \textbf{10-gene} panel
-(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
-ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
-($0.569$ vs.\ $0.526$ for BLEEP) and tops five of seven cohorts. Absolute correlations rise across
-all methods because the retained genes are the most variable, and hence the most predictable.
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth]{figures/box_looo5_percohort.png}
-\caption{\textbf{Per-cohort distribution of cross-organ LOOO accuracy} (five-organ subset,
-frozen UNI+CONCH). One panel per held-out cohort; each box is the per-gene PCC pooled over the
-three seeds and the fold's leakage-safe panel genes, with the mean marked ($\Diamond$).
-\morph{} (orange, leftmost) is best or tied on kidney, lung, prostate, and skin, and competitive on
-breast. Self-contained five-organ leave-one-organ-out; each fold trains on the other four organs
-with leakage-safe per-fold panels.}
-\label{fig:box_looo5}
-\end{figure}
-
 \FloatBarrier
 \medskip
 \subsection{Results for RQ2: Cross-organ transfer}
@@ -678,6 +666,17 @@ between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining di
 unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
 experiment.
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{figures/box_looo5_percohort.png}
+\caption{\textbf{Per-cohort distribution of cross-organ LOOO accuracy} (five-organ subset,
+frozen UNI+CONCH). One panel per held-out cohort; each box is the per-gene PCC pooled over the
+three seeds and the fold's leakage-safe panel genes, with the mean marked ($\Diamond$).
+\morph{} (orange, leftmost) is best or tied on kidney, lung, prostate, and skin, and competitive on
+breast. Self-contained five-organ leave-one-organ-out; each fold trains on the other four organs
+with leakage-safe per-fold panels.}
+\label{fig:box_looo5}
+\end{figure}
 
 \FloatBarrier
 \medskip
