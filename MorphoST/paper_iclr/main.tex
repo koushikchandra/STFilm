@@ -142,7 +142,7 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{table}
 
 \medskip
-\noindent We investigate five questions: \textbf{RQ1 (Accuracy)} across panel sizes and selection strategies; \textbf{RQ2 (Transfer)} under pooled and LOOO evaluation; \textbf{RQ3 (Design)} for encoder, context streams, and neighborhood definition; \textbf{RQ4 (Structure)} for spatial-domain recovery; and \textbf{RQ5 (Efficiency)} for whole-slide inference.
+\noindent We investigate six questions: \textbf{RQ1 (Accuracy)} across panel sizes and selection strategies; \textbf{RQ2 (Multi-organ)} whether a single pooled model predicts across diverse organs at once; \textbf{RQ3 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ4 (Design)} for encoder, context streams, and neighborhood definition; \textbf{RQ5 (Structure)} for spatial-domain recovery; and \textbf{RQ6 (Efficiency)} for whole-slide inference.
 
 \medskip
 \noindent\textbf{Contributions.}
@@ -679,22 +679,61 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ2: Cross-organ transfer}
-\label{sec:rq2}
-LOOO is substantially harder because the target anatomy is absent from training. \morph{} reaches a
-mean PCC of $0.490$ (Appendix~Table~\ref{tab:looo_main}), compared with $0.473$ for BLEEP, the strongest
-baseline, and leads on five of seven held-out cohorts; BLEEP is stronger on IDC and SKCM.
-Under pooled cross-validation, where slide-level samples are held out while organ types remain
-represented in training, \morph{} reaches
-$0.760$, narrowly above BLEEP at $0.758$. The gap
-between pooled ($0.760$) and LOOO ($0.490$) directly quantifies the remaining difficulty of
-unseen-organ anatomical transfer. Appendix~\ref{app:mouse} reports a complementary seven-organ mouse
-experiment.
+\subsection{Results for RQ2: Unified multi-organ prediction}
+\label{sec:multiorgan}
+A single \morph{}, trained jointly on all organs pooled (leave-slide-out cross-validation; no
+per-organ specialisation and no organ labels), predicts spatial expression across the diverse organs
+at once, adapting to each slide through its shared local, global, and slide-level context rather than a
+dedicated per-tissue model. On the six-organ subset it attains the best mean PCC ($0.599$;
+Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$); on the full seven-organ HEST
+panel it reaches $0.760$, narrowly above BLEEP ($0.758$). BLEEP obtains the lowest absolute error.
+Thus one shared model serves many organs at once---without the per-organ training of RQ1---provided
+each organ is represented during training.
 
 \begin{keybox}
-\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop---$0.760$ with organs seen to $0.490$ with the
-organ held out---isolates unseen-organ transfer as the dominant remaining gap; pooled multi-organ
-accuracy is not a substitute for it.
+\textbf{Key Finding (RQ2):} A single pooled \morph{} predicts expression across all six organs
+simultaneously (best mean PCC $0.599$; $0.760$ on full HEST), so a separate model per organ is
+unnecessary when the organ is represented in training.
+\end{keybox}
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Cross-organ POOLED on the six-organ subset} (kidney, breast, lung, pancreas,
+prostate, skin; COAD excluded). 5-fold pooled cross-validation (slide-level holdout, all organs seen);
+mean$_{\text{std}}$ over three seeds; best per metric in \best{bold}.}
+\label{tab:pooled6}
+{\small
+\setlength{\tabcolsep}{6pt}
+\begin{tabular}{l cccc}
+\toprule
+Method & PCC $\uparrow$ & MSE $\downarrow$ & RMSE $\downarrow$ & MAE $\downarrow$ \\
+\midrule
+ST-Net~\cite{he2020stnet} (NBE'20)       & $0.351_{0.02}$ & $0.747$ & $0.865$ & $0.574$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.556_{0.01}$ & $0.506$ & $0.711$ & $0.424$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & $0.587_{0.00}$ & \best{$0.431$} & \best{$0.657$} & \best{$0.365$} \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ & $0.934$ & $0.966$ & $0.493$ \\
+\midrule
+\morph{}                                 & \best{$0.599_{0.01}$} & $0.470$ & $0.685$ & $0.411$ \\
+\bottomrule
+\end{tabular}
+}
+\end{table}
+
+\FloatBarrier
+\medskip
+\subsection{Results for RQ3: Cross-organ transfer to an unseen organ}
+\label{sec:transfer}
+Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ2 because the target
+anatomy is \emph{absent} from training. On the six-organ subset \morph{} attains the best mean PCC
+($0.422$; Table~\ref{tab:looo_6organ}) and wins every held-out organ. On the full seven-organ HEST
+panel it reaches $0.490$ (Appendix~Table~\ref{tab:looo_main}) versus $0.473$ for BLEEP, the strongest
+baseline; BLEEP is stronger on IDC and SKCM there. Appendix~\ref{app:mouse} reports a complementary
+seven-organ mouse experiment.
+
+\begin{keybox}
+\textbf{Key Finding (RQ3):} The pooled$\to$LOOO drop---from $0.760$ with the organ seen (RQ2) to
+$0.490$ with the organ held out---isolates unseen-organ transfer as the dominant remaining gap;
+predicting seen organs well does not by itself transfer to a new organ.
 \end{keybox}
 
 \begin{figure}[H]
@@ -737,8 +776,8 @@ SKCM~\tiny{Skin}       & $0.500{\pm}0.09$ & $0.694{\pm}0.02$ & $0.708{\pm}0.01$ 
 
 \FloatBarrier
 \medskip
-\subsection{Results for RQ3: What drives accuracy and coordinate invariance?}
-\label{sec:rq3}
+\subsection{Results for RQ4: What drives accuracy and coordinate invariance?}
+\label{sec:design}
 The factorial study evaluates all eight combinations of local (L),
 global (G), and slide-level (S) context on SKCM and LUNG. Local attention provides the largest
 gain: enabling it alone raises mean PCC from $0.608$ to $0.640$. Global and slide context have
@@ -754,7 +793,7 @@ translation and rotation remain below $6\times10^{-5}$ and are attributable to f
 evaluation; reflection is exact in this test.
 
 \begin{keybox}
-\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy---
+\textbf{Key Finding (RQ4):} Local distance-biased attention is the primary driver of accuracy---
 enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
 without it---and the predictor is provably invariant to spot translation, rotation, and reflection.
 \end{keybox}
@@ -825,8 +864,8 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 
 
-\subsection{Results for RQ4: Spatial structure preservation}
-\label{sec:rq4}
+\subsection{Results for RQ5: Spatial structure preservation}
+\label{sec:structure}
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
 (KMeans, $k{=}6$ domains) using either predicted or measured expression and compare the induced spatial
 partitions with adjusted Rand index (ARI) and normalized mutual information (NMI) on held-out slides of
@@ -859,39 +898,10 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 \end{tabular}
 \end{table}
 
-Under \emph{pooled} cross-organ evaluation on the same six-organ subset---slide-level holdout with all
-organs seen in training (5-fold, 3 seeds; Table~\ref{tab:pooled6})---\morph{} attains the best PCC
-($0.599$), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$); BLEEP obtains the lowest error metrics.
-The gap between this pooled setting and the harder leave-one-organ-out transfer
-(Table~\ref{tab:looo_6organ}) reflects the difficulty of predicting an entirely unseen organ.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Cross-organ POOLED on the six-organ subset} (kidney, breast, lung, pancreas,
-prostate, skin; COAD excluded). 5-fold pooled cross-validation (slide-level holdout, all organs seen);
-mean$_{\text{std}}$ over three seeds; best per metric in \best{bold}.}
-\label{tab:pooled6}
-{\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l cccc}
-\toprule
-Method & PCC $\uparrow$ & MSE $\downarrow$ & RMSE $\downarrow$ & MAE $\downarrow$ \\
-\midrule
-ST-Net~\cite{he2020stnet} (NBE'20)       & $0.351_{0.02}$ & $0.747$ & $0.865$ & $0.574$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.556_{0.01}$ & $0.506$ & $0.711$ & $0.424$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & $0.587_{0.00}$ & \best{$0.431$} & \best{$0.657$} & \best{$0.365$} \\
-STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ & $0.934$ & $0.966$ & $0.493$ \\
-\midrule
-\morph{}                                 & \best{$0.599_{0.01}$} & $0.470$ & $0.685$ & $0.411$ \\
-\bottomrule
-\end{tabular}
-}
-\end{table}
-
 \FloatBarrier
 \medskip
-\subsection{Results for RQ5: Computational efficiency}
-\label{sec:rq5}
+\subsection{Results for RQ6: Computational efficiency}
+\label{sec:efficiency}
 \morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
 (Appendix~Table~\ref{tab:complexity}). Its advantage over the baselines is not minimum parameter count:
 ST-Net and BLEEP are smaller, whereas MIST combines multi-scale spatial context with direct
