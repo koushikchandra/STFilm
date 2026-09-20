@@ -1406,6 +1406,43 @@ SKCM~\tiny{Skin}  &  $1.015{\pm}0.023$  &  $1.056{\pm}0.015$  &  $0.926{\pm}0.01
 }
 \end{table*}
 
+\section{Cross-Organ LOOO Error Metrics (Five-Organ Subset)}
+\label{app:looo5_err}
+
+Table~\ref{tab:looo_5organ_err} is the error-metric companion to the per-cohort Pearson results in
+Table~\ref{tab:looo_5organ} and Figure~\ref{fig:box_looo5}: per-cohort MSE and MAE under the same
+five-organ leave-one-organ-out protocol (frozen UNI\,+\,CONCH, leakage-safe per-fold panels, three
+seeds). Unlike PCC, \morph{} does not lead on absolute error for the low-signal cohorts: STEM and
+ST-Net attain the lowest MSE/MAE on kidney and prostate---where every method sits near the noise floor
+and predicting close to the mean minimizes squared error without capturing spatial structure---while
+\morph{} is best on lung and competitive with BLEEP on skin. This reflects the known decoupling
+between correlation and absolute error when the expression scale is hard to recover.
+
+\begin{table*}[t]
+\centering
+\caption{\textbf{Cross-organ LOOO error metrics on the five-organ subset} (kidney, breast, lung,
+prostate, skin; companion to Table~\ref{tab:looo_5organ}). Per-cohort MSE and MAE $\downarrow$,
+mean$_{\text{std}}$ over three seeds, frozen UNI\,+\,CONCH; best (lowest) per row within each metric
+block in \best{bold}.}
+\label{tab:looo_5organ_err}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccccc ccccc}
+\toprule
+& \multicolumn{5}{c}{\textbf{MSE} $\downarrow$} & \multicolumn{5}{c}{\textbf{MAE} $\downarrow$} \\
+\cmidrule(lr){2-6}\cmidrule(lr){7-11}
+Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} & ST-Net & Hist2ST & BLEEP & STEM & \morph{} \\
+\midrule
+CCRCC~\tiny{Kidney}    & $0.48{\pm}0.06$ & $1.54{\pm}0.12$ & $1.06{\pm}0.08$ & \best{$0.40{\pm}0.05$} & $1.61{\pm}0.46$ & $0.52{\pm}0.03$ & $0.88{\pm}0.04$ & $0.55{\pm}0.03$ & \best{$0.33{\pm}0.02$} & $0.92{\pm}0.14$ \\
+IDC~\tiny{Breast}      & $2.53{\pm}0.23$ & \best{$1.52{\pm}0.14$} & $1.94{\pm}0.01$ & $2.72{\pm}0.05$ & $1.93{\pm}0.38$ & $1.13{\pm}0.03$ & \best{$0.95{\pm}0.03$} & $0.98{\pm}0.01$ & $1.12{\pm}0.01$ & $1.08{\pm}0.14$ \\
+LUNG~\tiny{Lung}       & $4.71{\pm}1.56$ & $1.48{\pm}0.15$ & $0.86{\pm}0.04$ & $2.46{\pm}0.68$ & \best{$0.82{\pm}0.06$} & $1.60{\pm}0.18$ & $0.96{\pm}0.06$ & $0.71{\pm}0.02$ & $1.21{\pm}0.18$ & \best{$0.70{\pm}0.02$} \\
+PRAD~\tiny{Prostate}   & $0.31{\pm}0.03$ & $0.51{\pm}0.27$ & $0.51{\pm}0.18$ & \best{$0.29{\pm}0.06$} & $1.19{\pm}0.92$ & $0.43{\pm}0.02$ & $0.51{\pm}0.14$ & $0.45{\pm}0.07$ & \best{$0.28{\pm}0.06$} & $0.77{\pm}0.33$ \\
+SKCM~\tiny{Skin}       & $2.71{\pm}0.21$ & $1.77{\pm}0.44$ & \best{$1.00{\pm}0.08$} & $2.53{\pm}0.68$ & $1.09{\pm}0.07$ & $1.17{\pm}0.02$ & $1.04{\pm}0.15$ & \best{$0.74{\pm}0.04$} & $1.14{\pm}0.16$ & $0.79{\pm}0.04$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
+
 \section{Cross-Organ Generalization: PCC and MSE}
 \label{app:crossorgan}
 
