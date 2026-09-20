@@ -813,17 +813,17 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
 (KMeans, $k{=}6$ domains) using either predicted or measured expression and compare the induced spatial
 partitions with adjusted Rand index (ARI) and normalized mutual information (NMI) on held-out slides of
-the five-organ subset (Table~\ref{tab:downstream5}). \morph{} leads on both ARI ($0.166$) and NMI
-($0.234$), ahead of the strongest baseline on each metric (BLEEP at $0.139$ ARI, ST-Net at $0.192$ NMI).
+the six-organ subset (Table~\ref{tab:downstream5}). \morph{} leads on both ARI ($0.173$) and NMI
+($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI, ST-Net at $0.201$ NMI).
 The differences remain small and slide-level variation is large (std $\approx$ mean), so we caution
 against over-interpreting them as evidence of uniformly improved domain recovery; the full seven-cohort
 version is in Appendix~\ref{app:spatial}.
 
 \begin{table}[h]
 \centering
-\caption{\textbf{Spatial-domain recovery (five-organ subset).} ARI/NMI between domains clustered
+\caption{\textbf{Spatial-domain recovery (six-organ subset).} ARI/NMI between domains clustered
 (KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of CCRCC, IDC, LUNG,
-PRAD, and SKCM (COAD and PAAD excluded); mean$_{\mathrm{std}}$ over three seeds, higher is better,
+PAAD, PRAD, and SKCM (COAD excluded); mean$_{\mathrm{std}}$ over three seeds, higher is better,
 best per column in \best{bold}.}
 \label{tab:downstream5}
 \small
@@ -832,12 +832,12 @@ best per column in \best{bold}.}
 \toprule
 Method & ARI $\uparrow$ & NMI $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet}      & $0.133_{0.11}$ & $0.192_{0.12}$ \\
-Hist2ST~\cite{zeng2022hist2st} & $0.126_{0.10}$ & $0.173_{0.10}$ \\
-BLEEP~\cite{xie2023bleep}      & $0.139_{0.11}$ & $0.189_{0.13}$ \\
-STEM~\cite{zhu2025diffusion}   & $0.096_{0.12}$ & $0.131_{0.14}$ \\
+ST-Net~\cite{he2020stnet}      & $0.140_{0.11}$ & $0.201_{0.12}$ \\
+Hist2ST~\cite{zeng2022hist2st} & $0.133_{0.11}$ & $0.180_{0.11}$ \\
+BLEEP~\cite{xie2023bleep}      & $0.147_{0.12}$ & $0.197_{0.13}$ \\
+STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 \midrule
-\morph{}                       & \best{$0.166_{0.14}$} & \best{$0.234_{0.14}$} \\
+\morph{}                       & \best{$0.173_{0.14}$} & \best{$0.242_{0.14}$} \\
 \bottomrule
 \end{tabular}
 \end{table}
