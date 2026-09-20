@@ -422,11 +422,14 @@ frame in exact arithmetic.
 The guarantee concerns a change of coordinate frame with fixed histology features; it does not claim
 that the frozen image encoder is invariant to transformations of the histology image. The proof is in
 Appendix~\ref{app:formal_guarantees}.
-Note that binary $k$NN adjacency models satisfy the same invariance property, since pairwise
-distances are also rotation-invariant. The distinguishing property of
-\morph{} is that it retains the \emph{magnitude} of those distances as continuous RBF features
-influencing attention weights, whereas binary-adjacency models collapse each distance to a 0/1
-neighbor indicator, losing the information of how close or far each neighbor actually is.
+The RBF bias is available to weight neighbors by distance, but at native HEST pixel scale the
+neighbor distances ($\sim\!10^{3}$) saturate $\exp(-\gamma D^{2})$ toward zero for all bandwidths, so
+in the reported configuration the bias contributes negligibly and the local pathway reduces to
+attention over the spatial $k$NN neighborhood. The distinguishing property of \morph{} is therefore
+this \emph{spatial locality}---each spot aggregates from its geometric neighbors rather than from
+arbitrary or random spots---which our ablation isolates directly (spatial $k$NN vs.\ random
+neighbors, \S\ref{sec:design}). The invariance guarantee above holds regardless, since it depends
+only on distances being rotation-invariant.
 
 \medskip
 \subsection{Multi-Context MIST Layer}
@@ -469,12 +472,13 @@ $a_i=\operatorname{softmax}_{i}(s(\mathbf{h}_i))$. The slide representation is
 and is broadcast to every spot. Unlike a learned class token, this representation is computed
 directly from the slide's spot features and summarizes its morphological composition.
 
-For the complete V3 model, the local output, global output, and broadcast slide representation are
-summed and added to the residual stream. A second pre-normalization residual update applies a
-two-layer feed-forward network with expansion factor four and GELU activation:
+For the complete model, the local ($\mathbf{L}$), global ($\mathbf{G}$), and broadcast slide
+($\mathbf{S}$) representations are summed and added to the residual stream. A second
+pre-normalization residual update applies a two-layer feed-forward network with expansion factor four
+and GELU activation:
 \begin{align}
 \widetilde{\mathbf{X}}^{(\ell)}
-  &=\mathbf{X}^{(\ell)}+\mathbf{L}^{(\ell)}+\mathbf{A}^{(\ell)}+\mathbf{G}^{(\ell)},\\
+  &=\mathbf{X}^{(\ell)}+\mathbf{L}^{(\ell)}+\mathbf{G}^{(\ell)}+\mathbf{S}^{(\ell)},\\
 \mathbf{X}^{(\ell+1)}
   &=\widetilde{\mathbf{X}}^{(\ell)}+
     \operatorname{FFN}\!\left(\operatorname{LN}(\widetilde{\mathbf{X}}^{(\ell)})\right).
