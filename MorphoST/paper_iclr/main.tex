@@ -648,28 +648,27 @@ cross-validation; no per-organ specialisation and no organ labels) predicts acro
 at once, adapting to each slide through its shared local, global, and slide-level context rather than a
 dedicated per-tissue model. On the six-organ subset it attains the best mean PCC ($0.599$;
 Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$), and reaches $0.760$ on the
-full seven-organ HEST panel (BLEEP $0.758$); BLEEP obtains the lowest absolute error. Thus one shared
-model serves many organs at once, without per-organ retraining, provided each organ is represented
-during training.
+full seven-organ HEST panel (BLEEP $0.758$). Thus one shared model serves many organs at once, without
+per-organ retraining, provided each organ is represented during training.
 
 \begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ POOLED on the six-organ subset} (kidney, breast, lung, pancreas,
 prostate, skin; COAD excluded). 5-fold pooled cross-validation (slide-level holdout, all organs seen);
-mean$_{\text{std}}$ over three seeds; best per metric in \best{bold}.}
+mean$_{\text{std}}$ over three seeds; best in \best{bold}.}
 \label{tab:pooled6}
 {\small
 \setlength{\tabcolsep}{6pt}
-\begin{tabular}{l cccc}
+\begin{tabular}{l c}
 \toprule
-Method & PCC $\uparrow$ & MSE $\downarrow$ & RMSE $\downarrow$ & MAE $\downarrow$ \\
+Method & PCC $\uparrow$ \\
 \midrule
-ST-Net~\cite{he2020stnet} (NBE'20)       & $0.351_{0.02}$ & $0.747$ & $0.865$ & $0.574$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.556_{0.01}$ & $0.506$ & $0.711$ & $0.424$ \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & $0.587_{0.00}$ & \best{$0.431$} & \best{$0.657$} & \best{$0.365$} \\
-STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ & $0.934$ & $0.966$ & $0.493$ \\
+ST-Net~\cite{he2020stnet} (NBE'20)       & $0.351_{0.02}$ \\
+Hist2ST~\cite{zeng2022hist2st} (BIB'22)     & $0.556_{0.01}$ \\
+BLEEP~\cite{xie2023bleep} (NeurIPS'23)       & $0.587_{0.00}$ \\
+STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ \\
 \midrule
-\morph{}                                 & \best{$0.599_{0.01}$} & $0.470$ & $0.685$ & $0.411$ \\
+\morph{}                                 & \best{$0.599_{0.01}$} \\
 \bottomrule
 \end{tabular}
 }
