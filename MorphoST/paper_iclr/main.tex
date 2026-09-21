@@ -700,7 +700,7 @@ unnecessary when the organ is represented in training.
 Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ1 because the target
 anatomy is \emph{absent} from training. On the six-organ subset \morph{} attains the best mean PCC
 ($0.422$; Table~\ref{tab:looo_6organ}) and wins every held-out organ. On the full seven-organ HEST
-panel it reaches $0.490$ (Appendix~Table~\ref{tab:looo_main}) versus $0.473$ for BLEEP, the strongest
+panel it reaches $0.490$ versus $0.473$ for BLEEP, the strongest
 baseline; BLEEP is stronger on IDC and SKCM there. Appendix~\ref{app:mouse} reports a complementary
 seven-organ mouse experiment.
 
@@ -1227,76 +1227,6 @@ STEM~\cite{zhu2025diffusion}   & $0.113_{0.13}$ & $0.152_{0.15}$ \\
 \end{tabular}
 \end{table}
 
-
-\section{Cross-organ LOOO transfer, expanded baselines (UNI\,+\,CONCH)}
-\label{app:percohort_uniconch}
-
-Table~\ref{tab:percohort_uniconch} extends Table~\ref{tab:looo_main} with M2OST and EGN under the
-same UNI+CONCH protocol. EGN attains the highest mean PCC ($0.500$), followed by \morph{} at
-$0.490$; their per-cohort ranking varies.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Cross-organ LOOO transfer, per-cohort Pearson $\uparrow$ (HEST-1k).}
-Mean$_{\text{std}}$ over three seeds; nested-validation.
-Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
-All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels.
-Best per row in \best{bold}.}
-\label{tab:looo_main}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l cc cc c}
-\toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
-\midrule
-IDC~\tiny{Breast}       &  $0.198{\pm}0.05$  &  $0.458{\pm}0.01$  &  \best{$0.529{\pm}0.02$}  &  $0.420{\pm}0.03$  &  $0.520{\pm}0.02$ \\
-COAD~\tiny{Colorectal}  &  $0.420{\pm}0.06$  &  $0.670{\pm}0.03$  &  $0.662{\pm}0.01$  &  $0.452{\pm}0.02$  &  \best{$0.729{\pm}0.03$} \\
-CCRCC~\tiny{Kidney}     &  $0.068{\pm}0.01$  &  $0.055{\pm}0.01$  &  $0.095{\pm}0.01$  &  $0.090{\pm}0.01$  &  \best{$0.109{\pm}0.01$} \\
-LUNG~\tiny{Lung}        &  $0.493{\pm}0.07$  &  $0.378{\pm}0.18$  &  $0.624{\pm}0.01$  &  $0.512{\pm}0.03$  &  \best{$0.675{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}    &  $0.459{\pm}0.02$  &  $0.399{\pm}0.02$  &  $0.537{\pm}0.02$  &  $0.409{\pm}0.03$  &  \best{$0.548{\pm}0.01$} \\
-PRAD~\tiny{Prostate}    &  $0.079{\pm}0.00$  &  $0.098{\pm}0.02$  &  $0.118{\pm}0.01$  &  $0.046{\pm}0.00$  &  \best{$0.118{\pm}0.01$} \\
-SKCM~\tiny{Skin}        &  $0.520{\pm}0.16$  &  $0.736{\pm}0.01$  &  \best{$0.748{\pm}0.01$}  &  $0.631{\pm}0.03$  &  $0.728{\pm}0.04$ \\
-\midrule
-\textbf{Average}        &  $0.319$  &  $0.399$  &  $0.473$  &  $0.366$  &  \best{$0.490$} \\
-\bottomrule
-\end{tabular}%
-}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-STEM: corrected DiT ($T=1000$, 34M params), three seeds.
-\end{minipage}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Cross-organ LOOO transfer, expanded baselines, per-cohort Pearson $\uparrow$ (HEST-1k)} (Pearson
-mean$_{\text{std}}$ over three seeds; nested-validation; liver excluded).
-Leave-one-organ-out: trained on all other organ groups, tested on the held-out cohort.
-All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and 50-gene panels.
-Best per row in \best{bold}.}
-\label{tab:percohort_uniconch}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cccc}
-\toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
-\midrule
-IDC~\tiny{Breast}       &  $0.198{\pm}0.05$  &  $0.458{\pm}0.01$  &  $0.529{\pm}0.02$  &  $0.437{\pm}0.04$  &  \best{$0.567{\pm}0.02$}  &  $0.420{\pm}0.03$  &  $0.520{\pm}0.02$ \\
-COAD~\tiny{Colorectal}  &  $0.420{\pm}0.06$  &  $0.670{\pm}0.03$  &  $0.662{\pm}0.01$  &  $0.657{\pm}0.05$  &  $0.728{\pm}0.01$  &  $0.452{\pm}0.02$  &  \best{$0.729{\pm}0.03$} \\
-CCRCC~\tiny{Kidney}     &  $0.068{\pm}0.01$  &  $0.055{\pm}0.01$  &  $0.095{\pm}0.01$  &  $0.081{\pm}0.03$  &  $0.103{\pm}0.02$  &  $0.090{\pm}0.01$  &  \best{$0.109{\pm}0.01$} \\
-LUNG~\tiny{Lung}        &  $0.493{\pm}0.07$  &  $0.378{\pm}0.18$  &  $0.624{\pm}0.01$  &  $0.665{\pm}0.01$  &  $0.672{\pm}0.01$  &  $0.512{\pm}0.03$  &  \best{$0.675{\pm}0.01$} \\
-PAAD~\tiny{Pancreas}    &  $0.459{\pm}0.02$  &  $0.399{\pm}0.02$  &  $0.537{\pm}0.02$  &  $0.513{\pm}0.03$  &  \best{$0.572{\pm}0.01$}  &  $0.409{\pm}0.03$  &  $0.548{\pm}0.01$ \\
-PRAD~\tiny{Prostate}    &  $0.079{\pm}0.00$  &  $0.098{\pm}0.02$  &  $0.118{\pm}0.01$  &  $0.087{\pm}0.02$  &  $0.107{\pm}0.01$  &  $0.046{\pm}0.00$  &  \best{$0.118{\pm}0.01$} \\
-SKCM~\tiny{Skin}        &  $0.520{\pm}0.16$  &  $0.736{\pm}0.01$  &  $0.748{\pm}0.01$  &  $0.740{\pm}0.01$  &  \best{$0.750{\pm}0.02$}  &  $0.631{\pm}0.03$  &  $0.728{\pm}0.04$ \\
-\midrule
-\textbf{Average}        &  $0.319$  &  $0.399$  &  $0.473$  &  $0.454$  &  \best{$0.500$}  &  $0.366$  &  $0.490$ \\
-\bottomrule
-\end{tabular}%
-}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-\end{minipage}
-\end{table}
 
 \section{Cross-organ LOOO transfer with UNI features}
 \label{app:looo_expanded}
