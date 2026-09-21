@@ -528,17 +528,19 @@ gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extend
 \medskip
 \subsection{RQ1: Predictive performance across diverse organs}
 \label{sec:rq1}
-We first establish accuracy on organs the model has \emph{seen}, both when a model is trained
-per cohort (intra-cohort) and when a \emph{single} model is trained jointly across organs (pooled).
-Table~\ref{tab:main} reports the feature-matched comparison across gene-panel sizes. For PCC@50, \morph{} obtains the highest mean PCC
-($0.496$), compared with $0.444$ for BLEEP, the strongest baseline, an $11.6\%$ relative improvement.
-It leads on all six cohorts, though the margin is not uniform: it is widest on kidney and prostate
-($+0.072$ and $+0.064$ over the best baseline) and narrowest on lung ($+0.024$).
-The same ranking largely holds under a smaller \textbf{10-gene} panel
-(PCC@10 in Table~\ref{tab:main_g10}): with everything else fixed and only the panel reduced to the
-ten highest-variance genes of each cohort's HEST 50-HVG set, \morph{} again leads the average
-($0.600$ vs.\ $0.545$ for BLEEP) and tops five of six cohorts. Absolute correlations rise across
-all methods because the retained genes are the most variable, and hence the most predictable.
+We begin by asking whether \morph{} predicts spatial expression accurately on organs it has
+\emph{seen} during training. To answer this, we measure accuracy in two complementary ways under
+matched features, panels, and splits: a separate model trained \emph{per cohort} (intra-cohort), and a
+\emph{single} model trained jointly across all organs (pooled).
+
+Starting with the intra-cohort setting, Table~\ref{tab:main} reports the comparison across gene-panel
+sizes. For PCC@50, \morph{} obtains the highest mean PCC ($0.496$) against $0.444$ for BLEEP, the
+strongest baseline, an $11.6\%$ relative improvement, and it leads on all six cohorts; the margin is
+widest on kidney and prostate ($+0.072$ and $+0.064$) and narrowest on lung ($+0.024$). Importantly,
+this ranking is robust to panel size: under a smaller \textbf{10-gene} panel (PCC@10,
+Table~\ref{tab:main_g10}), \morph{} again leads the average ($0.600$ vs.\ $0.545$ for BLEEP) and tops
+five of six cohorts, with correlations rising across all methods because the retained genes are the
+most variable, and hence the most predictable.
 
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!t]
@@ -665,13 +667,15 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
 \end{table}
 
 \medskip
-Beyond per-organ models, a \emph{single} \morph{} trained jointly on all organs pooled (leave-slide-out
-cross-validation; no per-organ specialisation and no organ labels) predicts across the diverse organs
-at once, adapting to each slide through its shared local, global, and slide-level context rather than a
-dedicated per-tissue model. On the six-organ subset it attains the best mean PCC ($0.599$;
-Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$), and reaches $0.760$ on the
-full seven-organ HEST panel (BLEEP $0.758$). Thus one shared model serves many organs at once, without
-per-organ retraining, provided each organ is represented during training.
+Turning next to the pooled setting, we test whether a \emph{single} shared model can replace the
+per-organ ones. Trained jointly on all organs (leave-slide-out cross-validation; no per-organ
+specialisation and no organ labels), one \morph{} predicts across the diverse organs at once, adapting
+to each slide through its shared local, global, and slide-level context rather than a dedicated
+per-tissue model. Even so, it remains the best method: on the six-organ subset it attains the top mean
+PCC ($0.599$; Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$), and reaches
+$0.760$ on the full seven-organ HEST panel (BLEEP $0.758$). Together, these two settings answer RQ1:
+\morph{} is the most accurate predictor on seen organs, whether specialised per organ or shared across
+all of them, so a separate model per tissue is not required.
 
 \begin{table}[H]
 \centering
@@ -707,12 +711,15 @@ unnecessary when the organ is represented in training.
 \medskip
 \subsection{RQ2: Cross-organ transfer to an unseen organ}
 \label{sec:transfer}
-Leave-one-organ-out (LOOO) is substantially harder than the pooled setting of RQ1 because the target
-anatomy is \emph{absent} from training. On the six-organ subset \morph{} attains the best mean PCC
-($0.422$; Table~\ref{tab:looo_6organ}) and wins every held-out organ. On the full seven-organ HEST
-panel it reaches $0.490$ versus $0.473$ for BLEEP, the strongest
-baseline; BLEEP is stronger on IDC and SKCM there. Appendix~\ref{app:mouse} reports a complementary
-seven-organ mouse experiment.
+Having established strong performance on \emph{seen} organs, we now ask the harder question of whether
+\morph{} transfers to an organ it has \emph{never} seen. To test this, we use leave-one-organ-out
+(LOOO) evaluation: we train on all-but-one organ and test on the held-out one, so the target anatomy is
+entirely absent from training. As expected, accuracy falls relative to the pooled setting of RQ1, yet
+\morph{} still transfers best. On the six-organ subset it attains the highest mean PCC ($0.422$;
+Table~\ref{tab:looo_6organ}) and wins every held-out organ, and on the full seven-organ HEST panel it
+reaches $0.490$ versus $0.473$ for BLEEP, the strongest baseline (although BLEEP is stronger on IDC and
+SKCM there). This shows that \morph{}'s inductive biases carry over to unseen anatomy, which supports
+RQ2; a complementary seven-organ mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
 
 \begin{keybox}
 \textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.760$ with the organ seen (RQ1) to
@@ -734,19 +741,21 @@ One panel per held-out cohort; box = per-gene PCC over three seeds, $\Diamond$ =
 \medskip
 \subsection{RQ3: What drives accuracy and coordinate invariance?}
 \label{sec:design}
-The factorial study evaluates all eight combinations of local (L),
-global (G), and slide-level (S) context on SKCM and LUNG. Local attention provides the largest
-gain: enabling it alone raises mean PCC from $0.608$ to $0.640$. Global and slide context have
-little effect without the local pathway, but the complete model achieves the highest mean ($0.643$).
-This result supports distance-biased neighborhood aggregation as the primary contributor in the
-tested intra-cohort setting; claims about component importance under organ shift require a matched
-LOOO ablation not reported here.
+Given \morph{}'s accuracy, we next ask \emph{which} components drive it and whether its coordinate
+invariance holds in practice. To isolate each context stream, we run a factorial study over all eight
+combinations of local (L), global (G), and slide-level (S) context on SKCM and LUNG. The picture is
+clear: local attention provides the largest gain, since enabling it alone raises mean PCC from $0.608$
+to $0.640$, whereas global and slide context add little without it; the complete model is nonetheless
+best ($0.643$). This identifies distance-biased neighborhood aggregation as the primary contributor in
+the intra-cohort setting, which supports the design rationale in RQ3 (claims under organ shift would
+require a matched LOOO ablation, not reported here).
 
 
 
-Table~\ref{tab:invariance} numerically verifies the analytic invariance result. Differences under
-translation and rotation remain below $6\times10^{-5}$ and are attributable to floating-point
-evaluation; reflection is exact in this test.
+Beyond accuracy, we also verify the model's coordinate invariance empirically. As
+Table~\ref{tab:invariance} shows, prediction differences under translation and rotation remain below
+$6\times10^{-5}$, attributable to floating-point evaluation, and reflection is exact. This numerically
+confirms the analytic guarantee, completing the answer to RQ3.
 
 \begin{keybox}
 \textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy
@@ -821,14 +830,15 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 \subsection{RQ4: Spatial structure preservation}
 \label{sec:structure}
-Gene-wise PCC does not test whether predictions preserve coherent tissue regions. We cluster spots
-(KMeans, $k{=}6$ domains) using either predicted or measured expression and compare the induced spatial
-partitions with adjusted Rand index (ARI) and normalized mutual information (NMI) on held-out slides of
-the six-organ subset (Table~\ref{tab:downstream5}). \morph{} leads on both ARI ($0.173$) and NMI
-($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI, ST-Net at $0.201$ NMI).
-The differences remain small and slide-level variation is large (std $\approx$ mean), so we caution
-against over-interpreting them as evidence of uniformly improved domain recovery; the full seven-cohort
-version is in Appendix~\ref{app:spatial}.
+Accurate per-gene prediction does not by itself guarantee that predictions preserve coherent tissue
+regions, so we finally ask whether \morph{} recovers spatial \emph{structure}. To test this, we cluster
+spots (KMeans, $k{=}6$ domains) from either predicted or measured expression and compare the induced
+partitions using the adjusted Rand index (ARI) and normalized mutual information (NMI) on held-out
+slides of the six-organ subset (Table~\ref{tab:downstream5}). Here \morph{} again leads, on both ARI
+($0.173$) and NMI ($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI,
+ST-Net at $0.201$ NMI). That said, the differences are small and slide-level variation is large
+(std $\approx$ mean), so we caution against reading them as uniformly improved domain recovery; the full
+seven-cohort version appears in Appendix~\ref{app:spatial}.
 
 \begin{table}[h]
 \centering
@@ -857,13 +867,14 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 \medskip
 \subsection{RQ5: Computational efficiency}
 \label{sec:efficiency}
-\morph{} contains $4.88$M parameters and predicts a complete slide in one forward pass
-(Appendix~Table~\ref{tab:complexity}). Its advantage over the baselines is not minimum parameter count:
-ST-Net and BLEEP are smaller, whereas MIST combines multi-scale spatial context with direct
-inference. Model-only latency grows from $3.5$\,ms for 500 spots to $64.7$\,ms for 10,000 spots on
-an A100, with $3.1$\,GiB peak allocated memory at the largest size (Appendix~Table~\ref{tab:scaling});
-feature extraction and disk I/O are excluded. STEM's iterative diffusion inference is the only
-approach with substantially higher latency.
+Finally, we ask whether this accuracy comes at a practical cost. \morph{} contains $4.88$M parameters
+and predicts a complete slide in a single forward pass (Appendix~Table~\ref{tab:complexity}). Its
+advantage is not the smallest footprint: ST-Net and BLEEP have fewer parameters, but \morph{} instead
+pairs multi-scale spatial context with direct, non-iterative inference. Concretely, model-only latency
+grows from $3.5$\,ms for 500 spots to $64.7$\,ms for 10,000 spots on an A100, with $3.1$\,GiB peak
+allocated memory at the largest size (Appendix~Table~\ref{tab:scaling}; feature extraction and disk I/O
+excluded). In contrast, STEM's iterative diffusion is the only approach with substantially higher
+latency. \morph{} therefore answers RQ5 by delivering its accuracy at single-pass inference cost.
 
 
 
