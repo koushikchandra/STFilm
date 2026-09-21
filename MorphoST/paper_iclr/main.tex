@@ -988,6 +988,19 @@ gene-expression variance.
 \end{minipage}
 \end{table}
 
+\paragraph{Split granularity and patient disjointness.}
+Each ``sample'' in Table~\ref{tab:cohort_stats} is a distinct HEST-1k slide (a whole-slide section),
+and every fold is \emph{slide-disjoint}: no slide is shared between training and test, the pooled
+regime holds out entire slides, and the leave-one-organ-out regime holds out entire organs. HEST-1k
+patient/donor identifiers are not distributed with the per-slide data in our pipeline, so for a cohort
+in which one donor may contribute several slides we cannot verify patient-level disjointness. The
+intra-cohort and pooled numbers should therefore be read as \emph{slide-level} generalization and
+could be optimistic if a cohort mixes multiple slides from the same patient; this risk is largest for
+the two multi-slide cohorts, CCRCC (24 slides) and PRAD (23 slides), and small for the remaining
+cohorts (IDC~4, PAAD~3, LUNG~2, SKCM~2 slides). Importantly, the cross-organ LOOO transfer results
+(our central generalization claim) are unaffected, because an entire organ (and hence a disjoint set
+of patients) is withheld at test time.
+
 \section{Extended Related Work}
 \label{app:related}
 
