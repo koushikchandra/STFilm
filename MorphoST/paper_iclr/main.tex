@@ -358,8 +358,8 @@ multi-context layer, and supervised prediction with a correlation-aware objectiv
 
 \begin{keybox}
 \textbf{Core Idea:} MIST predicts a slide's spatial expression in a single forward pass by fusing
-three views of context---local distance-biased neighborhoods, global self-attention, and a slide-level
-token---over frozen histology features, made invariant to the spot coordinate frame (translation,
+three views of context (local distance-biased neighborhoods, global self-attention, and a slide-level
+token) over frozen histology features, made invariant to the spot coordinate frame (translation,
 rotation, reflection) so a single model transfers across slides without per-dataset retraining.
 \end{keybox}
 
@@ -404,8 +404,8 @@ The RBF bias is available to weight neighbors by distance, but at native HEST pi
 neighbor distances ($\sim\!10^{3}$) saturate $\exp(-\gamma D^{2})$ toward zero for all bandwidths, so
 in the reported configuration the bias contributes negligibly and the local pathway reduces to
 attention over the spatial $k$NN neighborhood. The distinguishing property of \morph{} is therefore
-this \emph{spatial locality}---each spot aggregates from its geometric neighbors rather than from
-arbitrary or random spots---which our ablation isolates directly (spatial $k$NN vs.\ random
+this \emph{spatial locality} (each spot aggregates from its geometric neighbors rather than from
+arbitrary or random spots), which our ablation isolates directly (spatial $k$NN vs.\ random
 neighbors, \S\ref{sec:design}). The invariance guarantee above holds regardless, since it depends
 only on distances being rotation-invariant.
 
@@ -509,8 +509,8 @@ after variance filtering (Table~\ref{tab:panel_strategy}). Cross-organ
 experiments use the six retained cohorts of Appendix~\ref{app:cohort_stats} (HCC, LYMPH\_IDC, and
 READ excluded). We study three regimes: \emph{intra-cohort} (a model per organ), \emph{pooled}
 (train across organs, hold out slide-level samples; organ identity is not a model input), and
-\emph{LOOO} (train on all-but-one organ, test the held-out organ). We report PCC---and MSE/MAE where
-noted---over outer folds and three seeds, with checkpoints chosen on inner validation and evaluated
+\emph{LOOO} (train on all-but-one organ, test the held-out organ). We report PCC (and MSE/MAE where
+noted) over outer folds and three seeds, with checkpoints chosen on inner validation and evaluated
 once on the outer fold. Baselines ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP
 \cite{xie2023bleep}, and STEM \cite{zhu2025diffusion} use matched features, panels, splits, budgets,
 and selection. \morph{} has 4.88M parameters (four layers, width 256, eight neighbors). Full dataset,
@@ -709,8 +709,8 @@ baseline; BLEEP is stronger on IDC and SKCM there. Appendix~\ref{app:mouse} repo
 seven-organ mouse experiment.
 
 \begin{keybox}
-\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop---from $0.760$ with the organ seen (RQ1) to
-$0.490$ with the organ held out---isolates unseen-organ transfer as the dominant remaining gap;
+\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.760$ with the organ seen (RQ1) to
+$0.490$ with the organ held out, isolates unseen-organ transfer as the dominant remaining gap;
 predicting seen organs well does not by itself transfer to a new organ.
 \end{keybox}
 
@@ -743,9 +743,9 @@ translation and rotation remain below $6\times10^{-5}$ and are attributable to f
 evaluation; reflection is exact in this test.
 
 \begin{keybox}
-\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy---
-enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
-without it---and the predictor is provably invariant to spot translation, rotation, and reflection.
+\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy
+(enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
+without it), and the predictor is provably invariant to spot translation, rotation, and reflection.
 \end{keybox}
 
 \begin{table}[t]
@@ -1054,7 +1054,7 @@ incompatible with our CUDA-13 / PyTorch build and were excluded.
 \item \textbf{Encoders:} frozen UNI (ViT-L/16, 1024-d) and CONCH (512-d) patch features, concatenated
 to 1536-d; no encoder fine-tuning.
 \item \textbf{Model:} \morph{} has 4.88M trainable parameters (Table~\ref{tab:complexity}) and predicts
-a whole slide in a single forward pass---no iterative sampling.
+a whole slide in a single forward pass, with no iterative sampling.
 \item \textbf{Training:} AdamW with a cosine schedule, 100 epochs with early stopping (patience~20),
 nested validation, and a correlation-aware objective; three seeds per configuration.
 \item \textbf{Inference:} single-pass; median model-only latency and peak memory versus slide size are
