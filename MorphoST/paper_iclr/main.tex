@@ -87,7 +87,7 @@ and reflections.}
 
 Morphology and expression interact locally, across the slide, and at the level of slide composition. Existing predictors capture parts of this structure with patch regression, spatial graphs, retrieval, or conditional generation, but absolute coordinates can make predictions depend on an arbitrary scanner frame. We therefore seek a compact predictor that combines multi-scale context while using coordinates only through relative distances.
 
-We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines distance-biased $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary. Continuous radial-basis distance features preserve inter-spot geometry while guaranteeing invariance to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
+We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines spatial $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary. Because spot coordinates enter the model only through pairwise distances, its predictions are invariant to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
 
 We evaluate matched features, panels, splits, budgets, and nested validation in intra-cohort, pooled cross-organ, and leave-one-organ-out (LOOO) settings. Across six human cohorts, \morph{} reaches mean PCC $0.496$ versus $0.444$ for BLEEP, $0.760$ pooled PCC, and $0.490$ LOOO PCC; local attention is the strongest factorial component. The model has 4.88M parameters and processes 10,000 spots in $64.7$\,ms on an A100.
 
@@ -731,12 +731,13 @@ held-out organs in the complete table (Appendix~\ref{app:looo_complete}, Table~\
 \label{sec:design}
 Given \morph{}'s accuracy, we next ask \emph{which} components drive it and whether its coordinate
 invariance holds in practice. To isolate each context stream, we run a factorial study over all eight
-combinations of local (L), global (G), and slide-level (S) context on SKCM and LUNG. The picture is
-clear: local attention provides the largest gain, since enabling it alone raises mean PCC from $0.608$
-to $0.640$, whereas global and slide context add little without it; the complete model is nonetheless
-best ($0.643$). This identifies distance-biased neighborhood aggregation as the primary contributor in
-the intra-cohort setting, which supports the design rationale in RQ3 (claims under organ shift would
-require a matched LOOO ablation, not reported here).
+combinations of local (L), global (G), and slide-level (S) context on the six-organ pooled set
+(Table~\ref{tab:ablation}). The full model (L\,+\,G\,+\,S) is best (PCC $0.61$), and among the single
+streams local attention is the strongest ($0.60$, versus $0.59$ for global and $0.58$ for slide).
+Crucially, replacing the spatial $k$NN neighbors with random ones lowers accuracy ($0.61\!\to\!0.58$
+for the full model and $0.60\!\to\!0.58$ for global\,+\,local), showing that the benefit comes from
+\emph{spatial} locality rather than added attention alone. This identifies local spatial-neighborhood
+aggregation as the primary contributor, which supports the design rationale in RQ3.
 
 
 
@@ -746,9 +747,10 @@ $6\times10^{-5}$, attributable to floating-point evaluation, and reflection is e
 confirms the analytic guarantee, completing the answer to RQ3.
 
 \begin{keybox}
-\textbf{Key Finding (RQ3):} Local distance-biased attention is the primary driver of accuracy
-(enabling it alone lifts mean PCC from $0.608$ to $0.640$, while global and slide context add little
-without it), and the predictor is provably invariant to spot translation, rotation, and reflection.
+\textbf{Key Finding (RQ3):} Local spatial-neighborhood attention is the primary driver of accuracy
+(the full L\,+\,G\,+\,S model scores $0.61$, local is the strongest single stream, and spatial $k$NN
+neighbors beat random ones), and the predictor is provably invariant to spot translation, rotation,
+and reflection.
 \end{keybox}
 
 \begin{table}[H]
@@ -870,13 +872,13 @@ latency. \morph{} therefore answers RQ5 by delivering its accuracy at single-pas
 
 \FloatBarrier
 Three findings merit emphasis. First, a compact direct predictor is competitive when features,
-gene panels, splits, and model selection are controlled; the $10.3\%$ relative gain over the
+gene panels, splits, and model selection are controlled; the $11.6\%$ relative gain over the
 strongest baseline rests on matched experimental conditions, not a larger model. Second, pooled
 multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.760$
 (pooled) to $0.490$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
-local distance-biased attention is the dominant contributor in the factorial study; global and slide
-pathways provide moderate complementary gains, and the complete model ($\mathrm{C111}$) achieves
-the best mean across both tested cohorts.
+local spatial-neighborhood attention is the dominant contributor in the factorial study; global and
+slide pathways provide moderate complementary gains, and the complete model (L\,+\,G\,+\,S) achieves
+the best mean on the pooled evaluation.
 
 Direct and generative models serve different purposes. STEM \cite{zhu2025diffusion} models a
 conditional expression distribution and can represent one-to-many uncertainty through iterative
@@ -1052,7 +1054,7 @@ gradient clipping, 100 epochs maximum, patience 20, and at most 3,000 spots per 
 
 \section{Encoder Ablation}
 \label{app:encoder}
-We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{tab:main}, which uses the concatenated UNI\,+\,CONCH features) with each foundation encoder \emph{in isolation}: UNI only (ViT-L/16, 1024-d) and CONCH only (512-d), holding models, cohorts, gene panels, splits, and training budget fixed (Table~\ref{tab:encoder}). \running{} entries are still training.
+We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{tab:main}, which uses the concatenated UNI\,+\,CONCH features) with each foundation encoder \emph{in isolation}: UNI only (ViT-L/16, 1024-d) and CONCH only (512-d), holding models, cohorts, gene panels, splits, and training budget fixed (Table~\ref{tab:encoder}). \morph{} remains the most accurate encoder-averaged method under both UNI-only and CONCH-only features.
 
 \begin{table}[H]
 \centering
@@ -1064,23 +1066,23 @@ We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{ta
 \toprule
 Encoder & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
 \midrule
-\multirow{7}{*}{\rotatebox[origin=c]{90}{\textbf{\shortstack{UNI\\(1024-d)}}}} & IDC~\tiny{Breast} & $0.538{\pm}0.008$ & $0.250{\pm}0.067$ & $0.508{\pm}0.005$ & \running & \best{$0.569{\pm}0.009$} \\
- & CCRCC~\tiny{Kidney} & $0.172{\pm}0.010$ & $0.214{\pm}0.015$ & $0.184{\pm}0.007$ & \running & \best{$0.264{\pm}0.010$} \\
+\multirow{7}{*}{\rotatebox[origin=c]{90}{\textbf{\shortstack{UNI\\(1024-d)}}}} & IDC~\tiny{Breast} & $0.538{\pm}0.008$ & $0.250{\pm}0.067$ & $0.508{\pm}0.005$ & $0.436{\pm}0.005$ & \best{$0.569{\pm}0.009$} \\
+ & CCRCC~\tiny{Kidney} & $0.172{\pm}0.010$ & $0.214{\pm}0.015$ & $0.184{\pm}0.007$ & $0.116{\pm}0.002$ & \best{$0.264{\pm}0.010$} \\
  & LUNG~\tiny{Lung} & $0.482{\pm}0.012$ & $0.378{\pm}0.097$ & $0.559{\pm}0.007$ & $0.393{\pm}0.009$ & \best{$0.590{\pm}0.005$} \\
- & PAAD~\tiny{Pancreas} & $0.353{\pm}0.022$ & $0.243{\pm}0.061$ & \best{$0.393{\pm}0.035$} & \running & $0.392{\pm}0.040$ \\
- & PRAD~\tiny{Prostate} & $0.251{\pm}0.008$ & $0.322{\pm}0.020$ & $0.343{\pm}0.009$ & \running & \best{$0.394{\pm}0.003$} \\
+ & PAAD~\tiny{Pancreas} & $0.353{\pm}0.022$ & $0.243{\pm}0.061$ & \best{$0.393{\pm}0.035$} & $0.227{\pm}0.017$ & $0.392{\pm}0.040$ \\
+ & PRAD~\tiny{Prostate} & $0.251{\pm}0.008$ & $0.322{\pm}0.020$ & $0.343{\pm}0.009$ & $0.190{\pm}0.010$ & \best{$0.394{\pm}0.003$} \\
  & SKCM~\tiny{Skin} & $0.632{\pm}0.010$ & $0.510{\pm}0.015$ & $0.639{\pm}0.015$ & $0.471{\pm}0.031$ & \best{$0.694{\pm}0.001$} \\
 \cmidrule(lr){2-7}
- & \textbf{Average} & $0.405$ & $0.319$ & $0.438$ & \running & \best{$0.484$} \\
+ & \textbf{Average} & $0.405$ & $0.319$ & $0.438$ & $0.305$ & \best{$0.484$} \\
 \midrule
 \multirow{7}{*}{\rotatebox[origin=c]{90}{\textbf{\shortstack{CONCH\\(512-d)}}}} & IDC~\tiny{Breast} & $0.515{\pm}0.007$ & $0.264{\pm}0.018$ & $0.496{\pm}0.011$ & $0.396{\pm}0.011$ & \best{$0.551{\pm}0.004$} \\
- & CCRCC~\tiny{Kidney} & $0.160{\pm}0.010$ & $0.126{\pm}0.026$ & $0.141{\pm}0.012$ & \running & \best{$0.222{\pm}0.010$} \\
+ & CCRCC~\tiny{Kidney} & $0.160{\pm}0.010$ & $0.126{\pm}0.026$ & $0.141{\pm}0.012$ & $0.078{\pm}0.001$ & \best{$0.222{\pm}0.010$} \\
  & LUNG~\tiny{Lung} & $0.517{\pm}0.001$ & $0.435{\pm}0.006$ & \best{$0.576{\pm}0.003$} & $0.386{\pm}0.030$ & $0.554{\pm}0.005$ \\
  & PAAD~\tiny{Pancreas} & $0.372{\pm}0.035$ & $0.186{\pm}0.035$ & $0.384{\pm}0.033$ & $0.251{\pm}0.028$ & \best{$0.387{\pm}0.045$} \\
  & PRAD~\tiny{Prostate} & $0.327{\pm}0.003$ & $0.322{\pm}0.009$ & $0.364{\pm}0.010$ & $0.210{\pm}0.013$ & \best{$0.406{\pm}0.006$} \\
  & SKCM~\tiny{Skin} & $0.633{\pm}0.002$ & $0.388{\pm}0.022$ & $0.633{\pm}0.005$ & $0.453{\pm}0.014$ & \best{$0.658{\pm}0.007$} \\
 \cmidrule(lr){2-7}
- & \textbf{Average} & $0.421$ & $0.287$ & $0.432$ & \running & \best{$0.463$} \\
+ & \textbf{Average} & $0.421$ & $0.287$ & $0.432$ & $0.296$ & \best{$0.463$} \\
 \bottomrule
 \end{tabular}%
 }
