@@ -1335,58 +1335,6 @@ STEM~\cite{zhu2025diffusion}       & $0.291_{0.005}$ & $0.456_{0.002}$ & $0.485_
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:panel_percohort} gives the per-cohort breakdown.
-\morph{} leads on 6 of 7 cohorts under HVG (BLEEP is stronger on COAD) and on all 7 cohorts under
-both DEG and HMHVG.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Per-cohort gene panel comparison: intra-cohort PCC$\uparrow$ (HEST-1k).}
-Mean$_{\mathrm{std}}$ over three seeds. All methods use UNI\,+\,CONCH (1536-dim) and nested-validation.
-Best per cohort per panel in \best{bold}.}
-\label{tab:panel_percohort}
-\small
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.15}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{llccccc}
-\toprule
-Panel & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} \\
-\midrule
-\multirow{8}{*}{\textbf{HVG}}  &  IDC~\tiny{Breast}       &  $0.551_{0.007}$  &  $0.305_{0.108}$  &  $0.519_{0.002}$  &  $0.434_{0.002}$  &  \best{$0.581_{0.008}$} \\
-  &  COAD~\tiny{Colorectal}  &  $0.235_{0.005}$  &  $0.298_{0.009}$  &  \best{$0.322_{0.006}$}  &  $0.177_{0.014}$  &  $0.318_{0.008}$ \\
-  &  CCRCC~\tiny{Kidney}     &  $0.163_{0.015}$  &  $0.180_{0.030}$  &  $0.175_{0.015}$  &  $0.118_{0.006}$  &  \best{$0.252_{0.007}$} \\
-  &  LUNG~\tiny{Lung}        &  $0.521_{0.010}$  &  $0.430_{0.050}$  &  $0.565_{0.008}$  &  $0.407_{0.003}$  &  \best{$0.589_{0.006}$} \\
-  &  PAAD~\tiny{Pancreas}    &  $0.366_{0.032}$  &  $0.248_{0.038}$  &  $0.412_{0.034}$  &  $0.233_{0.019}$  &  \best{$0.437_{0.028}$} \\
-  &  PRAD~\tiny{Prostate}    &  $0.287_{0.023}$  &  $0.323_{0.012}$  &  $0.346_{0.007}$  &  $0.207_{0.016}$  &  \best{$0.410_{0.006}$} \\
-  &  SKCM~\tiny{Skin}        &  $0.661_{0.006}$  &  $0.523_{0.003}$  &  $0.650_{0.004}$  &  $0.461_{0.018}$  &  \best{$0.707_{0.007}$} \\
-\cmidrule(l){2-7}
-  &  \textbf{Average}           &  $0.398$  &  $0.330$  &  $0.427$  &  $0.291$  &  \best{$0.471$} \\
-\midrule
-\multirow{8}{*}{\textbf{DEG}}  &  IDC~\tiny{Breast}       &  $0.697_{0.010}$  &  $0.549_{0.067}$  &  $0.731_{0.014}$  &  $0.684_{0.020}$  &  \best{$0.774_{0.009}$} \\
-  &  COAD~\tiny{Colorectal}  &  $0.497_{0.003}$  &  $0.608_{0.010}$  &  $0.639_{0.016}$  &  $0.534_{0.014}$  &  \best{$0.677_{0.003}$} \\
-  &  CCRCC~\tiny{Kidney}     &  $0.312_{0.014}$  &  $0.335_{0.013}$  &  $0.304_{0.003}$  &  $0.253_{0.009}$  &  \best{$0.402_{0.013}$} \\
-  &  LUNG~\tiny{Lung}        &  $0.566_{0.006}$  &  $0.518_{0.006}$  &  $0.621_{0.006}$  &  $0.440_{0.009}$  &  \best{$0.662_{0.002}$} \\
-  &  PAAD~\tiny{Pancreas}    &  $0.425_{0.032}$  &  $0.352_{0.011}$  &  $0.487_{0.029}$  &  $0.306_{0.042}$  &  \best{$0.518_{0.026}$} \\
-  &  PRAD~\tiny{Prostate}    &  $0.413_{0.004}$  &  $0.437_{0.008}$  &  $0.466_{0.005}$  &  $0.355_{0.026}$  &  \best{$0.539_{0.012}$} \\
-  &  SKCM~\tiny{Skin}        &  $0.752_{0.009}$  &  $0.656_{0.004}$  &  $0.746_{0.026}$  &  $0.617_{0.023}$  &  \best{$0.794_{0.002}$} \\
-\cmidrule(l){2-7}
-  &  \textbf{Average}           &  $0.523$  &  $0.494$  &  $0.571$  &  $0.456$  &  \best{$0.624$} \\
-\midrule
-\multirow{8}{*}{\textbf{HMHVG}}  &  IDC~\tiny{Breast}       &  $0.724_{0.014}$  &  $0.633_{0.082}$  &  $0.739_{0.018}$  &  $0.687_{0.008}$  &  \best{$0.774_{0.011}$} \\
-  &  COAD~\tiny{Colorectal}  &  $0.503_{0.010}$  &  $0.659_{0.018}$  &  $0.645_{0.004}$  &  $0.528_{0.032}$  &  \best{$0.698_{0.005}$} \\
-  &  CCRCC~\tiny{Kidney}     &  $0.339_{0.007}$  &  $0.387_{0.010}$  &  $0.349_{0.010}$  &  $0.290_{0.013}$  &  \best{$0.454_{0.017}$} \\
-  &  LUNG~\tiny{Lung}        &  $0.568_{0.005}$  &  $0.598_{0.003}$  &  $0.661_{0.002}$  &  $0.517_{0.011}$  &  \best{$0.693_{0.004}$} \\
-  &  PAAD~\tiny{Pancreas}    &  $0.441_{0.032}$  &  $0.341_{0.038}$  &  $0.493_{0.023}$  &  $0.305_{0.027}$  &  \best{$0.524_{0.023}$} \\
-  &  PRAD~\tiny{Prostate}    &  $0.452_{0.002}$  &  $0.477_{0.011}$  &  $0.432_{0.045}$  &  $0.337_{0.016}$  &  \best{$0.555_{0.022}$} \\
-  &  SKCM~\tiny{Skin}        &  $0.824_{0.029}$  &  $0.710_{0.141}$  &  $0.849_{0.018}$  &  $0.731_{0.060}$  &  \best{$0.901_{0.002}$} \\
-\cmidrule(l){2-7}
-  &  \textbf{Average}           &  $0.550$  &  $0.544$  &  $0.595$  &  $0.485$  &  \best{$0.657$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
-
 \clearpage
 \section{Proofs of the formal guarantees}
 \label{app:formal_guarantees}
