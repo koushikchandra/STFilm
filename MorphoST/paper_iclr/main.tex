@@ -509,9 +509,15 @@ after variance filtering (Table~\ref{tab:panel_strategy}). Cross-organ
 experiments use the six retained cohorts of Appendix~\ref{app:cohort_stats} (HCC, LYMPH\_IDC, and
 READ excluded). We study three regimes: \emph{intra-cohort} (a model per organ), \emph{pooled}
 (train across organs, hold out slide-level samples; organ identity is not a model input), and
-\emph{LOOO} (train on all-but-one organ, test the held-out organ). We report PCC (and MSE/MAE where
-noted) over outer folds and three seeds, with checkpoints chosen on inner validation and evaluated
-once on the outer fold. Baselines ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP
+\emph{LOOO} (train on all-but-one organ, test the held-out organ).
+\textbf{Evaluation metrics.} Our primary metric is the \textbf{Pearson correlation coefficient (PCC)}
+computed per gene between predicted and measured expression and averaged over genes (genes with zero
+target variance are excluded). We also report the \textbf{mean squared error (MSE)} and
+\textbf{mean absolute error (MAE)} to capture prediction scale, and, for the spatial-domain-recovery
+analysis, the \textbf{Adjusted Rand Index (ARI)} and \textbf{Normalized Mutual Information (NMI)}
+between domains clustered from predicted versus measured expression; efficiency is measured by
+inference latency and peak GPU memory. All metrics are averaged over outer folds and three seeds, with
+checkpoints chosen on inner validation and evaluated once on the outer fold. Baselines ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP
 \cite{xie2023bleep}, and STEM \cite{zhu2025diffusion} use matched features, panels, splits, budgets,
 and selection. \morph{} has 4.88M parameters (four layers, width 256, eight neighbors). Full dataset,
 gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extended_setup}.
