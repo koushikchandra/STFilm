@@ -530,7 +530,8 @@ These intra-cohort gains are statistically significant, not noise: across the si
 seeds ($n{=}18$ paired runs), \morph{}'s mean PCC@50 exceeds BLEEP's by $0.051$
 (95\% bootstrap CI $[0.041,0.062]$; Wilcoxon signed-rank $p{=}7.6\times10^{-6}$, paired $t$-test
 $p{=}4.7\times10^{-8}$), and at the finer per-gene level \morph{} outperforms BLEEP on $87\%$ of genes
-($n{=}300$; Wilcoxon $p<10^{-30}$).
+($n{=}300$; Wilcoxon $p<10^{-30}$). Appendix~\ref{app:significance} reports the full paired tests for
+all regimes, including the significant LOOO gain and the marginal pooled one.
 
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!t]
@@ -1255,6 +1256,43 @@ STEM~\cite{zhu2025diffusion}   & $0.113_{0.13}$ & $0.152_{0.15}$ \\
 \end{tabular}
 \end{table}
 
+
+\section{Statistical Significance}
+\label{app:significance}
+Table~\ref{tab:significance} reports paired significance tests of \morph{} against BLEEP, the strongest
+baseline, in every regime. For intra-cohort and LOOO we pair mean PCC at the (cohort/organ $\times$
+seed) level; for pooled at the (fold $\times$ seed) level; and the per-gene row pairs individual
+gene PCC (PCC@50) across cohorts. We report the mean difference with a $95\%$ bootstrap confidence
+interval, a Wilcoxon signed-rank test, and a paired $t$-test. The intra-cohort advantage is decisive at
+every panel size and at the per-gene level ($p<2.5\times10^{-4}$, and $p<10^{-30}$ per gene), and
+cross-organ LOOO transfer is also significant ($p<0.02$). The pooled gain is small ($+0.012$) and only
+marginally significant (Wilcoxon $p=0.04$, paired $t$ $p=0.06$), consistent with all organs already
+being represented in that regime; we therefore treat the pooled result as supportive rather than
+decisive.
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Statistical significance of \morph{} vs.\ BLEEP} (strongest baseline) across regimes.
+$\Delta$PCC is the paired mean difference with a $95\%$ bootstrap CI; $p$-values from Wilcoxon
+signed-rank and paired $t$-tests. Intra-cohort/LOOO pair at (cohort/organ $\times$ seed); pooled at
+(fold $\times$ seed); per-gene at (gene) over PCC@50.}
+\label{tab:significance}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{l r cc c c cc}
+\toprule
+Comparison & $n$ & \morph{} & BLEEP & $\Delta$PCC & 95\% CI & Wilcoxon $p$ & paired-$t$ $p$ \\
+\midrule
+Intra-cohort, PCC@10  & 18 & $0.600$ & $0.545$ & $+0.056$ & $[0.034,0.077]$ & $2.5{\times}10^{-4}$ & $1.2{\times}10^{-4}$ \\
+Intra-cohort, PCC@50  & 18 & $0.496$ & $0.444$ & $+0.051$ & $[0.041,0.062]$ & $7.6{\times}10^{-6}$ & $4.7{\times}10^{-8}$ \\
+Intra-cohort, PCC@100 & 18 & $0.559$ & $0.502$ & $+0.057$ & $[0.045,0.070]$ & $7.6{\times}10^{-6}$ & $1.1{\times}10^{-7}$ \\
+Per-gene (PCC@50)     & 300 & $0.496$ & $0.444$ & $+0.051$ & --- & $1.7{\times}10^{-38}$ & --- \\
+\midrule
+Pooled (cross-organ)  & 15 & $0.599$ & $0.587$ & $+0.012$ & $[0.001,0.022]$ & $4.1{\times}10^{-2}$ & $5.6{\times}10^{-2}$ \\
+LOOO (cross-organ)    & 18 & $0.422$ & $0.398$ & $+0.025$ & $[0.007,0.041]$ & $1.8{\times}10^{-2}$ & $1.4{\times}10^{-2}$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Proofs of the formal guarantees}
 \label{app:formal_guarantees}
