@@ -1093,14 +1093,14 @@ models, and protocol as Table~\ref{tab:main}; mean$_{\text{std}}$ over three see
 \toprule
 Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
 \midrule
-IDC~\tiny{Breast}    & \running & \running & \running & \running & \running \\
-CCRCC~\tiny{Kidney}  & \running & \running & \running & \running & \running \\
-LUNG~\tiny{Lung}     & \running & \running & \running & \running & \running \\
-PAAD~\tiny{Pancreas} & \running & \running & \running & \running & \running \\
-PRAD~\tiny{Prostate} & \running & \running & \running & \running & \running \\
-SKCM~\tiny{Skin}     & \running & \running & \running & \running & \running \\
+IDC~\tiny{Breast} & $0.54{\pm}0.01$ & $0.25{\pm}0.07$ & $0.51{\pm}0.01$ & \running & \best{$0.57{\pm}0.01$} \\
+CCRCC~\tiny{Kidney} & $0.17{\pm}0.01$ & $0.21{\pm}0.01$ & $0.18{\pm}0.01$ & \running & \best{$0.26{\pm}0.01$} \\
+LUNG~\tiny{Lung} & $0.48{\pm}0.01$ & $0.38{\pm}0.10$ & $0.56{\pm}0.01$ & \running & \best{$0.59{\pm}0.01$} \\
+PAAD~\tiny{Pancreas} & $0.35{\pm}0.02$ & $0.24{\pm}0.06$ & \best{$0.39{\pm}0.03$} & \running & $0.39{\pm}0.04$ \\
+PRAD~\tiny{Prostate} & $0.25{\pm}0.01$ & $0.32{\pm}0.02$ & $0.34{\pm}0.01$ & \running & \best{$0.39{\pm}0.00$} \\
+SKCM~\tiny{Skin} & $0.63{\pm}0.01$ & $0.51{\pm}0.02$ & $0.64{\pm}0.01$ & $0.47{\pm}0.03$ & \best{$0.69{\pm}0.00$} \\
 \midrule
-\textbf{Average}     & \running & \running & \running & \running & \running \\
+\textbf{Average} & $0.40$ & $0.32$ & $0.44$ & \running & \best{$0.48$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -1118,14 +1118,14 @@ models, and protocol as Table~\ref{tab:main}; mean$_{\text{std}}$ over three see
 \toprule
 Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
 \midrule
-IDC~\tiny{Breast}    & \running & \running & \running & \running & \running \\
-CCRCC~\tiny{Kidney}  & \running & \running & \running & \running & \running \\
-LUNG~\tiny{Lung}     & \running & \running & \running & \running & \running \\
-PAAD~\tiny{Pancreas} & \running & \running & \running & \running & \running \\
-PRAD~\tiny{Prostate} & \running & \running & \running & \running & \running \\
-SKCM~\tiny{Skin}     & \running & \running & \running & \running & \running \\
+IDC~\tiny{Breast} & $0.52{\pm}0.01$ & $0.26{\pm}0.02$ & $0.50{\pm}0.01$ & $0.40{\pm}0.01$ & \best{$0.55{\pm}0.00$} \\
+CCRCC~\tiny{Kidney} & $0.16{\pm}0.01$ & $0.13{\pm}0.03$ & $0.14{\pm}0.01$ & \running & \best{$0.22{\pm}0.01$} \\
+LUNG~\tiny{Lung} & $0.52{\pm}0.00$ & $0.43{\pm}0.01$ & \best{$0.58{\pm}0.00$} & $0.39{\pm}0.03$ & $0.55{\pm}0.00$ \\
+PAAD~\tiny{Pancreas} & $0.37{\pm}0.03$ & $0.19{\pm}0.04$ & $0.38{\pm}0.03$ & $0.25{\pm}0.03$ & \best{$0.39{\pm}0.04$} \\
+PRAD~\tiny{Prostate} & $0.33{\pm}0.00$ & $0.32{\pm}0.01$ & $0.36{\pm}0.01$ & $0.21{\pm}0.01$ & \best{$0.41{\pm}0.01$} \\
+SKCM~\tiny{Skin} & $0.63{\pm}0.00$ & $0.39{\pm}0.02$ & $0.63{\pm}0.01$ & $0.45{\pm}0.01$ & \best{$0.66{\pm}0.01$} \\
 \midrule
-\textbf{Average}     & \running & \running & \running & \running & \running \\
+\textbf{Average} & $0.42$ & $0.29$ & $0.43$ & \running & \best{$0.46$} \\
 \bottomrule
 \end{tabular}%
 }
@@ -1767,6 +1767,38 @@ SKCM~\tiny{Skin}        &  $0.665{\pm}0.01$  &  $0.522{\pm}0.03$  &  $0.645{\pm}
 All entries use three completed seeds. STEM uses the corrected DiT configuration ($T=1000$, 100 epochs).
 \end{minipage}
 \end{table}
+
+\begin{table*}[h]
+\centering
+\caption{\textbf{Intra-cohort PCC@50 with UNI-only features (1024-d).} Same six cohorts, models,
+and protocol as Table~\ref{tab:main}; mean$\pm$std over three seeds; best per row in bold.
+Only completed runs are shown; ``--'' denotes a result not available in the workspace.}
+\label{tab:uni_only_pcc50}
+\setlength{\tabcolsep}{3pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l ccc cc c}
+\toprule
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & HyperST~\tiny{CVPR'26}
+       & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & PatchMorphoST~(ours) \\
+\midrule
+IDC~\tiny{Breast}      & -- & -- & -- & -- & -- & \best{$0.569\pm0.011$} \\
+COAD~\tiny{Colorectal} & -- & -- & -- & -- & -- & -- \\
+CCRCC~\tiny{Kidney}    & -- & -- & -- & -- & -- & \best{$0.264\pm0.012$} \\
+LUNG~\tiny{Lung}       & -- & -- & -- & -- & -- & \best{$0.590\pm0.007$} \\
+PAAD~\tiny{Pancreas}   & -- & -- & -- & -- & -- & \best{$0.392\pm0.049$} \\
+PRAD~\tiny{Prostate}   & -- & -- & -- & -- & -- & \best{$0.394\pm0.003$} \\
+SKCM~\tiny{Skin}       & -- & -- & -- & -- & -- & \best{$0.694\pm0.001$} \\
+\midrule
+\textbf{Average of available rows} & -- & -- & -- & -- & -- & $0.484$ \\
+\bottomrule
+\end{tabular}%
+}
+\begin{minipage}{\linewidth}
+\footnotesize
+UNI-only PatchMorphoST results are from \texttt{results\_pcc50\_uni\_morphost}; COAD is absent from
+the completed UNI run. No baseline UNI-only results were found.
+\end{minipage}
+\end{table*}
 
 \section{Training Objective Ablation}
 \label{app:lossdata}
