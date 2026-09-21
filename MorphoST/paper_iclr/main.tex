@@ -771,23 +771,6 @@ confirms the analytic guarantee, completing the answer to RQ3.
 without it), and the predictor is provably invariant to spot translation, rotation, and reflection.
 \end{keybox}
 
-\begin{table}[t]
-\centering
-\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference when only the spot coordinates are transformed (randomly initialized model, 257-spot synthetic slide).}
-\label{tab:invariance}
-\small
-\begin{tabular}{l r}
-\toprule
-Transformation & Max.\ abs.\ difference \\
-\midrule
-Translation & $5.97\times10^{-5}$ \\
-Rotation    & $1.97\times10^{-5}$ \\
-Reflection  & $0$ \\
-Spot permutation & $5.96\times10^{-7}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
 \begin{table}[H]
 \centering
 \caption{\textbf{Context-stream ablation (six-organ POOLED, no COAD).} Each row toggles a subset of
@@ -816,6 +799,23 @@ Full, random nbr.        & L$_{\text{rand}}$\,+\,G\,+\,S & $0.58{\pm}0.01$ & $0.
 \morph{} (ours)          & L\,+\,G\,+\,S & \best{$0.61{\pm}0.01$} & \best{$0.42{\pm}0.01$} & \best{$0.40{\pm}0.01$} \\
 \bottomrule
 \end{tabular}}
+\end{table}
+
+\begin{table}[t]
+\centering
+\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference when only the spot coordinates are transformed (randomly initialized model, 257-spot synthetic slide).}
+\label{tab:invariance}
+\small
+\begin{tabular}{l r}
+\toprule
+Transformation & Max.\ abs.\ difference \\
+\midrule
+Translation & $5.97\times10^{-5}$ \\
+Rotation    & $1.97\times10^{-5}$ \\
+Reflection  & $0$ \\
+Spot permutation & $5.96\times10^{-7}$ \\
+\bottomrule
+\end{tabular}
 \end{table}
 
 \begin{figure*}[t]
