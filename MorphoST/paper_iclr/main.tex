@@ -533,14 +533,19 @@ We begin by asking whether \morph{} predicts spatial expression accurately on or
 matched features, panels, and splits: a separate model trained \emph{per cohort} (intra-cohort), and a
 \emph{single} model trained jointly across all organs (pooled).
 
-Starting with the intra-cohort setting, Table~\ref{tab:main} reports the comparison across gene-panel
-sizes. For PCC@50, \morph{} obtains the highest mean PCC ($0.496$) against $0.444$ for BLEEP, the
-strongest baseline, an $11.6\%$ relative improvement, and it leads on all six cohorts; the margin is
-widest on kidney and prostate ($+0.072$ and $+0.064$) and narrowest on lung ($+0.024$). Importantly,
-this ranking is robust to panel size: under a smaller \textbf{10-gene} panel (PCC@10,
-Table~\ref{tab:main_g10}), \morph{} again leads the average ($0.600$ vs.\ $0.545$ for BLEEP) and tops
-five of six cohorts, with correlations rising across all methods because the retained genes are the
-most variable, and hence the most predictable.
+Starting with the intra-cohort setting, we stress-test accuracy along two axes of the target panel and
+report both. \emph{First}, across the three 50-gene \emph{selection strategies}
+(Table~\ref{tab:panel_strategy}), \morph{} attains the best mean PCC under every strategy: $0.496$
+(HVG), $0.615$ (DEG), and $0.650$ (HMHVG), each ahead of the strongest baseline (BLEEP at $0.444$,
+$0.559$, and $0.587$, respectively). \emph{Second}, across \emph{panel sizes} (Table~\ref{tab:main}),
+this lead persists at every size, as \morph{} tops the average at PCC@10 ($0.600$), PCC@50 ($0.496$),
+and PCC@100 ($0.559$). Focusing on the default PCC@50 panel, the gain over BLEEP is $11.6\%$, and
+\morph{} wins all six cohorts, with the margin widest on kidney and prostate ($+0.072$, $+0.064$) and
+narrowest on lung ($+0.024$); at the smallest 10-gene panel, correlations rise across all methods
+because the retained genes are the most variable, and hence the most predictable. Crucially, these
+gains are not an artifact of the correlation metric: as Table~\ref{tab:error_strategy} reports,
+\morph{} also achieves the lowest error under every strategy and size (for example, at PCC@50 its
+MSE is $1.233$ and MAE $0.794$, versus $1.318$ and $0.819$ for BLEEP).
 
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!t]
