@@ -1291,51 +1291,6 @@ MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
 \end{tabular}
 \end{table}
 
-\section{Gene Panel Comparison}
-\label{app:panel}
-
-Table~\ref{tab:panel} reports intra-cohort mean PCC averaged over seven cohorts and three seeds
-for three gene-panel strategies: highly variable genes (\textbf{HVG}, the HEST-1k default),
-unsupervised differentially expressed genes (\textbf{DEG}; Leiden clustering + Wilcoxon), and
-high-mean highly variable genes (\textbf{HMHVG}; selected using expression mean and variability
-after variance filtering).
-The supplied panel-generation script constructs DEG and HMHVG panels once per cohort using
-all available slides, rather than selecting genes separately within each training fold.
-These results therefore describe an exploratory comparison with fixed cohort-level panels;
-held-out expression can influence target selection, and nested checkpoint validation does
-not remove this dependence. A strictly inductive comparison requires training-fold-only
-panel selection and retraining.
-All methods use identical UNI+CONCH features, nested-validation, and the same training protocol.
-DEG and HMHVG panels consistently outperform HVG across all methods, with HMHVG yielding the
-highest mean for every method tested.
-\morph{} leads on all three panels, with its advantage most pronounced on HMHVG ($0.657$ vs.\
-$0.595$ for BLEEP) and consistent across DEG ($0.624$ vs.\ $0.571$) and HVG ($0.471$ vs.\
-$0.427$).
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Gene panel comparison: intra-cohort mean PCC$\uparrow$ (HEST-1k).}
-Mean$_{\mathrm{std}}$ over three seeds; per-seed value is the average over seven cohorts.
-All methods use identical frozen UNI\,+\,CONCH features (1536-dim) and nested-validation.
-Best per column in \best{bold}.}
-\label{tab:panel}
-\small
-\setlength{\tabcolsep}{7pt}
-\begin{tabular}{l ccc}
-\toprule
-Method & HVG & DEG & HMHVG \\
-\midrule
-ST-Net~\cite{he2020stnet}          & $0.398_{0.004}$ & $0.523_{0.004}$ & $0.550_{0.008}$ \\
-Hist2ST~\cite{zeng2022hist2st}     & $0.330_{0.032}$ & $0.494_{0.014}$ & $0.544_{0.038}$ \\
-BLEEP~\cite{xie2023bleep}          & $0.427_{0.004}$ & $0.571_{0.005}$ & $0.595_{0.014}$ \\
-STEM~\cite{zhu2025diffusion}       & $0.291_{0.005}$ & $0.456_{0.002}$ & $0.485_{0.010}$ \\
-\midrule
-\morph{} (ours)                    & \best{$0.471_{0.005}$} & \best{$0.624_{0.002}$} & \best{$0.657_{0.006}$} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\clearpage
 \section{Proofs of the formal guarantees}
 \label{app:formal_guarantees}
 
