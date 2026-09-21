@@ -501,7 +501,11 @@ of architectural additions.
 \section{Experimental Setup}
 \label{sec:setup}
 We evaluate on \textbf{HEST-1k} \cite{jaume2024hest} with frozen UNI+CONCH patch features and
-$\log(1+x)$ targets; unless stated otherwise the target is the 50-gene HEST HVG panel. Cross-organ
+$\log(1+x)$ targets; unless stated otherwise the target is the 50-gene HEST HVG panel. To test
+robustness to how the target genes are chosen, we use three 50-gene \emph{selection strategies}:
+\textbf{HVG}, the highest-variance genes; \textbf{DEG}, differentially expressed genes selected by a
+Wilcoxon test across Leiden clusters; and \textbf{HMHVG}, a mean-and-variability criterion applied
+after variance filtering (Table~\ref{tab:panel_strategy}). Cross-organ
 experiments use the six retained cohorts of Appendix~\ref{app:cohort_stats} (HCC, LYMPH\_IDC, and
 READ excluded). We study three regimes: \emph{intra-cohort} (a model per organ), \emph{pooled}
 (train across organs, hold out slide-level samples; organ identity is not a model input), and
