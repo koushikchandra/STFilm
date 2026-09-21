@@ -719,12 +719,15 @@ unnecessary when the organ is represented in training.
 Having established strong performance on \emph{seen} organs, we now ask the harder question of whether
 \morph{} transfers to an organ it has \emph{never} seen. To test this, we use leave-one-organ-out
 (LOOO) evaluation: we train on all-but-one organ and test on the held-out one, so the target anatomy is
-entirely absent from training. As expected, accuracy falls relative to the pooled setting of RQ1, yet
-\morph{} still transfers best. On the six-organ subset it attains the highest mean PCC ($0.422$;
-Table~\ref{tab:looo_6organ}) and wins every held-out organ, and on the full seven-organ HEST panel it
-reaches $0.490$ versus $0.473$ for BLEEP, the strongest baseline (although BLEEP is stronger on IDC and
-SKCM there). This shows that \morph{}'s inductive biases carry over to unseen anatomy, which supports
-RQ2; a complementary seven-organ mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
+entirely absent from training. As expected, accuracy falls relative to the pooled setting of RQ1, yet \morph{} still transfers best:
+on the six-organ subset it wins \emph{every} held-out organ and attains the highest mean PCC ($0.422$).
+Figure~\ref{fig:box_looo5} illustrates this for four representative held-out organs (kidney and prostate
+are omitted for readability), where \morph{} (orange) leads in every panel; the complete per-cohort
+results for all six organs are reported in the supplementary (Appendix~\ref{app:looo_complete},
+Table~\ref{tab:looo_6organ}). On the full seven-organ HEST panel \morph{} reaches $0.490$ versus
+$0.473$ for BLEEP, the strongest baseline (although BLEEP is stronger on IDC and SKCM there). Together,
+these results show that \morph{}'s inductive biases carry over to unseen anatomy, which supports RQ2; a
+complementary seven-organ mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
 
 \begin{keybox}
 \textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.760$ with the organ seen (RQ1) to
@@ -735,10 +738,10 @@ predicting seen organs well does not by itself transfer to a new organ.
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{figures/box_looo6_4panel.png}
-\caption{\textbf{Per-cohort cross-organ LOOO accuracy} (four of the six cohorts in
-Table~\ref{tab:looo_6organ}; kidney and prostate omitted for readability, frozen UNI+CONCH).
-One panel per held-out cohort; box = per-gene PCC over three seeds, $\Diamond$ = mean. \morph{}
-(orange) leads on all four.}
+\caption{\textbf{Per-cohort cross-organ LOOO accuracy} (four representative held-out cohorts; kidney
+and prostate omitted for readability, frozen UNI+CONCH). One panel per held-out cohort; box = per-gene
+PCC over three seeds, $\Diamond$ = mean. \morph{} (orange) leads in all four panels, and wins all six
+held-out organs in the complete table (Appendix~\ref{app:looo_complete}, Table~\ref{tab:looo_6organ}).}
 \label{fig:box_looo5}
 \end{figure}
 
