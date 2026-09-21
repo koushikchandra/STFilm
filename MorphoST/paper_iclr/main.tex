@@ -487,7 +487,8 @@ gene-wise Pearson-correlation term:
 where $\rho_g$ is the Pearson correlation between predicted and measured expression across the $N$
 spots, $\mathcal{V}$ is the set of genes with nonzero target variance on that slide, and
 $\lambda=0.5$. MSE constrains the scale of the predictions, while the correlation term encourages
-the model to reproduce spot-to-spot expression patterns.
+the model to reproduce spot-to-spot expression patterns; Appendix~\ref{app:lossdata} ablates this
+correlation term.
 
 The main model enables all three context pathways. Our factorial ablation independently toggles the
 local (L), global (G), and slide-level (S) pathways, avoiding conclusions tied to a particular order
@@ -500,7 +501,8 @@ of architectural additions.
 
 \section{Experimental Setup}
 \label{sec:setup}
-We evaluate on \textbf{HEST-1k} \cite{jaume2024hest} with frozen UNI+CONCH patch features and
+We evaluate on \textbf{HEST-1k} \cite{jaume2024hest} with frozen UNI+CONCH patch features
+(Appendix~\ref{app:encoder} ablates each encoder in isolation) and
 $\log(1+x)$ targets; unless stated otherwise the target is the 50-gene HEST HVG panel. To test
 robustness to how the target genes are chosen, we use three 50-gene \emph{selection strategies}:
 \textbf{HVG}, the highest-variance genes; \textbf{DEG}, differentially expressed genes selected by a
@@ -1070,22 +1072,6 @@ selection.
 parameters. AdamW training uses learning rate $10^{-3}$, weight decay $10^{-2}$, cosine decay,
 gradient clipping, 100 epochs maximum, patience 20, and at most 3,000 spots per step.
 
-\section{Computation Resources and Inference Tools}
-\label{app:compute}
-All experiments ran on a shared GPU cluster. Feature extraction and training used NVIDIA GPUs with
-compute capability $\geq$~sm\_80 (A100 80GB, A100-PCIe, L40s, and H200); Volta (V100) GPUs are
-incompatible with our CUDA-13 / PyTorch build and were excluded.
-\begin{itemize}[nosep,leftmargin=1.4em]
-\item \textbf{Encoders:} frozen UNI (ViT-L/16, 1024-d) and CONCH (512-d) patch features, concatenated
-to 1536-d; no encoder fine-tuning.
-\item \textbf{Model:} \morph{} has 4.88M trainable parameters (Table~\ref{tab:complexity}) and predicts
-a whole slide in a single forward pass, with no iterative sampling.
-\item \textbf{Training:} AdamW with a cosine schedule, 100 epochs with early stopping (patience~20),
-nested validation, and a correlation-aware objective; three seeds per configuration.
-\item \textbf{Inference:} single-pass; median model-only latency and peak memory versus slide size are
-reported in Table~\ref{tab:scaling}, with feature extraction and disk I/O excluded.
-\end{itemize}
-
 \section{Encoder Ablation}
 \label{app:encoder}
 We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{tab:main}, which uses the concatenated UNI\,+\,CONCH features) with each foundation encoder \emph{in isolation}: UNI only (ViT-L/16, 1024-d) and CONCH only (512-d), holding models, cohorts, gene panels, splits, and training budget fixed (Table~\ref{tab:encoder}). \running{} entries are still training.
@@ -1158,7 +1144,22 @@ SKCM~\tiny{Skin}       & $0.500{\pm}0.09$ & $0.694{\pm}0.02$ & $0.708{\pm}0.01$ 
 {\footnotesize $^\dagger$STEM incomplete (1--2 of 3 seeds); values provisional.}
 \end{table}
 
-\section{Model complexity and inference scaling}
+\section{Computation Resources, Model Complexity, and Inference Scaling}
+\label{app:compute}
+All experiments ran on a shared GPU cluster. Feature extraction and training used NVIDIA GPUs with
+compute capability $\geq$~sm\_80 (A100 80GB, A100-PCIe, L40s, and H200); Volta (V100) GPUs are
+incompatible with our CUDA-13 / PyTorch build and were excluded.
+\begin{itemize}[nosep,leftmargin=1.4em]
+\item \textbf{Encoders:} frozen UNI (ViT-L/16, 1024-d) and CONCH (512-d) patch features, concatenated
+to 1536-d; no encoder fine-tuning.
+\item \textbf{Model:} \morph{} has 4.88M trainable parameters (Table~\ref{tab:complexity}) and predicts
+a whole slide in a single forward pass, with no iterative sampling.
+\item \textbf{Training:} AdamW with a cosine schedule, 100 epochs with early stopping (patience~20),
+nested validation, and a correlation-aware objective; three seeds per configuration.
+\item \textbf{Inference:} single-pass; median model-only latency and peak memory versus slide size are
+reported in Table~\ref{tab:scaling}, with feature extraction and disk I/O excluded.
+\end{itemize}
+
 
 \begin{table}[H]
 \centering
@@ -1257,45 +1258,6 @@ STEM~\cite{zhu2025diffusion}   & $0.113_{0.13}$ & $0.152_{0.15}$ \\
 \end{table}
 
 
-\section{Cross-organ LOOO transfer with UNI features}
-\label{app:looo_expanded}
-
-Table~\ref{tab:looo_appendix} reports a complementary LOOO comparison using UNI features. EGN has
-the highest mean PCC ($0.493$), while \morph{} reaches $0.477$. M2OST narrowly leads EGN on LUNG
-($0.667$ versus $0.666$). STEM uses the corrected DiT configuration with $T=1000$; its SKCM entry
-contains one completed seed and is marked accordingly.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Cross-organ LOOO transfer with UNI features} (Pearson mean$_{\text{std}}$
-over three seeds; nested-validation; HCC, LYMPH\_IDC, and READ excluded).
-Leave-one-organ-out: trained on all other organs, tested on the held-out organ.
-Best per row in \best{bold}.}
-\label{tab:looo_appendix}
-\setlength{\tabcolsep}{3pt}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{l ccc cccc}
-\toprule
-Organ & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{} (V3) \\
-\midrule
-IDC~\tiny{Breast}       &  $0.217{\pm}0.06$  &  $0.459{\pm}0.02$  &  $0.509{\pm}0.03$  &  $0.452{\pm}0.01$  &  $0.531{\pm}0.03$  &  $0.406{\pm}0.01$  &  \best{$0.534{\pm}0.02$} \\
-COAD~\tiny{Colorectal}  &  $0.430{\pm}0.03$  &  $0.688{\pm}0.04$  &  $0.667{\pm}0.02$  &  $0.672{\pm}0.03$  &  \best{$0.749{\pm}0.01$}  &  $0.504{\pm}0.03$  &  $0.703{\pm}0.01$ \\
-CCRCC~\tiny{Kidney}     &  $0.084{\pm}0.03$  &  $0.084{\pm}0.01$  &  $0.100{\pm}0.02$  &  $0.122{\pm}0.01$  &  $0.106{\pm}0.01$  &  $0.090{\pm}0.01$  &  \best{$0.124{\pm}0.00$} \\
-LUNG~\tiny{Lung}        &  $0.504{\pm}0.04$  &  $0.499{\pm}0.06$  &  $0.621{\pm}0.02$  &  \best{$0.667{\pm}0.01$}  &  $0.666{\pm}0.01$  &  $0.561{\pm}0.01$  &  $0.660{\pm}0.01$ \\
-PAAD~\tiny{Pancreas}    &  $0.404{\pm}0.05$  &  $0.360{\pm}0.07$  &  $0.521{\pm}0.02$  &  $0.522{\pm}0.01$  &  \best{$0.551{\pm}0.02$}  &  $0.460{\pm}0.02$  &  $0.507{\pm}0.04$ \\
-PRAD~\tiny{Prostate}    &  $0.071{\pm}0.01$  &  $0.104{\pm}0.02$  &  $0.111{\pm}0.00$  &  $0.107{\pm}0.02$  &  $0.098{\pm}0.02$  &  $0.068{\pm}0.01$  &  \best{$0.119{\pm}0.02$} \\
-SKCM~\tiny{Skin}        &  $0.402{\pm}0.08$  &  $0.652{\pm}0.08$  &  $0.745{\pm}0.01$  &  $0.724{\pm}0.02$  &  \best{$0.749{\pm}0.01$}  &  $0.686^\dagger$  &  $0.692{\pm}0.06$ \\
-\midrule
-\textbf{Average}        &  $0.302$  &  $0.407$  &  $0.468$  &  $0.466$  &  \best{$0.493$}  &  $0.396^\dagger$  &  $0.477$ \\
-\bottomrule
-\end{tabular}%
-}
-\begin{minipage}{\linewidth}
-\vspace{2pt}\footnotesize
-$^\dagger$STEM DiT (corrected, T=1000, 100 epochs) LOOO: SKCM (skin) has only 1 seed complete; all other organs use 3 seeds. Average marked $^\dagger$ accordingly.
-\end{minipage}
-\end{table}
-
 \section{Proofs of the formal guarantees}
 \label{app:formal_guarantees}
 
@@ -1329,33 +1291,6 @@ layer. Induction over the layers and application of the pointwise prediction hea
 $f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P})$, proving
 Proposition~\ref{prop:permutation_equivariance}.
 
-
-\section{Three-Metric Intra-Cohort Summary}
-\label{app:metrics}
-
-Table~\ref{tab:metrics} extends the intra-cohort comparison with Spearman correlation (SCC) and
-mean squared error (MSE) alongside PCC, averaged over seven organ groups.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Intra-cohort three-metric summary} (HEST-1k, averaged over seven organ groups;
-three seeds; UNI\,+\,CONCH features). PCC$\uparrow$, SCC$\uparrow$, MSE$\downarrow$. Best per column in \best{bold}.}
-\label{tab:metrics}
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l ccc}
-\toprule
-Method & PCC $\uparrow$ & SCC $\uparrow$ & MSE $\downarrow$ \\
-\midrule
-ST-Net~\cite{he2020stnet} (NBE'20)         & 0.399 & 0.356 & 2.043 \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)    & 0.337 & 0.321 & 1.616 \\
-BLEEP~\cite{xie2023bleep} (NeurIPS'23)     & 0.426 & 0.388 & 1.464 \\
-STEM~\cite{zhu2025diffusion} (ICLR'25)     & 0.299 & 0.274 & 1.855 \\
-\midrule
-\morph{} (ours) & \best{0.470} & \best{0.430} & \best{1.389} \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Training Objective Ablation}
 \label{app:lossdata}
