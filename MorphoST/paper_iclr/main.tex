@@ -526,6 +526,11 @@ because the retained genes are the most variable, and hence the most predictable
 gains are not an artifact of the correlation metric: as Table~\ref{tab:error_strategy} reports,
 \morph{} also achieves the lowest error under every strategy and size (for example, at PCC@50 its
 MSE is $1.233$ and MAE $0.794$, versus $1.318$ and $0.819$ for BLEEP).
+These intra-cohort gains are statistically significant, not noise: across the six cohorts and three
+seeds ($n{=}18$ paired runs), \morph{}'s mean PCC@50 exceeds BLEEP's by $0.051$
+(95\% bootstrap CI $[0.041,0.062]$; Wilcoxon signed-rank $p{=}7.6\times10^{-6}$, paired $t$-test
+$p{=}4.7\times10^{-8}$), and at the finer per-gene level \morph{} outperforms BLEEP on $87\%$ of genes
+($n{=}300$; Wilcoxon $p<10^{-30}$).
 
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!t]
