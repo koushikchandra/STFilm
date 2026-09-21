@@ -1093,6 +1093,14 @@ Encoder & Cohort & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
 }
 \end{table}
 
+\section{Complete LOOO (Leave-One-Organ-Out) Results}
+\label{app:looo_complete}
+Table~\ref{tab:looo_6organ} reports the complete per-cohort leave-one-organ-out transfer results on
+the six-organ subset summarised in the main text (Section~\ref{sec:transfer}, Figure~\ref{fig:box_looo5}).
+Each fold holds out one entire organ and trains on the other five, using leakage-safe per-fold gene
+panels and identical frozen UNI\,+\,CONCH features. \morph{} wins every held-out cohort and the
+average ($0.422$).
+
 \begin{table}[H]
 \centering
 \caption{\textbf{Cross-organ LOOO transfer on a six-organ subset} (kidney, breast, lung, pancreas,
@@ -1105,7 +1113,7 @@ in \best{bold}. \morph{} wins every cohort and the average.}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{l cc cc c}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25}$^\dagger$ & \morph{}+CONCH \\
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25}$^\dagger$ & \morph{} (Ours) \\
 \midrule
 CCRCC~\tiny{Kidney}    & $0.074{\pm}0.00$ & $0.064{\pm}0.01$ & $0.058{\pm}0.00$ & $0.024{\pm}0.01$ & \best{$0.098{\pm}0.01$} \\
 IDC~\tiny{Breast}      & $0.332{\pm}0.02$ & $0.350{\pm}0.00$ & $0.401{\pm}0.04$ & $0.131{\pm}0.08$ & \best{$0.425{\pm}0.03$} \\
@@ -1239,7 +1247,7 @@ Best per row in \best{bold}.}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{l cc cc c}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
 IDC~\tiny{Breast}       &  $0.198{\pm}0.05$  &  $0.458{\pm}0.01$  &  \best{$0.529{\pm}0.02$}  &  $0.420{\pm}0.03$  &  $0.520{\pm}0.02$ \\
 COAD~\tiny{Colorectal}  &  $0.420{\pm}0.06$  &  $0.670{\pm}0.03$  &  $0.662{\pm}0.01$  &  $0.452{\pm}0.02$  &  \best{$0.729{\pm}0.03$} \\
@@ -1271,7 +1279,7 @@ Best per row in \best{bold}.}
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{l ccc cccc}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & M2OST~\tiny{AAAI'25} & EGN~\tiny{WACV'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
 IDC~\tiny{Breast}       &  $0.198{\pm}0.05$  &  $0.458{\pm}0.01$  &  $0.529{\pm}0.02$  &  $0.437{\pm}0.04$  &  \best{$0.567{\pm}0.02$}  &  $0.420{\pm}0.03$  &  $0.520{\pm}0.02$ \\
 COAD~\tiny{Colorectal}  &  $0.420{\pm}0.06$  &  $0.670{\pm}0.03$  &  $0.662{\pm}0.01$  &  $0.657{\pm}0.05$  &  $0.728{\pm}0.01$  &  $0.452{\pm}0.02$  &  \best{$0.729{\pm}0.03$} \\
@@ -1556,7 +1564,7 @@ seeds with nested-validation; best (lowest) per row in \best{bold}. Same models,
 \resizebox{\linewidth}{!}{%
 \begin{tabular}{l cc cc c}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{}+CONCH \\
+Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25} & \morph{} (Ours) \\
 \midrule
 IDC~\tiny{Breast}  &  $1.273{\pm}0.066$  &  $1.246{\pm}0.032$  &  $1.141{\pm}0.022$  &  $1.210{\pm}0.015$  &  \best{$1.096{\pm}0.010$} \\
 COAD~\tiny{Colorectal}  &  $0.996{\pm}0.014$  &  $1.008{\pm}0.017$  &  \best{$0.986{\pm}0.020$}  &  $1.088{\pm}0.008$  &  $1.040{\pm}0.012$ \\
