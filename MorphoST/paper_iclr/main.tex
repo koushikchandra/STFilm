@@ -60,29 +60,28 @@
 \maketitle
 
 \begin{abstract}
-Predicting spatial gene expression from routine histology images could extend molecular analysis
-to tissue samples without spatial transcriptomic measurements. This task requires integrating local
-morphology with tissue context while avoiding sensitivity to arbitrary choices of coordinate origin
-and orientation. We introduce \morph{}, a compact spatial transformer that combines three sources
-of context in each layer: attention over nearby spots, attention over all spots on a slide, and a
-pooled slide representation. The local pathway uses continuous pairwise distances to bias attention,
-retaining information about spatial proximity beyond a binary neighborhood graph. Because
-coordinates enter the model only through these distances, predictions are invariant to translations,
-rotations, and reflections of the coordinate frame when image features are fixed.
-We evaluate \morph{} on seven human organ cohorts from HEST-1k through intra-cohort prediction,
-pooled multi-organ testing on held-out samples, and leave-one-organ-out cross-organ transfer,
-using matched features, gene panels, splits, and model-selection procedures within each comparison.
-In intra-cohort prediction of 100 genes, \morph{} improves mean Pearson correlation by $11.4\%$ over
-the strongest baseline and leads on all six cohorts. In pooled evaluation on held-out samples from represented organs, it improves
-correlation by $0.3\%$ over the strongest baseline.
-In a separate 50-gene cross-organ evaluation with an entire organ held out during training,
-\morph{} improves correlation by $3.6\%$ over BLEEP, the strongest baseline considered.
-Across frozen UNI, CONCH, and combined UNI\,+\,CONCH features, \morph{} consistently
-achieves the highest mean correlation among the methods in the pooled encoder comparison.
-Factorial ablations identify local attention as the main contributor to predictive accuracy.
-With $4.88$M parameters and model-only inference of $64.7$\,ms for 10,000 spots on an A100,
-\morph{} supports accurate, efficient prediction across cohorts and feature encoders, while
-generalization to unseen organs remains a challenge.
+Predicting spatial gene expression from routine histology images could extend molecular analysis to
+tissue samples that lack spatial-transcriptomic measurements. Doing so requires integrating local
+morphology with tissue-wide context while avoiding sensitivity to arbitrary choices of coordinate
+origin and orientation. We introduce \morph{}, a compact ($4.88$M-parameter) spatial transformer that
+fuses three sources of context in every layer: attention over each spot's spatial nearest neighbors,
+global self-attention over all spots on a slide, and a pooled slide-level representation, and that
+predicts a whole slide in a single forward pass. Because spot coordinates enter the model only through
+pairwise distances, its predictions are provably invariant to translations, rotations, and reflections
+of the coordinate frame when image features are fixed.
+We evaluate \morph{} on six human organ cohorts from HEST-1k under three regimes: intra-cohort
+prediction, pooled multi-organ testing on held-out samples, and leave-one-organ-out (LOOO) cross-organ
+transfer. Using frozen UNI\,+\,CONCH features with matched gene panels, splits, and model-selection
+procedures, \morph{} attains the highest mean Pearson correlation on every cohort and every 50-gene
+panel in the intra-cohort setting, improving over the strongest baseline by $11.6\%$ at 50 genes
+($0.496$ vs.\ $0.444$) and $11.4\%$ at 100 genes, while also achieving the lowest MSE and MAE. A single
+pooled \morph{} then leads across all six organs at once ($0.599$ vs.\ $0.587$), and under the harder
+LOOO transfer, where an entire organ is withheld from training, it still wins every held-out organ
+($0.422$ vs.\ $0.398$). These gains persist across frozen UNI, CONCH, and combined UNI\,+\,CONCH
+features, and factorial ablations identify local spatial attention as the primary driver of accuracy.
+With model-only inference of $64.7$\,ms for 10,000 spots on an A100, \morph{} delivers accurate and
+efficient prediction across cohorts and encoders, while generalization to entirely unseen organs
+remains the main open challenge.
 \end{abstract}
 
 \etocdepthtag.toc{mainbody}
