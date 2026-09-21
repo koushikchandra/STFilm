@@ -1036,7 +1036,7 @@ disjointness is not guaranteed where identifiers are unavailable.
 \paragraph{Baselines and implementation.}
 We compare with ST-Net \cite{he2020stnet}, Hist2ST \cite{zeng2022hist2st}, BLEEP \cite{xie2023bleep},
 and STEM \cite{zhu2025diffusion} under matched features, panels, splits, budgets, and checkpoint
-selection. MCToGene uses a different ten-cohort protocol and appears in Appendix~\ref{app:published}.
+selection.
 \morph{} uses four layers, width 256, four heads, eight neighbors, 16 radial bases, and 4.88M
 parameters. AdamW training uses learning rate $10^{-3}$, weight decay $10^{-2}$, cosine decay,
 gradient clipping, 100 epochs maximum, patience 20, and at most 3,000 spots per step.
@@ -1265,30 +1265,6 @@ SKCM~\tiny{Skin}        &  $0.402{\pm}0.08$  &  $0.652{\pm}0.08$  &  $0.745{\pm}
 \vspace{2pt}\footnotesize
 $^\dagger$STEM DiT (corrected, T=1000, 100 epochs) LOOO: SKCM (skin) has only 1 seed complete; all other organs use 3 seeds. Average marked $^\dagger$ accordingly.
 \end{minipage}
-\end{table}
-
-\section{Published Per-Cohort Comparison}
-\label{app:published}
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Published per-cohort accuracy on the standard HEST-1k splits}, mean PCC$\uparrow$
-as reported in respective papers (ten cohorts, no organ grouping). Shown for context
-only (\emph{not comparable} to Table~\ref{tab:main}), which uses organ grouping and
-nested-validation. $\dagger$\morph{} uses our organ-grouped splits, not the standard per-cohort split.}
-\label{tab:published}
-\small
-\begin{tabular}{lc}
-\toprule
-Method & HEST-1k (10 cohorts) \\
-\midrule
-ST-Net~\cite{he2020stnet} (NBE'20)            & $0.286$ \\
-Hist2ST~\cite{zeng2022hist2st} (BIB'22)       & -- \\
-MCToGene~\cite{sun2026mctogene} (CVPR'26)      & \best{$0.435$} \\
-\midrule
-\morph{}$^\dagger$ (ours)                   & $0.440$ \\
-\bottomrule
-\end{tabular}
 \end{table}
 
 \section{Proofs of the formal guarantees}
