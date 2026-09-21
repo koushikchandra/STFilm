@@ -72,8 +72,8 @@ rotations, and reflections of the coordinate frame when image features are fixed
 We evaluate \morph{} on seven human organ cohorts from HEST-1k through intra-cohort prediction,
 pooled multi-organ testing on held-out samples, and leave-one-organ-out cross-organ transfer,
 using matched features, gene panels, splits, and model-selection procedures within each comparison.
-In intra-cohort prediction of 100 genes, \morph{} improves mean Pearson correlation by $10.0\%$ over
-the strongest baseline and leads on all seven cohorts. In pooled evaluation on held-out samples from represented organs, it improves
+In intra-cohort prediction of 100 genes, \morph{} improves mean Pearson correlation by $11.4\%$ over
+the strongest baseline and leads on all six cohorts. In pooled evaluation on held-out samples from represented organs, it improves
 correlation by $0.3\%$ over the strongest baseline.
 In a separate 50-gene cross-organ evaluation with an entire organ held out during training,
 \morph{} improves correlation by $3.6\%$ over BLEEP, the strongest baseline considered.
@@ -111,7 +111,7 @@ Morphology and expression interact locally, across the slide, and at the level o
 
 We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines distance-biased $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary. Continuous radial-basis distance features preserve inter-spot geometry while guaranteeing invariance to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
 
-We evaluate matched features, panels, splits, budgets, and nested validation in intra-cohort, pooled cross-organ, and leave-one-organ-out (LOOO) settings. Across seven human cohorts, \morph{} reaches mean PCC $0.470$ versus $0.426$ for BLEEP, $0.760$ pooled PCC, and $0.490$ LOOO PCC; local attention is the strongest factorial component. The model has 4.88M parameters and processes 10,000 spots in $64.7$\,ms on an A100.
+We evaluate matched features, panels, splits, budgets, and nested validation in intra-cohort, pooled cross-organ, and leave-one-organ-out (LOOO) settings. Across six human cohorts, \morph{} reaches mean PCC $0.496$ versus $0.444$ for BLEEP, $0.760$ pooled PCC, and $0.490$ LOOO PCC; local attention is the strongest factorial component. The model has 4.88M parameters and processes 10,000 spots in $64.7$\,ms on an A100.
 
 \begin{table}[t]
 \centering
