@@ -1267,32 +1267,6 @@ We evaluate 59 mouse Visium slides spanning seven organs with mouse-specific 50-
 performance reaches $0.887$, whereas every method remains near the floor under LOOO; we therefore do
 not interpret the latter as evidence of successful cross-species organ transfer.
 
-\begin{table}[H]
-\centering
-\caption{\textbf{Cross-organ generalization on mouse HEST} (three seeds, mean$_{\text{std}}$).
-\textsc{looo}: leave-one-organ-out transfer; \textsc{pooled}: five-fold pooled cross-validation.
-PCC$\uparrow$ on 50 mouse HVGs.}
-\label{tab:mouse}
-\small
-\setlength{\tabcolsep}{5pt}
-\begin{tabular}{l c c}
-\toprule
-Method & \textsc{looo} PCC$^\dag$ & \textsc{pooled} PCC \\
-\midrule
-ST-Net~\cite{he2020stnet}          & $0.013_{0.011}$ & $0.357_{0.036}$ \\
-Hist2ST~\cite{zeng2022hist2st}     & $0.018_{0.007}$ & $0.829_{0.028}$ \\
-BLEEP~\cite{xie2023bleep}          & $-0.006_{0.003}$ & $0.848_{0.012}$ \\
-STEM~\cite{zhu2025diffusion}       & -- & $0.279_{0.009}$ \\
-\midrule
-\morph{} & \best{$0.018_{0.006}$} & \best{$0.887_{0.005}$} \\
-\bottomrule
-\end{tabular}
-\begin{minipage}{\linewidth}\vspace{2pt}
-\scriptsize $^\dag$All \textsc{looo} values are near the floor because the organ-specific gene
-panels do not transfer reliably.
-\end{minipage}
-\end{table}
-
 \section{Spatial-domain recovery}
 \label{app:spatial}
 \begin{table}[H]
