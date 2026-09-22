@@ -830,7 +830,7 @@ to interpret; a \emph{paired per-slide} comparison, however, is decisive (Figure
 beats BLEEP on $78\%$ of slides for ARI and $90\%$ for NMI ($n{=}58$ held-out slides; Wilcoxon
 $p<0.001$ for both).
 \morph{} therefore recovers spatial domains more faithfully than the strongest baseline, even though the
-absolute agreement remains modest; the full six-cohort version appears in Appendix~\ref{app:spatial}.
+absolute agreement remains modest.
 
 \begin{table}[h]
 \centering
@@ -1266,102 +1266,5 @@ Spots & Latency (ms) & Memory (MiB) \\
 We evaluate 59 mouse Visium slides spanning seven organs with mouse-specific 50-gene panels. Pooled
 performance reaches $0.887$, whereas every method remains near the floor under LOOO; we therefore do
 not interpret the latter as evidence of successful cross-species organ transfer.
-
-\section{Spatial-domain recovery}
-\label{app:spatial}
-\begin{table}[H]
-\centering
-\caption{\textbf{Spatial-domain recovery (all six cohorts).} ARI/NMI between domains clustered
-(KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of all six retained
-HEST-1k cohorts; mean$_{\mathrm{std}}$ over three seeds, higher is better, best per column in
-\best{bold}. Companion to the six-organ Table~\ref{tab:downstream5}.}
-\label{tab:downstream}
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l cc}
-\toprule
-Method & ARI $\uparrow$ & NMI $\uparrow$ \\
-\midrule
-ST-Net~\cite{he2020stnet}     & $0.149_{0.11}$ & $0.213_{0.13}$ \\
-Hist2ST~\cite{zeng2022hist2st} & $0.149_{0.12}$ & $0.197_{0.12}$ \\
-BLEEP~\cite{xie2023bleep}      & $0.157_{0.12}$ & $0.209_{0.14}$ \\
-STEM~\cite{zhu2025diffusion}   & $0.113_{0.13}$ & $0.152_{0.15}$ \\
-\midrule
-\morph{}                       & \best{$0.192_{0.15}$} & \best{$0.259_{0.16}$} \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-
-\section{Statistical Significance}
-\label{app:significance}
-Table~\ref{tab:significance} reports paired significance tests of \morph{} against BLEEP, the strongest
-baseline, in every regime. For intra-cohort and LOOO we pair mean PCC at the (cohort/organ $\times$
-seed) level; for pooled at the (fold $\times$ seed) level; and the per-gene row pairs individual
-gene PCC (PCC@50) across cohorts. We report the mean difference with a $95\%$ bootstrap confidence
-interval, a Wilcoxon signed-rank test, and a paired $t$-test. The intra-cohort advantage is decisive at
-every panel size and at the per-gene level ($p<2.5\times10^{-4}$, and $p<10^{-30}$ per gene), and
-cross-organ LOOO transfer is also significant ($p<0.02$). The pooled gain is small ($+0.012$) and only
-marginally significant (Wilcoxon $p=0.04$, paired $t$ $p=0.06$), consistent with all organs already
-being represented in that regime; we therefore treat the pooled result as supportive rather than
-decisive.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Statistical significance of \morph{} vs.\ BLEEP} (strongest baseline) across regimes.
-$\Delta$PCC is the paired mean difference with a $95\%$ bootstrap CI; $p$-values from Wilcoxon
-signed-rank and paired $t$-tests. Intra-cohort/LOOO pair at (cohort/organ $\times$ seed); pooled at
-(fold $\times$ seed); per-gene at (gene) over PCC@50.}
-\label{tab:significance}
-\small
-\setlength{\tabcolsep}{4pt}
-\begin{tabular}{l r cc c c cc}
-\toprule
-Comparison & $n$ & \morph{} & BLEEP & $\Delta$PCC & 95\% CI & Wilcoxon $p$ & paired-$t$ $p$ \\
-\midrule
-Intra-cohort, PCC@10  & 18 & $0.600$ & $0.545$ & $+0.056$ & $[0.034,0.077]$ & $2.5{\times}10^{-4}$ & $1.2{\times}10^{-4}$ \\
-Intra-cohort, PCC@50  & 18 & $0.496$ & $0.444$ & $+0.051$ & $[0.041,0.062]$ & $7.6{\times}10^{-6}$ & $4.7{\times}10^{-8}$ \\
-Intra-cohort, PCC@100 & 18 & $0.559$ & $0.502$ & $+0.057$ & $[0.045,0.070]$ & $7.6{\times}10^{-6}$ & $1.1{\times}10^{-7}$ \\
-Per-gene (PCC@50)     & 300 & $0.496$ & $0.444$ & $+0.051$ & --- & $1.7{\times}10^{-38}$ & --- \\
-\midrule
-Pooled (cross-organ)  & 15 & $0.599$ & $0.587$ & $+0.012$ & $[0.001,0.022]$ & $4.1{\times}10^{-2}$ & $5.6{\times}10^{-2}$ \\
-LOOO (cross-organ)    & 18 & $0.422$ & $0.398$ & $+0.025$ & $[0.007,0.041]$ & $1.8{\times}10^{-2}$ & $1.4{\times}10^{-2}$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\section{Proofs of the formal guarantees}
-\label{app:formal_guarantees}
-
-\subsection{Proof of Proposition~\ref{prop:coordinate_invariance}}
-For every pair of spots $i,j$, orthogonality of $R$ gives
-\begin{align}
-\left\|R\mathbf{p}_i+\mathbf{t}-(R\mathbf{p}_j+\mathbf{t})\right\|_2
-&=\left\|R(\mathbf{p}_i-\mathbf{p}_j)\right\|_2 \\
-&=\left\|\mathbf{p}_i-\mathbf{p}_j\right\|_2.
-\end{align}
-Hence, transforming the coordinate frame leaves the complete distance matrix unchanged. It also
-leaves the $k$NN graph, radial basis features, and distance-dependent attention biases unchanged.
-The input projection is unchanged because $\mathbf{F}$ is fixed. At every layer, the local pathway
-therefore receives the same features, neighbors, and distance biases, while the global and slide
-pathways do not use coordinates. Their outputs, the residual fusion, and the feed-forward update are
-identical. Induction over the $L$ layers gives identical final representations and predictions,
-proving Proposition~\ref{prop:coordinate_invariance}.
-
-\subsection{Proof of Proposition~\ref{prop:permutation_equivariance}}
-Let $\mathbf{F}'=Q\mathbf{F}$ and $\mathbf{P}'=Q\mathbf{P}$. The pairwise distance matrix is relabelled
-as $\mathbf{D}'=Q\mathbf{D}Q^\top$. Under equivariant tie handling, the $k$NN graph and its radial
-basis edge features are relabelled by the same permutation. The input projection and all pointwise
-linear maps, layer normalizations, activations, and feed-forward networks commute with $Q$.
-
-For local attention, permuting the spots only relabels each neighborhood and its attention sum, so
-the local output is multiplied by $Q$. Global self-attention is likewise permutation equivariant
-because its query-key score matrix is transformed by $Q$ on both axes and its value matrix by $Q$.
-The slide attention scores are permuted, but their weighted sum is unchanged; broadcasting that same
-summary to all spots is equivariant. Consequently, residual fusion preserves equivariance at every
-layer. Induction over the layers and application of the pointwise prediction head yield
-$f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P})$, proving
-Proposition~\ref{prop:permutation_equivariance}.
-
 
 \end{document}
