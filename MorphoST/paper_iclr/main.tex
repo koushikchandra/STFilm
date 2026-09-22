@@ -120,7 +120,7 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{table}
 
 \medskip
-\noindent We investigate five questions: \textbf{RQ1 (Performance)} accuracy across diverse organs, both per-organ and with a single pooled model; \textbf{RQ2 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ3 (Design)} the effect of encoder, context streams, and neighborhood definition; \textbf{RQ4 (Structure)} spatial-domain recovery; and \textbf{RQ5 (Efficiency)} whole-slide inference.
+\noindent We investigate four questions: \textbf{RQ1 (Performance)} accuracy across diverse organs, both per-organ and with a single pooled model; \textbf{RQ2 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ3 (Design)} the effect of encoder, context streams, and neighborhood definition; and \textbf{RQ4 (Structure)} spatial-domain recovery.
 
 \medskip
 \noindent\textbf{Contributions.}
@@ -871,25 +871,6 @@ so \morph{} improves ARI on $78\%$ and NMI on $90\%$ of slides (Wilcoxon $p<0.00
 baseline: paired per slide, it improves both ARI and NMI on $78$--$90\%$ of held-out slides
 ($n{=}58$; Wilcoxon $p<0.001$; Figure~\ref{fig:spatial_scatter}), though the absolute domain agreement
 remains modest.
-\end{keybox}
-
-\FloatBarrier
-\medskip
-\subsection{RQ5: Computational efficiency}
-\label{sec:efficiency}
-Finally, we ask whether this accuracy comes at a practical cost. \morph{} contains $4.88$M parameters
-and predicts a complete slide in a single forward pass (Appendix~Table~\ref{tab:complexity}). Its
-advantage is not the smallest footprint: ST-Net and BLEEP have fewer parameters, but \morph{} instead
-pairs multi-scale spatial context with direct, non-iterative inference. Concretely, model-only latency
-grows from $3.5$\,ms for 500 spots to $64.7$\,ms for 10,000 spots on an A100, with $3.1$\,GiB peak
-allocated memory at the largest size (Appendix~Table~\ref{tab:scaling}; feature extraction and disk I/O
-excluded). In contrast, STEM's iterative diffusion is the only approach with substantially higher
-latency. \morph{} therefore answers RQ5 by delivering its accuracy at single-pass inference cost.
-
-\begin{keybox}
-\textbf{Key Finding (RQ5):} \morph{} predicts a whole slide in one forward pass ($4.88$M parameters;
-$64.7$\,ms and $3.1$\,GiB for 10,000 spots on an A100), pairing its accuracy with efficient,
-non-iterative inference, unlike the diffusion baseline.
 \end{keybox}
 
 \FloatBarrier
