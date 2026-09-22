@@ -827,8 +827,9 @@ partitions using the adjusted Rand index (ARI) and normalized mutual information
 slides of the six-organ subset (Table~\ref{tab:downstream5}). \morph{} leads on both ARI ($0.173$) and
 NMI ($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI, ST-Net at $0.201$
 NMI). Absolute scores vary widely across slides (std $\approx$ mean), so the cohort means alone are hard
-to interpret; a \emph{paired per-slide} comparison, however, is decisive: \morph{} beats BLEEP on
-$78\%$ of slides for ARI and $90\%$ for NMI ($n{=}58$ held-out slides; Wilcoxon $p<0.001$ for both).
+to interpret; a \emph{paired per-slide} comparison, however, is decisive (Figure~\ref{fig:spatial_scatter}): \morph{}
+beats BLEEP on $78\%$ of slides for ARI and $90\%$ for NMI ($n{=}58$ held-out slides; Wilcoxon
+$p<0.001$ for both).
 \morph{} therefore recovers spatial domains more faithfully than the strongest baseline, even though the
 absolute agreement remains modest; the full seven-cohort version appears in Appendix~\ref{app:spatial}.
 
@@ -855,10 +856,21 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 \end{tabular}
 \end{table}
 
+\begin{figure}[H]
+\centering
+\includegraphics[width=0.9\linewidth]{figures/spatial_ari_nmi.png}
+\caption{\textbf{Per-slide spatial-domain recovery}, \morph{} (\emph{y}) vs.\ BLEEP (\emph{x}) on the
+$n{=}58$ held-out slides. Each point is one slide; orange marks slides where \morph{} wins; the dashed
+line is $y{=}x$. Points spread widely (large across-slide variance) yet lie mostly above the diagonal,
+so \morph{} improves ARI on $78\%$ and NMI on $90\%$ of slides (Wilcoxon $p<0.001$ for both).}
+\label{fig:spatial_scatter}
+\end{figure}
+
 \begin{keybox}
 \textbf{Key Finding (RQ4):} \morph{} reconstructs spatial domains more faithfully than the strongest
 baseline: paired per slide, it improves both ARI and NMI on $78$--$90\%$ of held-out slides
-($n{=}58$; Wilcoxon $p<0.001$), though the absolute domain agreement remains modest.
+($n{=}58$; Wilcoxon $p<0.001$; Figure~\ref{fig:spatial_scatter}), though the absolute domain agreement
+remains modest.
 \end{keybox}
 
 \FloatBarrier
