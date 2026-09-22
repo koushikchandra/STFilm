@@ -37,13 +37,13 @@
   \trivlist\item[]\noindent{\large\bfseries\heavytext{#1\ #2\ (#3):}}\enspace\normalfont}
 \makeatother
 \newcommand{\insightbox}[2]{%
-  \par\medskip\noindent
+  \par\noindent
   \begingroup
   \setlength{\fboxsep}{7pt}%
   \fcolorbox{blue!55!black}{blue!4}{%
     \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
       \textbf{\textcolor{blue!55!black}{#1}}\quad #2}}%
-  \endgroup\par\medskip}
+  \endgroup\par}
 \renewcommand{\arraystretch}{1.05}
 \setlength{\textfloatsep}{6pt plus 1pt minus 2pt}
 \setlength{\floatsep}{4pt plus 1pt minus 1pt}
@@ -60,7 +60,7 @@
 \maketitle
 
 \begin{abstract}
-Predicting spatial gene expression from histology requires representations that integrate local morphology with tissue-wide context without depending on arbitrary coordinate conventions. We introduce \morph{}, a spatial transformer that jointly models three complementary sources of context in every layer: local attention over spatial nearest neighbors, global self-attention across all spots, and an attention-pooled slide representation broadcast to each spot. Operating on frozen histology embeddings, \morph{} predicts gene expression for all input spots on a slide in a single forward pass. Spatial coordinates enter only through pairwise distances, making predictions invariant to translations, rotations, and reflections of the coordinate frame when image features are fixed. We evaluate \morph{} on six human organ cohorts from HEST-1k under intra-cohort prediction, pooled multi-organ evaluation, and leave-one-organ-out transfer, using matched features, gene panels, splits, and model-selection procedures across methods. With combined UNI and CONCH features, \morph{} achieves the highest mean Pearson correlation (PCC) across all six cohorts in intra-cohort evaluation, improving over the strongest baseline by $11.6\%$ for 50-gene prediction and $11.4\%$ for 100-gene prediction. It also improves mean correlation in pooled evaluation ($0.599$ versus $0.587$) and transfer to held-out organs ($0.422$ versus $0.398$). In addition to PCC, we also measure MSE and MAE, on which \morph{} likewise outperforms all baselines. Improvements persist across UNI, CONCH, and combined features, while factorial ablations identify local spatial attention as the largest contributor to predictive accuracy. These results support explicit spatial neighborhood modeling within a unified local and tissue-wide representation, while highlighting the remaining difficulty of generalization to unseen organs.
+Predicting spatial gene expression from histology requires representations that integrate local morphology with tissue-wide context without depending on arbitrary coordinate conventions. We introduce \morph{}, a spatial transformer that jointly models three complementary sources of context in every layer: local attention over spatial nearest neighbors, global self-attention across all spots, and an attention-pooled slide representation broadcast to each spot. Operating on frozen histology embeddings, \morph{} predicts gene expression for all input spots on a slide in a single forward pass. Spatial coordinates enter only through pairwise distances, making predictions invariant to translations, rotations, and reflections of the coordinate frame when image features are fixed. We evaluate \morph{} on six human organ cohorts from HEST-1k under intra-cohort prediction, pooled multi-organ evaluation, and leave-one-organ-out transfer, using matched features, gene panels, splits, and model-selection procedures across methods. With combined UNI and CONCH features, \morph{} achieves the highest mean Pearson correlation (PCC) across all six cohorts in intra-cohort evaluation, improving over the strongest baseline by $11.6\%$ for 50-gene prediction and $11.4\%$ for 100-gene prediction. It improves mean correlation in held-out-organ transfer by $6.0\%$ over BLEEP ($0.422$ versus $0.398$). In addition to PCC, we also measure MSE and MAE, on which \morph{} likewise outperforms all baselines. Improvements persist across UNI, CONCH, and combined features, while factorial ablations identify local spatial attention as the largest contributor to predictive accuracy. These results support explicit spatial neighborhood modeling within a unified local and tissue-wide representation, while highlighting the remaining difficulty of generalization to unseen organs.
 \end{abstract}
 
 \etocdepthtag.toc{mainbody}
@@ -69,9 +69,10 @@ Spatial transcriptomics (ST) measures gene expression together with tissue locat
 study of spatial heterogeneity, tissue organization, and cellular interactions
 \cite{staahl2016visualization}. Its cost and experimental burden, however, constrain the number and
 diversity of specimens that can be profiled. In contrast, H\&E slides are routinely collected and
-contain morphological signals associated with tissue composition and molecular state. Predicting
-spatial gene expression from these images could therefore extend molecular analysis to specimens
-without matched ST measurements.
+contain morphological signals associated with tissue composition and molecular state
+\cite{chen2024stimage,jaume2024hest}. Predicting spatial gene expression from these images could
+therefore extend molecular analysis to specimens without matched ST measurements
+\cite{he2020stnet,zeng2022hist2st,xie2023bleep}.
 
 \begin{figure*}[t]
 \centering
@@ -85,15 +86,15 @@ and reflections.}
 \end{figure*}
 \vspace{-6pt}
 
-Morphology and expression interact locally, across the slide, and at the level of slide composition. Existing predictors capture parts of this structure with patch regression, spatial graphs, retrieval, or conditional generation, but absolute coordinates can make predictions depend on an arbitrary scanner frame. We therefore seek a compact predictor that combines multi-scale context while using coordinates only through relative distances.
+Morphology and expression interact locally, across the slide, and at the level of slide composition. Existing predictors capture parts of this structure with patch regression, spatial graphs, retrieval, or conditional generation~\cite{he2020stnet,zeng2022hist2st,xie2023bleep,zhu2025diffusion}, but absolute coordinates can make predictions depend on an arbitrary scanner frame. Geometric representations based on relative quantities provide a principled way to reduce this dependence~\cite{satorras2021egnn}. We therefore seek a compact predictor that combines multi-scale context while using coordinates only through relative distances.
 
-We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines spatial $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary. Because spot coordinates enter the model only through pairwise distances, its predictions are invariant to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
+We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines spatial $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary~\cite{vaswani2017attention}. Because spot coordinates enter the model only through pairwise distances, its predictions are invariant to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
 
-We evaluate matched features, panels, splits, budgets, and nested validation in intra-cohort, pooled cross-organ, and leave-one-organ-out (LOOO) settings. Across six human cohorts, \morph{} reaches mean PCC $0.496$ versus $0.444$ for BLEEP, $0.760$ pooled PCC, and $0.490$ LOOO PCC; local attention is the strongest factorial component. The model has 4.88M parameters and processes 10,000 spots in $64.7$\,ms on an A100.
+We evaluate \morph{} across six human cohorts under intra-cohort prediction, pooled multi-organ prediction, and leave-one-organ-out transfer. In intra-cohort evaluation, \morph{} achieves the highest mean Pearson correlation and the lowest mean squared error (MSE) and mean absolute error (MAE), averaged across cohorts, for all evaluated gene-selection strategies and panel sizes. Pooled and leave-one-organ-out evaluations further assess generalization across organs, highlighting the challenges of transfer to unseen anatomy.
 
 \begin{table}[t]
 \centering
-\caption{\textbf{Architectural components across representative H\&E$\to$ST predictors.}
+\caption{\textbf{Architectural components across representative histology to spatial transcriptomic (H\&E to ST) predictors.}
 \morph{} is the only model that combines local neighborhood attention, slide-wide global
 attention, a slide-level summary token, coordinate invariance, and continuous (distance-expressive)
 spatial encoding rather than binary adjacency. $\bullet$~= present, $\circ$~= absent.}
@@ -119,10 +120,14 @@ STEM~\cite{zhu2025diffusion}    & $\circ$    & $\bullet$  & $\circ$    & $\circ$
 \end{tabular}
 \end{table}
 
-\medskip
-\noindent We investigate four questions: \textbf{RQ1 (Performance)} accuracy across diverse organs, both per-organ and with a single pooled model; \textbf{RQ2 (Transfer)} generalization to an entirely unseen organ under LOOO; \textbf{RQ3 (Design)} the effect of encoder, context streams, and neighborhood definition; and \textbf{RQ4 (Structure)} spatial-domain recovery.
 
-\medskip
+\noindent Our experiments address four research questions:
+\textbf{RQ1 (Performance):} How accurately does \morph{} predict gene expression across organs when trained separately per cohort or jointly across cohorts?
+\textbf{RQ2 (Transfer):} How well does it generalize to an organ excluded from training?
+\textbf{RQ3 (Design):} How do the image encoder, context pathways, and neighborhood construction affect predictive accuracy?
+\textbf{RQ4 (Structure):} How well do the predicted expression profiles preserve spatial domains identified from measured expression?
+
+
 \noindent\textbf{Contributions.}
 \begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
   \item We introduce \morph{}, a multi-scale transformer with local, slide-wide, and slide-summary pathways driven by continuous pairwise-distance features and coordinate-frame invariance.
@@ -312,14 +317,14 @@ all genes in one pass.}
 \fi
 
 \section{Related Work}
-\noindent\textbf{H\&E$\to$ST prediction.}\quad Prior models span patch-level regression
+\noindent\textbf{H\&E to ST prediction.}\quad Prior models span patch-level regression
 (ST-Net~\cite{he2020stnet}), graph spatial context (Hist2ST~\cite{zeng2022hist2st}), cross-modal
 retrieval (BLEEP~\cite{xie2023bleep}), and conditional generation (STEM~\cite{zhu2025diffusion}).
 Because they differ in features, gene panels, splits, and selection, published scores conflate data
 choices with architecture; we therefore compare under a matched protocol. \morph{} is a deterministic
 point predictor and does not model the full conditional expression distribution.
 
-\medskip
+
 \noindent\textbf{Geometry and generalization.}\quad Absolute position encodings can change when an
 equivalent tissue layout is translated, rotated, or reflected; geometric networks instead build
 interactions from relative quantities~\cite{satorras2021egnn}. \morph{} conditions its spatial
@@ -346,7 +351,7 @@ the model therefore supports a variable number of spots and does not require exp
 test time. In the feature-matched main comparisons, $\mathbf{f}_i$ concatenates frozen UNI
 \cite{chen2024uni} and CONCH \cite{lu2024conch} embeddings ($d_{\mathrm{in}}=1536$).
 
-\medskip
+
 \subsection{Coordinate-Invariant Distance Encoding}
 We first compute the pairwise Euclidean distance matrix
 $D_{ij}=\lVert\mathbf{p}_i-\mathbf{p}_j\rVert_2$. For each spot $i$, we retain the indices
@@ -359,7 +364,7 @@ are expanded into $M$ radial-basis features,
 where the fixed bandwidth parameters $\gamma_m$ are logarithmically spaced. These features influence
 attention weights but are never added to the spot embeddings as absolute positions.
 
-\par\medskip\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Coordinate frame invariance):}\label{prop:coordinate_invariance}\par
+\par\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Coordinate frame invariance):}\label{prop:coordinate_invariance}\par
 Let $R\in\mathbb{R}^{2\times2}$ be orthogonal, let $\mathbf{t}\in\mathbb{R}^{2}$, and define
 $\mathbf{P}'=\mathbf{P}R^\top+\mathbf{1}\mathbf{t}^\top$. For fixed histology features
 $\mathbf{F}$, the prediction is unchanged:
@@ -380,7 +385,7 @@ arbitrary or random spots), which our ablation isolates directly (spatial $k$NN 
 neighbors, \S\ref{sec:design}). The invariance guarantee above holds regardless, since it depends
 only on distances being rotation-invariant.
 
-\medskip
+
 \subsection{Multi-Context MIST Layer}
 \insightbox{Core Idea.}{At every layer, each spot receives three messages in parallel: one from its
 nearby spots, one from all spots, and one from a pooled summary of the slide. The model adds these
@@ -435,7 +440,7 @@ and GELU activation:
 After $L$ layers, layer normalization and a linear head map each spot representation to its $G$
 predicted gene values. The model produces the complete slide prediction in one forward pass.
 
-\par\medskip\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Permutation equivariance):}\label{prop:permutation_equivariance}\par
+\par\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Permutation equivariance):}\label{prop:permutation_equivariance}\par
 Let $Q\in\{0,1\}^{N\times N}$ be a permutation matrix. If the $k$NN construction handles distance
 ties equivariantly, then
 \begin{equation}
@@ -446,7 +451,7 @@ Appendix~\ref{app:formal_guarantees} provides the proof. Our numerical checks ev
 Propositions~\ref{prop:coordinate_invariance} and~\ref{prop:permutation_equivariance} under finite
 precision.
 
-\medskip
+
 \subsection{Training Objective and Ablations}
 \label{sec:loss}
 For a slide with measured expression $\mathbf{Y}$, we optimize mean squared error together with a
@@ -498,7 +503,7 @@ gene-panel, protocol, and hyperparameter details are in Appendix~\ref{app:extend
 \section{Results}
 \label{sec:results}
 
-\medskip
+
 \subsection{RQ1: Predictive performance across diverse organs}
 \label{sec:rq1}
 We begin by asking whether \morph{} predicts spatial expression accurately on organs it has
@@ -569,7 +574,7 @@ Panel & Cohort & ST-Net & Hist2ST
 \end{tabular}%
 }
 
-\medskip
+
 \centering
 \caption{\textbf{Intra-cohort PCC across gene-panel sizes.} Mean$_{\text{std}}$ over three seeds; each panel reports its average.}
 \label{tab:main}
@@ -650,14 +655,14 @@ Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
 }%
 \end{table}
 
-\medskip
+
 Turning next to the pooled setting, we test whether a \emph{single} shared model can replace the
 per-organ ones. Trained jointly on all organs (leave-slide-out cross-validation; no per-organ
 specialisation and no organ labels), one \morph{} predicts across the diverse organs at once, adapting
 to each slide through its shared local, global, and slide-level context rather than a dedicated
 per-tissue model. Even so, it remains the best method: on the six-organ subset it attains the top mean
 PCC ($0.599$; Table~\ref{tab:pooled6}), ahead of BLEEP ($0.587$) and Hist2ST ($0.556$), and reaches
-$0.760$ on the full seven-organ HEST panel (BLEEP $0.758$). Together, these two settings answer RQ1:
+$0.599$ on the six-organ HEST panel (BLEEP $0.587$). Together, these two settings answer RQ1:
 \morph{} is the most accurate predictor on seen organs, whether specialised per organ or shared across
 all of them, so a separate model per tissue is not required.
 
@@ -687,12 +692,12 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ \\
 \begin{keybox}
 \textbf{Key Finding (RQ1):} \morph{} gives the best accuracy across diverse organs both \emph{per
 organ} (intra-cohort PCC@50 $0.496$ vs.\ $0.444$ for BLEEP, winning all six cohorts) and as a
-\emph{single pooled} model ($0.599$ six-organ / $0.760$ full HEST), so a separate model per tissue is
+\emph{single pooled} model ($0.599$ six-organ HEST), so a separate model per tissue is
 unnecessary when the organ is represented in training.
 \end{keybox}
 
 \FloatBarrier
-\medskip
+
 \subsection{RQ2: Cross-organ transfer to an unseen organ}
 \label{sec:transfer}
 Having established strong performance on \emph{seen} organs, we now ask the harder question of whether
@@ -704,14 +709,14 @@ on the six-organ subset it wins \emph{every} held-out organ and attains the high
 Figure~\ref{fig:box_looo5} illustrates this for four representative held-out organs (kidney and prostate
 are omitted for readability), where \morph{} (orange) leads in every panel; the complete per-cohort
 results for all six organs are reported in the supplementary (Appendix~\ref{app:looo_complete},
-Table~\ref{tab:looo_6organ}). On the full seven-organ HEST panel \morph{} reaches $0.490$ versus
-$0.473$ for BLEEP, the strongest baseline (although BLEEP is stronger on IDC and SKCM there). Together,
+Table~\ref{tab:looo_6organ}). On the six-organ HEST panel \morph{} reaches $0.422$ versus
+$0.398$ for BLEEP, the strongest baseline on the six-organ panel. Together,
 these results show that \morph{}'s inductive biases carry over to unseen anatomy, which supports RQ2; a
-complementary seven-organ mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
+complementary mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
 
 \begin{keybox}
-\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.760$ with the organ seen (RQ1) to
-$0.490$ with the organ held out, isolates unseen-organ transfer as the dominant remaining gap;
+\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.599$ with the organ seen (RQ1) to
+$0.422$ with the organ held out, isolates unseen-organ transfer as the dominant remaining gap;
 predicting seen organs well does not by itself transfer to a new organ.
 \end{keybox}
 
@@ -726,7 +731,7 @@ held-out organs in the complete table (Appendix~\ref{app:looo_complete}, Table~\
 \end{figure}
 
 \FloatBarrier
-\medskip
+
 \subsection{RQ3: What drives accuracy and coordinate invariance?}
 \label{sec:design}
 Given \morph{}'s accuracy, we next ask \emph{which} components drive it and whether its coordinate
@@ -812,7 +817,7 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 \end{figure*}
 
 \FloatBarrier
-\medskip
+
 
 
 
@@ -831,7 +836,7 @@ to interpret; a \emph{paired per-slide} comparison, however, is decisive (Figure
 beats BLEEP on $78\%$ of slides for ARI and $90\%$ for NMI ($n{=}58$ held-out slides; Wilcoxon
 $p<0.001$ for both).
 \morph{} therefore recovers spatial domains more faithfully than the strongest baseline, even though the
-absolute agreement remains modest; the full seven-cohort version appears in Appendix~\ref{app:spatial}.
+absolute agreement remains modest; the full six-cohort version appears in Appendix~\ref{app:spatial}.
 
 \begin{table}[h]
 \centering
@@ -874,7 +879,7 @@ remains modest.
 \end{keybox}
 
 \FloatBarrier
-\medskip
+
 \subsection{Case Study: Recovering Cancer-Marker Genes}
 \label{sec:casestudy}
 Average accuracy is clinically meaningful only if a model recovers the \emph{specific} genes that
@@ -943,8 +948,8 @@ bright = high). \morph{} reproduces the spatial architecture of each marker ($r$
 Three findings merit emphasis. First, a compact direct predictor is competitive when features,
 gene panels, splits, and model selection are controlled; the $11.6\%$ relative gain over the
 strongest baseline rests on matched experimental conditions, not a larger model. Second, pooled
-multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.760$
-(pooled) to $0.490$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
+multi-organ performance is not a substitute for unseen-organ evaluation: the drop from $0.599$
+(pooled) to $0.422$ (LOOO) shows that anatomical shift remains a separate and harder problem. Third,
 local spatial-neighborhood attention is the dominant contributor in the factorial study; global and
 slide pathways provide moderate complementary gains, and the complete model (L\,+\,G\,+\,S) achieves
 the best mean on the pooled evaluation.
@@ -1298,10 +1303,10 @@ panels do not transfer reliably.
 \label{app:spatial}
 \begin{table}[H]
 \centering
-\caption{\textbf{Spatial-domain recovery (all seven cohorts).} ARI/NMI between domains clustered
-(KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of all seven retained
+\caption{\textbf{Spatial-domain recovery (all six cohorts).} ARI/NMI between domains clustered
+(KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of all six retained
 HEST-1k cohorts; mean$_{\mathrm{std}}$ over three seeds, higher is better, best per column in
-\best{bold}. Companion to the five-organ Table~\ref{tab:downstream5}.}
+\best{bold}. Companion to the six-organ Table~\ref{tab:downstream5}.}
 \label{tab:downstream}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -1401,7 +1406,7 @@ is not attributable to the loss function alone.
 \begin{table}[H]
 \centering
 \caption{\textbf{Objective ablation (HEST-1k).} Effect of adding the Pearson correlation term
-to the MSE objective; averaged over seven organ groups, three seeds.}
+to the MSE objective; averaged over six organ groups, three seeds.}
 \label{tab:lossdata}
 \small
 \setlength{\tabcolsep}{6pt}
