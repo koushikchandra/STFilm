@@ -94,10 +94,7 @@ We evaluate \morph{} across six human cohorts under intra-cohort prediction, poo
 
 \begin{table}[t]
 \centering
-\caption{\textbf{Architectural components across representative histology to spatial transcriptomic (H\&E to ST) predictors.}
-\morph{} is the only model that combines local neighborhood attention, slide-wide global
-attention, a slide-level summary token, coordinate invariance, and continuous (distance-expressive)
-spatial encoding rather than binary adjacency. $\bullet$~= present, $\circ$~= absent.}
+\caption{\textbf{Architectural components across representative histology to spatial transcriptomic (H\&E to ST) predictors.} $\bullet$~present, $\circ$~absent.}
 \label{tab:design_comparison}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -620,10 +617,7 @@ Metric & Cohort & ST-Net & Hist2ST
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Error metrics across gene-selection strategies and panel sizes on HEST-1k.}
-Mean over three seeds, averaged over the same six cohorts as Tables~\ref{tab:panel_strategy}
-and~\ref{tab:main} (IDC, CCRCC, LUNG, PAAD, PRAD, SKCM); lower values are better and the best
-result in each row is in \best{bold}. Models, features, splits, and training budget are matched.}
+\caption{\textbf{Intra-cohort error metrics (MSE, MAE) on HEST-1k.} Mean over three seeds and six cohorts, matched protocol; best per row in \best{bold}.}
 \label{tab:error_strategy}
 \setlength{\tabcolsep}{5pt}
 \renewcommand{\arraystretch}{1.12}
@@ -667,9 +661,7 @@ all of them, so a separate model per tissue is not required.
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Cross-organ POOLED on the six-organ subset} (kidney, breast, lung, pancreas,
-prostate, skin; COAD excluded). 5-fold pooled cross-validation (slide-level holdout, all organs seen);
-mean$_{\text{std}}$ over three seeds; best in \best{bold}.}
+\caption{\textbf{Cross-organ POOLED (six-organ subset).} 5-fold slide-level holdout; mean$_{\text{std}}$ over three seeds; best in \best{bold}.}
 \label{tab:pooled6}
 {\small
 \setlength{\tabcolsep}{6pt}
@@ -759,12 +751,7 @@ and the predictor is provably invariant to spot translation, rotation, and refle
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Context-stream ablation (six-organ POOLED, no COAD).} Each row toggles a subset of
-\morph{}'s local (L), global (G), and slide (S) context streams on the six-organ POOLED set
-(CCRCC/IDC/LUNG/PAAD/PRAD/SKCM; frozen UNI+CONCH, 14-gene, 5-fold). POOLED PCC$\uparrow$, MSE$\downarrow$,
-and MAE$\downarrow$ are mean$_{\text{std}}$ over three seeds; best per column in \best{bold}. The
-``Full, random nbr.'' row replaces spatial-kNN local attention with random neighbours. The complete
-model (L+G+S) is best on PCC and MSE; local attention is the dominant stream.}
+\caption{\textbf{Context-stream ablation (six-organ POOLED).} Local (L), global (G), slide (S) streams; the ``Full, random nbr.'' row uses random rather than spatial-$k$NN neighbours. Mean$_{\text{std}}$ over three seeds; best per column in \best{bold}.}
 \label{tab:ablation}
 \small
 \setlength{\tabcolsep}{5pt}
@@ -784,7 +771,7 @@ Full, random nbr.        & L$_{\text{rand}}$\,+\,G\,+\,S & $0.577{\pm}0.009$ & $
 
 \begin{table}[t]
 \centering
-\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction difference when only the spot coordinates are transformed (randomly initialized model, 257-spot synthetic slide).}
+\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction change under coordinate transforms (random-init model, 257-spot synthetic slide).}
 \label{tab:invariance}
 \small
 \begin{tabular}{l r}
@@ -834,10 +821,7 @@ absolute agreement remains modest.
 
 \begin{table}[h]
 \centering
-\caption{\textbf{Spatial-domain recovery (six-organ subset).} ARI/NMI between domains clustered
-(KMeans, $k{=}6$) from predicted vs.\ measured expression on held-out slides of CCRCC, IDC, LUNG,
-PAAD, PRAD, and SKCM (COAD excluded); mean$_{\mathrm{std}}$ over three seeds, higher is better,
-best per column in \best{bold}.}
+\caption{\textbf{Spatial-domain recovery (six-organ subset).} ARI/NMI between domains (KMeans, $k{=}6$) from predicted vs.\ measured expression; mean$_{\mathrm{std}}$ over three seeds; best per column in \best{bold}.}
 \label{tab:downstream5}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -890,9 +874,7 @@ molecular markers, and their spatial localization, from H\&E alone.
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Case study: per-gene recovery of canonical cancer markers} (intra-cohort, held-out
-slides; per-gene Pearson $\uparrow$, mean over folds and three seeds). \morph{} beats BLEEP on every
-marker; best per row in \best{bold}.}
+\caption{\textbf{Case study: per-gene recovery of canonical cancer markers.} Per-gene Pearson $\uparrow$, mean over folds and three seeds; best per row in \best{bold}.}
 \label{tab:casestudy}
 \small
 \setlength{\tabcolsep}{6pt}
@@ -1025,11 +1007,7 @@ LUNG (lung, 2 / 7{,}505), PAAD (pancreas, 3 / 9{,}793), PRAD (prostate, 23 / 62{
 
 \begin{table}[H]
 \centering
-\caption{\textbf{HEST-1k cohort statistics.} Spots counted after barcode filtering. Folds = number
-of train/test splits in the per-cohort cross-validation. The six cohorts marked \checkmark
-(CCRCC, IDC, LUNG, PAAD, PRAD, SKCM) form the no-COAD cross-organ evaluation set used in our
-leave-one-organ-out and pooled experiments; LYMPH\_IDC, COAD, READ, and HCC (liver) are not used
-there (HCC has a near-zero signal floor).}
+\caption{\textbf{HEST-1k cohort statistics.} Spots after barcode filtering; folds = per-cohort train/test splits. The six \checkmark\ cohorts form the no-COAD cross-organ set; HCC, LYMPH\_IDC, and READ are excluded.}
 \label{tab:cohort_stats}
 \small
 \begin{tabular}{l l r r r c}
@@ -1139,7 +1117,7 @@ We repeat the intra-cohort PCC@50 comparison (the 50-gene block of Table~\ref{ta
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Encoder ablation: intra-cohort PCC@50 with each foundation encoder in isolation.} UNI only (1024-d) vs.\ CONCH only (512-d), per cohort; mean$_{\text{std}}$ over three seeds; best per row in \best{bold}. Compare with the UNI\,+\,CONCH (1536-d) results in Table~\ref{tab:main}.}
+\caption{\textbf{Encoder ablation: intra-cohort PCC@50 per encoder.} UNI-only (1024-d) vs.\ CONCH-only (512-d); mean$_{\text{std}}$ over three seeds; best per row in \best{bold}.}
 \label{tab:encoder}
 \setlength{\tabcolsep}{3pt}\renewcommand{\arraystretch}{1.05}
 \resizebox{\linewidth}{!}{%
@@ -1179,11 +1157,7 @@ average ($0.422$).
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Cross-organ LOOO transfer on a six-organ subset} (kidney, breast, lung, pancreas,
-prostate, skin; COAD excluded), per-cohort Pearson $\uparrow$. Self-contained leave-one-organ-out:
-each fold holds out one organ and trains on the other five, with leakage-safe per-fold gene panels.
-Identical frozen UNI\,+\,CONCH features (1536-dim); mean$_{\text{std}}$ over three seeds; best per row
-in \best{bold}. \morph{} wins every cohort and the average.}
+\caption{\textbf{Cross-organ LOOO transfer (six-organ subset).} Per-cohort Pearson $\uparrow$; each fold holds out one organ (leakage-safe panels, frozen UNI\,+\,CONCH); mean$_{\text{std}}$ over three seeds; best per row in \best{bold}.}
 \label{tab:looo_6organ}
 \setlength{\tabcolsep}{3pt}
 \resizebox{\linewidth}{!}{%
@@ -1244,8 +1218,7 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)    & 34.16 & iterative \\
 
 \begin{table}[H]
 \centering
-\caption{\textbf{\morph{} inference scaling on an NVIDIA A100 80GB.} Median model-only latency and
-peak allocated GPU memory over synthetic slides; feature extraction and disk I/O are excluded.}
+\caption{\textbf{\morph{} inference scaling (A100 80GB).} Median model-only latency and peak GPU memory vs.\ slide size; feature extraction and I/O excluded.}
 \label{tab:scaling}
 \small
 \begin{tabular}{r rr}
