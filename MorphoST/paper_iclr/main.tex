@@ -699,7 +699,8 @@ Having established strong performance on \emph{seen} organs, we now ask the hard
 \morph{} transfers to an organ it has \emph{never} seen. To test this, we use leave-one-organ-out
 (LOOO) evaluation: we train on all-but-one organ and test on the held-out one, so the target anatomy is
 entirely absent from training. As expected, accuracy falls relative to the pooled setting of RQ1, yet \morph{} still transfers best:
-on the six-organ subset it wins \emph{every} held-out organ and attains the highest mean PCC ($0.422$).
+on the six-organ subset it wins \emph{every} held-out organ and attains the highest mean PCC
+($0.422$ vs.\ $0.398$ for BLEEP; a significant gain, Wilcoxon $p{=}0.018$, Appendix~\ref{app:significance}).
 Figure~\ref{fig:box_looo5} illustrates this for four representative held-out organs (kidney and prostate
 are omitted for readability), where \morph{} (orange) leads in every panel; the complete per-cohort
 results for all six organs are reported in the supplementary (Appendix~\ref{app:looo_complete},
@@ -823,11 +824,13 @@ Accurate per-gene prediction does not by itself guarantee that predictions prese
 regions, so we finally ask whether \morph{} recovers spatial \emph{structure}. To test this, we cluster
 spots (KMeans, $k{=}6$ domains) from either predicted or measured expression and compare the induced
 partitions using the adjusted Rand index (ARI) and normalized mutual information (NMI) on held-out
-slides of the six-organ subset (Table~\ref{tab:downstream5}). Here \morph{} again leads, on both ARI
-($0.173$) and NMI ($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI,
-ST-Net at $0.201$ NMI). That said, the differences are small and slide-level variation is large
-(std $\approx$ mean), so we caution against reading them as uniformly improved domain recovery; the full
-seven-cohort version appears in Appendix~\ref{app:spatial}.
+slides of the six-organ subset (Table~\ref{tab:downstream5}). \morph{} leads on both ARI ($0.173$) and
+NMI ($0.242$), ahead of the strongest baseline on each metric (BLEEP at $0.147$ ARI, ST-Net at $0.201$
+NMI). Absolute scores vary widely across slides (std $\approx$ mean), so the cohort means alone are hard
+to interpret; a \emph{paired per-slide} comparison, however, is decisive: \morph{} beats BLEEP on
+$78\%$ of slides for ARI and $90\%$ for NMI ($n{=}58$ held-out slides; Wilcoxon $p<0.001$ for both).
+\morph{} therefore recovers spatial domains more faithfully than the strongest baseline, even though the
+absolute agreement remains modest; the full seven-cohort version appears in Appendix~\ref{app:spatial}.
 
 \begin{table}[h]
 \centering
@@ -852,6 +855,12 @@ STEM~\cite{zhu2025diffusion}   & $0.101_{0.12}$ & $0.136_{0.14}$ \\
 \end{tabular}
 \end{table}
 
+\begin{keybox}
+\textbf{Key Finding (RQ4):} \morph{} reconstructs spatial domains more faithfully than the strongest
+baseline: paired per slide, it improves both ARI and NMI on $78$--$90\%$ of held-out slides
+($n{=}58$; Wilcoxon $p<0.001$), though the absolute domain agreement remains modest.
+\end{keybox}
+
 \FloatBarrier
 \medskip
 \subsection{RQ5: Computational efficiency}
@@ -864,6 +873,12 @@ grows from $3.5$\,ms for 500 spots to $64.7$\,ms for 10,000 spots on an A100, wi
 allocated memory at the largest size (Appendix~Table~\ref{tab:scaling}; feature extraction and disk I/O
 excluded). In contrast, STEM's iterative diffusion is the only approach with substantially higher
 latency. \morph{} therefore answers RQ5 by delivering its accuracy at single-pass inference cost.
+
+\begin{keybox}
+\textbf{Key Finding (RQ5):} \morph{} predicts a whole slide in one forward pass ($4.88$M parameters;
+$64.7$\,ms and $3.1$\,GiB for 10,000 spots on an A100), pairing its accuracy with efficient,
+non-iterative inference, unlike the diffusion baseline.
+\end{keybox}
 
 
 
