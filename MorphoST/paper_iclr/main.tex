@@ -463,8 +463,7 @@ gene-wise Pearson-correlation term:
 where $\rho_g$ is the Pearson correlation between predicted and measured expression across the $N$
 spots, $\mathcal{V}$ is the set of genes with nonzero target variance on that slide, and
 $\lambda=0.5$. MSE constrains the scale of the predictions, while the correlation term encourages
-the model to reproduce spot-to-spot expression patterns; Appendix~\ref{app:lossdata} ablates this
-correlation term.
+the model to reproduce spot-to-spot expression patterns.
 
 The main model enables all three context pathways. Our factorial ablation independently toggles the
 local (L), global (G), and slide-level (S) pathways, avoiding conclusions tied to a particular order
@@ -1390,29 +1389,5 @@ layer. Induction over the layers and application of the pointwise prediction hea
 $f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P})$, proving
 Proposition~\ref{prop:permutation_equivariance}.
 
-
-\section{Training Objective Ablation}
-\label{app:lossdata}
-
-Table~\ref{tab:lossdata} isolates the contribution of the Pearson correlation term in the
-training objective from the architectural design, confirming that the accuracy gap over baselines
-is not attributable to the loss function alone.
-
-\begin{table}[H]
-\centering
-\caption{\textbf{Objective ablation (HEST-1k).} Effect of adding the Pearson correlation term
-to the MSE objective; averaged over six organ groups, three seeds.}
-\label{tab:lossdata}
-\small
-\setlength{\tabcolsep}{6pt}
-\begin{tabular}{l l c}
-\toprule
-Model & Objective & PCC $\uparrow$ \\
-\midrule
-\morph{} & MSE only    & $0.382$ \\
-\morph{} & MSE $+$ PCC & $0.389$ \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \end{document}
