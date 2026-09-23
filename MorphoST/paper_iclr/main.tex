@@ -682,20 +682,26 @@ Appendix~\ref{app:encoder}.
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Context-stream ablation (six-organ POOLED).} Local (L), global (G), slide (S) streams; the ``Full, random nbr.'' row uses random rather than spatial-$k$NN neighbours. Mean$_{\text{std}}$ over three seeds; best per column in \best{bold}.}
+\caption{\textbf{Context-stream ablation} on two datasets: six-organ POOLED (top) and SKCM intra-cohort (bottom), both with frozen UNI\,+\,CONCH. Local (L), global (G), slide (S) streams; the ``Full, random nbr.'' row uses random rather than spatial-$k$NN neighbours. Mean$_{\text{std}}$ over three seeds; best per column \emph{within each block} in \best{bold}.}
 \label{tab:ablation}
 \small
 \setlength{\tabcolsep}{5pt}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{ll ccc}
+\begin{tabular}{c ll ccc}
 \toprule
-Configuration & Streams & PCC $\uparrow$ & MSE $\downarrow$ & MAE $\downarrow$ \\
+Dataset & Configuration & Streams & PCC $\uparrow$ & MSE $\downarrow$ & MAE $\downarrow$ \\
 \midrule
-Global\,+\,Local         & L\,+\,G       & $0.596{\pm}0.007$ & $0.461{\pm}0.024$ & $0.414{\pm}0.010$ \\
-Global\,+\,Slide         & G\,+\,S       & $0.570{\pm}0.037$ & $0.517{\pm}0.130$ & $0.439{\pm}0.050$ \\
-Full, random nbr.        & L$_{\text{rand}}$\,+\,G\,+\,S & $0.577{\pm}0.009$ & $0.466{\pm}0.015$ & $0.415{\pm}0.004$ \\
+\multirow{4}{*}{\rotatebox[origin=c]{90}{\shortstack{Six-organ\\POOLED}}}
+ & Global\,+\,Local  & L\,+\,G       & $0.596{\pm}0.007$ & $0.461{\pm}0.024$ & $0.414{\pm}0.010$ \\
+ & Global\,+\,Slide  & G\,+\,S       & $0.570{\pm}0.037$ & $0.517{\pm}0.130$ & $0.439{\pm}0.050$ \\
+ & Full, random nbr. & L$_{\text{rand}}$\,+\,G\,+\,S & $0.577{\pm}0.009$ & $0.466{\pm}0.015$ & $0.415{\pm}0.004$ \\
+ & \morph{} (ours)   & L\,+\,G\,+\,S & \best{$0.605{\pm}0.006$} & \best{$0.421{\pm}0.011$} & \best{$0.400{\pm}0.013$} \\
 \midrule
-\morph{} (ours)          & L\,+\,G\,+\,S & \best{$0.605{\pm}0.006$} & \best{$0.421{\pm}0.011$} & \best{$0.400{\pm}0.013$} \\
+\multirow{4}{*}{\rotatebox[origin=c]{90}{\shortstack{SKCM\\(intra)}}}
+ & Global\,+\,Local  & L\,+\,G       & $0.704{\pm}0.006$ & $1.240{\pm}0.029$ & $0.804{\pm}0.012$ \\
+ & Global\,+\,Slide  & G\,+\,S       & $0.659{\pm}0.003$ & $1.411{\pm}0.069$ & $0.855{\pm}0.023$ \\
+ & Full, random nbr. & L$_{\text{rand}}$\,+\,G\,+\,S & $0.671{\pm}0.004$ & $1.408{\pm}0.014$ & $0.859{\pm}0.007$ \\
+ & \morph{} (ours)   & L\,+\,G\,+\,S & \best{$0.709{\pm}0.002$} & \best{$1.240{\pm}0.041$} & \best{$0.798{\pm}0.018$} \\
 \bottomrule
 \end{tabular}}
 \end{table}
