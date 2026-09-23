@@ -61,8 +61,11 @@
 \maketitle
 
 \begin{abstract}
-Spatial transcriptomics reveals how gene expression is organized across a tissue; however, it is expensive and time-consuming. This motivates predicting gene expression from standard H\&E images. A spot's morphology, its spatial neighborhood, and the broader tissue context provide complementary information for predicting gene expression from H\&E images. A key modeling challenge is how to integrate these cues effectively. We introduce \morph{}, a compact spatial transformer that predicts a slide's spatial gene expression in a single forward pass by fusing three complementary views of context in every layer: local attention over spatial nearest neighbors, global self-attention across all spots, and an attention-pooled slide representation. Because the model uses spot coordinates only through pairwise distances, its predictions are invariant to translations, rotations, and reflections of the coordinate frame when image features are fixed. On six human organ cohorts from HEST-1k, evaluated under intra-cohort, pooled multi-organ, and leave-one-organ-out settings, \morph{} attains the highest mean Pearson correlation (PCC) on every cohort, improving over the strongest baseline by $9.7\%$, $11.6\%$ and $11.4\%$ for the 10-, 50-, and 100-gene panels, respectively, with the lowest MSE and MAE. Moreover, the gains are statistically significant and persist across the evaluated gene-selection strategies (HVG, DEG, and HMHVG) and encoder features (UNI, CONCH, and UNI+CONCH). It generalizes to held-out organs ($+6.0\%$ over the closest baseline BLEEP). On 58 held-out slides, MIST outperformed BLEEP in spatial-domain recovery on 78\% of slides according to ARI and on 90\% according to NMI. It also reproduces spatial expression patterns of selected melanoma-associated genes (mean PCC $0.90$) and breast cancer receptor genes associated with HER2, ER, and PR, supporting its ability to capture biologically relevant molecular patterns from H\&E images.
+Spatial transcriptomics reveals how gene expression is organized across a tissue; however, it is expensive and time-consuming. This motivates predicting gene expression from standard H\&E images. A spot's morphology, its spatial neighborhood, and the broader tissue context provide complementary information for predicting gene expression from H\&E images. A key modeling challenge is how to integrate these cues effectively. We introduce \morph{}, a compact spatial transformer that predicts a slide's spatial gene expression in a single forward pass by fusing three complementary views of context in every layer: local attention over spatial nearest neighbors, global self-attention across all spots, and an attention-pooled slide representation. Because the model uses spot coordinates only through pairwise distances, its predictions are invariant to translations, rotations, and reflections of the coordinate frame when image features are fixed. On six human organ cohorts from HEST-1k, evaluated under intra-cohort, pooled multi-organ, and leave-one-organ-out settings, \morph{} attains the highest mean Pearson correlation (PCC) on every cohort, improving over the strongest baseline by $9.7\%$, $11.6\%$ and $11.4\%$ for the 10-, 50-, and 100-gene panels, respectively, with the lowest MSE and MAE. Moreover, the gains are statistically significant and persist across the evaluated gene-selection strategies (HVG, DEG, and HMHVG) and encoder features (UNI, CONCH, and UNI+CONCH). It generalizes to held-out organs ($+6.0\%$ over the closest baseline BLEEP). \morph{} also better preserves tissue spatial structure: when we group spots into regions (spatial domains) from the predicted expression, these regions match those obtained from the measured expression more closely than for BLEEP, on 78\% of the 58 held-out slides by the Adjusted Rand Index (ARI) and 90\% by Normalized Mutual Information (NMI), two standard measures of agreement between clusterings. It also reproduces spatial expression patterns of selected melanoma-associated genes (mean PCC $0.90$) and breast cancer receptor genes associated with HER2, ER, and PR, supporting its ability to capture biologically relevant molecular patterns from H\&E images.
 
+The exact coordinate guarantee assumes consistent resolution of $k$NN distance ties. On held-out
+CCRCC and PRAD slides, rigid coordinate transforms preserve aggregate PCC to within $0.000166$, although
+individual predictions can change.
 \end{abstract}
 
 \etocdepthtag.toc{mainbody}
@@ -90,7 +93,7 @@ and reflections.}
 
 Morphology and expression interact locally, across the slide, and at the level of slide composition. Existing predictors capture parts of this structure with patch regression, spatial graphs, retrieval, or conditional generation~\cite{he2020stnet,zeng2022hist2st,xie2023bleep,zhu2025diffusion}, but absolute coordinates can make predictions depend on an arbitrary scanner frame. Geometric representations based on relative quantities provide a principled way to reduce this dependence~\cite{satorras2021egnn}. We therefore seek a compact predictor that combines multi-scale context while using coordinates only through relative distances.
 
-We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines spatial $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary~\cite{vaswani2017attention}. Because spot coordinates enter the model only through pairwise distances, its predictions are invariant to translations, rotations, and reflections when image features are fixed (Fig.~\ref{fig:arch}).
+We introduce \morph{}, a direct spatial transformer that represents each spot as a token and combines spatial $k$NN attention for local context, full self-attention for slide-wide context, and attention pooling for a slide summary~\cite{vaswani2017attention}. Because spot coordinates enter the model only through pairwise distances, its predictions are invariant to translations, rotations, and reflections when image features are fixed and $k$NN ties are resolved consistently (Fig.~\ref{fig:arch}).
 
 \begin{keybox}
 \textbf{Main idea.}
@@ -102,11 +105,12 @@ summary of the overall tissue composition.
 
 We evaluate \morph{} across six human cohorts under intra-cohort prediction, pooled multi-organ prediction, and leave-one-organ-out transfer. In intra-cohort evaluation, \morph{} achieves the highest mean Pearson correlation and the lowest mean squared error (MSE) and mean absolute error (MAE), averaged across cohorts, for all evaluated gene-selection strategies and panel sizes. It also improves transfer to held-out organs and preserves biologically meaningful spatial patterns for melanoma- and breast-cancer-associated genes. Finally, on 58 held-out slides, \morph{} improves spatial-domain recovery over BLEEP on 78\% of slides according to ARI and on 90\% according to NMI, although absolute domain agreement remains modest.
 
-\noindent Our experiments address four research questions:
+\noindent Our experiments address five research questions:
 \textbf{RQ1 (Performance):} How accurately does \morph{} predict gene expression across organs when trained separately per cohort or jointly across cohorts?
 \textbf{RQ2 (Transfer):} How well does it generalize to an organ excluded from training?
-\textbf{RQ3 (Design):} How do the image encoder, context pathways, and neighborhood construction affect predictive accuracy?
-\textbf{RQ4 (Structure):} How well do predicted expression profiles preserve spatial domains identified from measured expression, as measured by ARI and NMI?
+\textbf{RQ3 (Ablation):} Which context pathways and spatial-neighborhood choices drive predictive accuracy?
+\textbf{RQ4 (Coordinate invariance):} How stable are predictions and accuracy under transformations of the spot-coordinate frame?
+\textbf{RQ5 (Structure):} How well do predicted expression profiles preserve spatial domains identified from measured expression, as measured by ARI and NMI?
 
 To sum up, we have the following summarized contributions:
 \begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
@@ -517,128 +521,86 @@ In the intra-cohort setting, \morph{} is best under every 50-gene selection stra
 (HMHVG), compared with BLEEP's $0.444$, $0.559$, and $0.587$. The advantage also holds across panel
 sizes (Table~\ref{tab:main}): \morph{} reaches PCC@10/50/100 values of $0.600/0.496/0.559$ and wins
 all six cohorts at PCC@50, yielding an $11.6\%$ gain over BLEEP. It also has the lowest MSE and MAE
-under every tested strategy and panel size (Table~\ref{tab:error_strategy}).
+under every tested strategy and panel size (Table~\ref{tab:main}).
 
 The intra-cohort improvement is statistically reliable: across six cohorts and three seeds
 ($n{=}18$ paired runs), the PCC@50 gain over BLEEP is $0.051$ (95\% bootstrap CI
 $[0.041,0.062]$; Wilcoxon $p{=}7.6\times10^{-6}$). At the per-gene level, \morph{} outperforms
-BLEEP on $87\%$ of genes ($n{=}300$; Wilcoxon $p<10^{-30}$). Full paired tests are reported in
+BLEEP on $87\%$ of genes ($n{=}300$; Wilcoxon $p<10^{-30}$). A summary of the paired statistical
+tests is reported in
 Appendix~\ref{app:significance}.
 
 % Keep all three gene-selection strategies in one indivisible float.
 \begin{table*}[!b]
 \centering
 \setcounter{table}{0}
-\caption{\textbf{Intra-cohort PCC across 50-gene selection strategies.} Mean$_{\text{std}}$ over three seeds.}
+\caption{\textbf{Intra-cohort HEST-1k: 50-gene selection strategies.} Dataset PCC is mean $\pm$ SD over three seeds; final columns are six-cohort mean PCC, MSE, and MAE. Best per strategy in \best{bold}; $\uparrow$ higher and $\downarrow$ lower is better.}
 \label{tab:panel_strategy}
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{0.85}
-\resizebox{0.68\linewidth}{!}{%
-\begin{tabular}{llrrrrrrr}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrrrrrrr}
 \toprule
-Panel & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & Average \\
+Panel & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & MSE Avg. $\downarrow$ & MAE Avg. $\downarrow$ \\
 \midrule
-\multirow{5}{*}{\textbf{HVG}} & ST-Net & $0.551{\pm}0.01$ & $0.163{\pm}0.02$ & $0.521{\pm}0.01$ & $0.366{\pm}0.03$ & $0.287{\pm}0.02$ & $0.661{\pm}0.01$ & $0.425$ \\
- & Hist2ST & $0.305{\pm}0.11$ & $0.180{\pm}0.03$ & $0.430{\pm}0.05$ & $0.248{\pm}0.04$ & $0.323{\pm}0.01$ & $0.523{\pm}0.00$ & $0.335$ \\
- & BLEEP & $0.519{\pm}0.00$ & $0.175{\pm}0.02$ & $0.565{\pm}0.01$ & $0.412{\pm}0.03$ & $0.346{\pm}0.01$ & $0.650{\pm}0.00$ & $0.444$ \\
- & STEM & $0.434{\pm}0.00$ & $0.118{\pm}0.01$ & $0.407{\pm}0.00$ & $0.233{\pm}0.02$ & $0.207{\pm}0.02$ & $0.461{\pm}0.02$ & $0.310$ \\
- & \morph{} (Ours) & \best{$0.581{\pm}0.01$} & \best{$0.252{\pm}0.01$} & \best{$0.589{\pm}0.01$} & \best{$0.437{\pm}0.03$} & \best{$0.410{\pm}0.01$} & \best{$0.707{\pm}0.01$} & \best{$0.496$} \\
+\multirow{5}{*}{\textbf{HVG}} & ST-Net & $0.551{\pm}0.01$ & $0.163{\pm}0.02$ & $0.521{\pm}0.01$ & $0.366{\pm}0.03$ & $0.287{\pm}0.02$ & $0.661{\pm}0.01$ & $0.425$ & $1.995$ & $0.969$ \\
+ & Hist2ST & $0.305{\pm}0.11$ & $0.180{\pm}0.03$ & $0.430{\pm}0.05$ & $0.248{\pm}0.04$ & $0.323{\pm}0.01$ & $0.523{\pm}0.00$ & $0.335$ & $1.561$ & $0.890$ \\
+ & BLEEP & $0.519{\pm}0.00$ & $0.175{\pm}0.02$ & $0.565{\pm}0.01$ & $0.412{\pm}0.03$ & $0.346{\pm}0.01$ & $0.650{\pm}0.00$ & $0.444$ & $1.318$ & $0.819$ \\
+ & STEM & $0.434{\pm}0.00$ & $0.118{\pm}0.01$ & $0.407{\pm}0.00$ & $0.233{\pm}0.02$ & $0.207{\pm}0.02$ & $0.461{\pm}0.02$ & $0.310$ & $1.747$ & $0.920$ \\
+ & \morph{} (Ours) & \best{$0.581{\pm}0.01$} & \best{$0.252{\pm}0.01$} & \best{$0.589{\pm}0.01$} & \best{$0.437{\pm}0.03$} & \best{$0.410{\pm}0.01$} & \best{$0.707{\pm}0.01$} & \best{$0.496$} & \best{$1.233$} & \best{$0.794$} \\
 \midrule
-\multirow{5}{*}{\textbf{DEG}} & ST-Net & $0.697{\pm}0.01$ & $0.312{\pm}0.01$ & $0.566{\pm}0.01$ & $0.425{\pm}0.03$ & $0.413{\pm}0.00$ & $0.752{\pm}0.01$ & $0.528$ \\
- & Hist2ST & $0.549{\pm}0.07$ & $0.335{\pm}0.01$ & $0.518{\pm}0.01$ & $0.352{\pm}0.01$ & $0.437{\pm}0.01$ & $0.656{\pm}0.00$ & $0.475$ \\
- & BLEEP & $0.731{\pm}0.01$ & $0.304{\pm}0.00$ & $0.621{\pm}0.01$ & $0.487{\pm}0.03$ & $0.466{\pm}0.00$ & $0.746{\pm}0.03$ & $0.559$ \\
- & STEM & $0.684{\pm}0.02$ & $0.253{\pm}0.01$ & $0.440{\pm}0.01$ & $0.306{\pm}0.04$ & $0.355{\pm}0.03$ & $0.617{\pm}0.02$ & $0.443$ \\
- & \morph{} (Ours) & \best{$0.774{\pm}0.01$} & \best{$0.402{\pm}0.01$} & \best{$0.662{\pm}0.00$} & \best{$0.518{\pm}0.03$} & \best{$0.539{\pm}0.01$} & \best{$0.794{\pm}0.00$} & \best{$0.615$} \\
+\multirow{5}{*}{\textbf{DEG}} & ST-Net & $0.697{\pm}0.01$ & $0.312{\pm}0.01$ & $0.566{\pm}0.01$ & $0.425{\pm}0.03$ & $0.413{\pm}0.00$ & $0.752{\pm}0.01$ & $0.528$ & $3.336$ & $1.457$ \\
+ & Hist2ST & $0.549{\pm}0.07$ & $0.335{\pm}0.01$ & $0.518{\pm}0.01$ & $0.352{\pm}0.01$ & $0.437{\pm}0.01$ & $0.656{\pm}0.00$ & $0.475$ & $1.757$ & $1.021$ \\
+ & BLEEP & $0.731{\pm}0.01$ & $0.304{\pm}0.00$ & $0.621{\pm}0.01$ & $0.487{\pm}0.03$ & $0.466{\pm}0.00$ & $0.746{\pm}0.03$ & $0.559$ & $1.557$ & $0.945$ \\
+ & STEM & $0.684{\pm}0.02$ & $0.253{\pm}0.01$ & $0.440{\pm}0.01$ & $0.306{\pm}0.04$ & $0.355{\pm}0.03$ & $0.617{\pm}0.02$ & $0.443$ & $1.958$ & $1.054$ \\
+ & \morph{} (Ours) & \best{$0.774{\pm}0.01$} & \best{$0.402{\pm}0.01$} & \best{$0.662{\pm}0.00$} & \best{$0.518{\pm}0.03$} & \best{$0.539{\pm}0.01$} & \best{$0.794{\pm}0.00$} & \best{$0.615$} & \best{$1.477$} & \best{$0.928$} \\
 \midrule
-\multirow{5}{*}{\textbf{HMHVG}} & ST-Net & $0.724{\pm}0.01$ & $0.339{\pm}0.01$ & $0.568{\pm}0.00$ & $0.441{\pm}0.03$ & $0.452{\pm}0.00$ & $0.824{\pm}0.03$ & $0.558$ \\
- & Hist2ST & $0.633{\pm}0.08$ & $0.387{\pm}0.01$ & $0.598{\pm}0.00$ & $0.341{\pm}0.04$ & $0.477{\pm}0.01$ & $0.710{\pm}0.14$ & $0.524$ \\
- & BLEEP & $0.739{\pm}0.02$ & $0.349{\pm}0.01$ & $0.661{\pm}0.00$ & $0.493{\pm}0.02$ & $0.432{\pm}0.04$ & $0.849{\pm}0.02$ & $0.587$ \\
- & STEM & $0.687{\pm}0.01$ & $0.290{\pm}0.01$ & $0.517{\pm}0.01$ & $0.305{\pm}0.03$ & $0.337{\pm}0.02$ & $0.731{\pm}0.06$ & $0.478$ \\
- & \morph{} (Ours) & \best{$0.774{\pm}0.01$} & \best{$0.454{\pm}0.02$} & \best{$0.693{\pm}0.00$} & \best{$0.524{\pm}0.02$} & \best{$0.555{\pm}0.02$} & \best{$0.901{\pm}0.00$} & \best{$0.650$} \\
+\multirow{5}{*}{\textbf{HMHVG}} & ST-Net & $0.724{\pm}0.01$ & $0.339{\pm}0.01$ & $0.568{\pm}0.00$ & $0.441{\pm}0.03$ & $0.452{\pm}0.00$ & $0.824{\pm}0.03$ & $0.558$ & $3.589$ & $1.470$ \\
+ & Hist2ST & $0.633{\pm}0.08$ & $0.387{\pm}0.01$ & $0.598{\pm}0.00$ & $0.341{\pm}0.04$ & $0.477{\pm}0.01$ & $0.710{\pm}0.14$ & $0.524$ & $1.832$ & $1.042$ \\
+ & BLEEP & $0.739{\pm}0.02$ & $0.349{\pm}0.01$ & $0.661{\pm}0.00$ & $0.493{\pm}0.02$ & $0.432{\pm}0.04$ & $0.849{\pm}0.02$ & $0.587$ & $1.566$ & $0.936$ \\
+ & STEM & $0.687{\pm}0.01$ & $0.290{\pm}0.01$ & $0.517{\pm}0.01$ & $0.305{\pm}0.03$ & $0.337{\pm}0.02$ & $0.731{\pm}0.06$ & $0.478$ & $1.976$ & $1.049$ \\
+ & \morph{} (Ours) & \best{$0.774{\pm}0.01$} & \best{$0.454{\pm}0.02$} & \best{$0.693{\pm}0.00$} & \best{$0.524{\pm}0.02$} & \best{$0.555{\pm}0.02$} & \best{$0.901{\pm}0.00$} & \best{$0.650$} & \best{$1.393$} & \best{$0.901$} \\
 \bottomrule
 \end{tabular}%
 }
 
 \centering
 \setcounter{table}{1}
-\caption{\textbf{Intra-cohort PCC across gene-panel sizes.} Mean$_{\text{std}}$ over three seeds; each panel reports its average.}
+\caption{\textbf{Intra-cohort HEST-1k: gene-panel sizes.} Dataset PCC is mean $\pm$ SD over three seeds; final columns are six-cohort mean PCC, MSE, and MAE. Best per panel size in \best{bold}; $\uparrow$ higher and $\downarrow$ lower is better.}
 \label{tab:main}
 \label{tab:main_g10}
 \label{tab:main_g100}
 \setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{0.85}
-\resizebox{0.68\linewidth}{!}{%
-\begin{tabular}{llccccc}
+\renewcommand{\arraystretch}{1.05}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llrrrrrrrrr}
 \toprule
-Metric & Cohort & ST-Net & Hist2ST
-       & BLEEP & STEM & \morph{} (Ours) \\
+Panel size & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & MSE Avg. $\downarrow$ & MAE Avg. $\downarrow$ \\
 \midrule
-\multirow{7}{*}{\textbf{PCC@10}} & IDC & $0.666{\pm}0.01$ & $0.636{\pm}0.01$ & $0.635{\pm}0.02$ & $0.591{\pm}0.02$ & \best{$0.708{\pm}0.00$} \\
- & CCRCC & $0.231{\pm}0.01$ & $0.273{\pm}0.02$ & $0.231{\pm}0.02$ & $0.170{\pm}0.00$ & \best{$0.322{\pm}0.01$} \\
- & LUNG & $0.702{\pm}0.01$ & $0.519{\pm}0.02$ & $0.735{\pm}0.00$ & $0.616{\pm}0.01$ & \best{$0.759{\pm}0.00$} \\
- & PAAD & $0.511{\pm}0.04$ & $0.377{\pm}0.07$ & \best{$0.536{\pm}0.03$} & $0.393{\pm}0.04$ & $0.519{\pm}0.05$ \\
- & PRAD & $0.442{\pm}0.03$ & $0.459{\pm}0.02$ & $0.434{\pm}0.03$ & $0.325{\pm}0.03$ & \best{$0.524{\pm}0.02$} \\
- & SKCM & $0.728{\pm}0.00$ & $0.471{\pm}0.04$ & $0.697{\pm}0.01$ & $0.598{\pm}0.01$ & \best{$0.769{\pm}0.01$} \\
-\cmidrule(lr){2-7}
- & \textbf{Average} & $0.547$ & $0.456$ & $0.545$ & $0.449$ & \best{$0.600$} \\
+\multirow{5}{*}{\textbf{PCC@10}} & ST-Net & $0.666{\pm}0.01$ & $0.231{\pm}0.01$ & $0.702{\pm}0.01$ & $0.511{\pm}0.04$ & $0.442{\pm}0.03$ & $0.728{\pm}0.00$ & $0.547$ & $6.087$ & $1.908$ \\
+ & Hist2ST & $0.636{\pm}0.01$ & $0.273{\pm}0.02$ & $0.519{\pm}0.02$ & $0.377{\pm}0.07$ & $0.459{\pm}0.02$ & $0.471{\pm}0.04$ & $0.456$ & $3.297$ & $1.374$ \\
+ & BLEEP & $0.635{\pm}0.02$ & $0.231{\pm}0.02$ & $0.735{\pm}0.00$ & \best{$0.536{\pm}0.03$} & $0.434{\pm}0.03$ & $0.697{\pm}0.01$ & $0.545$ & $2.859$ & $1.243$ \\
+ & STEM & $0.591{\pm}0.02$ & $0.170{\pm}0.00$ & $0.616{\pm}0.01$ & $0.393{\pm}0.04$ & $0.325{\pm}0.03$ & $0.598{\pm}0.01$ & $0.449$ & $3.181$ & $1.310$ \\
+ & \morph{} (Ours) & \best{$0.708{\pm}0.00$} & \best{$0.322{\pm}0.01$} & \best{$0.759{\pm}0.00$} & $0.519{\pm}0.05$ & \best{$0.524{\pm}0.02$} & \best{$0.769{\pm}0.01$} & \best{$0.600$} & \best{$2.620$} & \best{$1.211$} \\
 \midrule
-\multirow{7}{*}{\textbf{PCC@50}} & IDC      & $0.551{\pm}0.01$ & $0.309{\pm}0.07$ & $0.519{\pm}0.00$ & $0.439{\pm}0.01$ & \best{$0.581{\pm}0.01$} \\
- & CCRCC    & $0.163{\pm}0.02$ & $0.184{\pm}0.02$ & $0.175{\pm}0.02$ & $0.123{\pm}0.00$ & \best{$0.252{\pm}0.01$} \\
- & LUNG       & $0.518{\pm}0.01$ & $0.470{\pm}0.01$ & $0.562{\pm}0.01$ & $0.423{\pm}0.03$ & \best{$0.589{\pm}0.01$} \\
- & PAAD       & $0.366{\pm}0.03$ & $0.248{\pm}0.04$ & $0.412{\pm}0.03$ & $0.233{\pm}0.02$ & \best{$0.437{\pm}0.03$} \\
- & PRAD   & $0.294{\pm}0.02$ & $0.333{\pm}0.02$ & $0.348{\pm}0.01$ & $0.207{\pm}0.02$ & \best{$0.410{\pm}0.01$} \\
- & SKCM       & $0.665{\pm}0.01$ & $0.522{\pm}0.03$ & $0.645{\pm}0.01$ & $0.491{\pm}0.04$ & \best{$0.707{\pm}0.01$} \\
-\cmidrule(lr){2-7}
- & \textbf{Average} & $0.425$ & $0.335$ & $0.444$ & $0.310$ & \best{$0.496$} \\
+\multirow{5}{*}{\textbf{PCC@50}} & ST-Net & $0.551{\pm}0.01$ & $0.163{\pm}0.02$ & $0.518{\pm}0.01$ & $0.366{\pm}0.03$ & $0.294{\pm}0.02$ & $0.665{\pm}0.01$ & $0.425$ & $1.995$ & $0.969$ \\
+ & Hist2ST & $0.309{\pm}0.07$ & $0.184{\pm}0.02$ & $0.470{\pm}0.01$ & $0.248{\pm}0.04$ & $0.333{\pm}0.02$ & $0.522{\pm}0.03$ & $0.335$ & $1.561$ & $0.890$ \\
+ & BLEEP & $0.519{\pm}0.00$ & $0.175{\pm}0.02$ & $0.562{\pm}0.01$ & $0.412{\pm}0.03$ & $0.348{\pm}0.01$ & $0.645{\pm}0.01$ & $0.444$ & $1.318$ & $0.819$ \\
+ & STEM & $0.439{\pm}0.01$ & $0.123{\pm}0.00$ & $0.423{\pm}0.03$ & $0.233{\pm}0.02$ & $0.207{\pm}0.02$ & $0.491{\pm}0.04$ & $0.310$ & $1.747$ & $0.920$ \\
+ & \morph{} (Ours) & \best{$0.581{\pm}0.01$} & \best{$0.252{\pm}0.01$} & \best{$0.589{\pm}0.01$} & \best{$0.437{\pm}0.03$} & \best{$0.410{\pm}0.01$} & \best{$0.707{\pm}0.01$} & \best{$0.496$} & \best{$1.233$} & \best{$0.794$} \\
 \midrule
-\multirow{7}{*}{\textbf{PCC@100}} & IDC & $0.611{\pm}0.01$ & $0.473{\pm}0.07$ & $0.632{\pm}0.01$ & $0.565{\pm}0.01$ & \best{$0.682{\pm}0.01$} \\
- & CCRCC & $0.221{\pm}0.01$ & $0.274{\pm}0.03$ & $0.247{\pm}0.02$ & $0.192{\pm}0.00$$^\dag$ & \best{$0.328{\pm}0.02$} \\
- & LUNG & $0.595{\pm}0.00$ & $0.434{\pm}0.03$ & $0.659{\pm}0.01$ & $0.498{\pm}0.03$ & \best{$0.688{\pm}0.00$} \\
- & PAAD & $0.355{\pm}0.04$ & $0.222{\pm}0.04$ & $0.399{\pm}0.04$ & $0.236{\pm}0.02$ & \best{$0.435{\pm}0.03$} \\
- & PRAD & $0.327{\pm}0.01$ & $0.341{\pm}0.03$ & $0.377{\pm}0.02$ & $0.240{\pm}0.03$ & \best{$0.450{\pm}0.00$} \\
- & SKCM & $0.696{\pm}0.01$ & $0.446{\pm}0.12$ & $0.696{\pm}0.01$ & $0.602{\pm}0.02$ & \best{$0.771{\pm}0.01$} \\
-\cmidrule(lr){2-7}
- & \textbf{Average} & $0.468$ & $0.365$ & $0.502$ & $0.389$ & \best{$0.559$} \\
+\multirow{5}{*}{\textbf{PCC@100}} & ST-Net & $0.611{\pm}0.01$ & $0.221{\pm}0.01$ & $0.595{\pm}0.00$ & $0.355{\pm}0.04$ & $0.327{\pm}0.01$ & $0.696{\pm}0.01$ & $0.468$ & $3.320$ & $1.354$ \\
+ & Hist2ST & $0.473{\pm}0.07$ & $0.274{\pm}0.03$ & $0.434{\pm}0.03$ & $0.222{\pm}0.04$ & $0.341{\pm}0.03$ & $0.446{\pm}0.12$ & $0.365$ & $1.843$ & $1.011$ \\
+ & BLEEP & $0.632{\pm}0.01$ & $0.247{\pm}0.02$ & $0.659{\pm}0.01$ & $0.399{\pm}0.04$ & $0.377{\pm}0.02$ & $0.696{\pm}0.01$ & $0.502$ & $1.558$ & $0.915$ \\
+ & STEM & $0.565{\pm}0.01$ & $0.192{\pm}0.00$$^\dag$ & $0.498{\pm}0.03$ & $0.236{\pm}0.02$ & $0.240{\pm}0.03$ & $0.602{\pm}0.02$ & $0.389$ & $1.899$ & $1.001$ \\
+ & \morph{} (Ours) & \best{$0.682{\pm}0.01$} & \best{$0.328{\pm}0.02$} & \best{$0.688{\pm}0.00$} & \best{$0.435{\pm}0.03$} & \best{$0.450{\pm}0.00$} & \best{$0.771{\pm}0.01$} & \best{$0.559$} & \best{$1.458$} & \best{$0.894$} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table*}
 \setcounter{table}{2}
 
-\begin{table}[H]
-\centering
-\caption{\textbf{Intra-cohort error metrics (MSE, MAE) on HEST-1k.} Mean over three seeds and six cohorts, matched protocol; best per row in \best{bold}.}
-\label{tab:error_strategy}
-\setlength{\tabcolsep}{5pt}
-\renewcommand{\arraystretch}{1.12}
-\resizebox{\linewidth}{!}{%
-\begin{tabular}{ll>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{blue!5}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c>{\columncolor{orange!7}}c}
-\toprule
-& & \multicolumn{5}{c}{\cellcolor{blue!5}\textbf{MSE} $\downarrow$} & \multicolumn{5}{c}{\cellcolor{orange!7}\textbf{MAE} $\downarrow$} \\
-Section & Panel & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours)
-        & ST-Net & Hist2ST & BLEEP & STEM & \morph{} (Ours) \\
-\midrule
-\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{selection}\\\textit{strategy}}}}
-& HVG   & $1.995$ & $1.561$ & $1.318$ & $1.747$ & \best{$1.233$}
-         & $0.969$ & $0.890$ & $0.819$ & $0.920$ & \best{$0.794$} \\
-& DEG   & $3.336$ & $1.757$ & $1.557$ & $1.958$ & \best{$1.477$}
-         & $1.457$ & $1.021$ & $0.945$ & $1.054$ & \best{$0.928$} \\
-& HMHVG & $3.589$ & $1.832$ & $1.566$ & $1.976$ & \best{$1.393$}
-         & $1.470$ & $1.042$ & $0.936$ & $1.049$ & \best{$0.901$} \\
-\midrule
-\multirow{3}{*}{\rotatebox[origin=c]{90}{\shortstack{\textit{Gene-}\\\textit{panel}\\\textit{size}}}}
-& 10  & $6.087$ & $3.297$ & $2.859$ & $3.181$ & \best{$2.620$}
-         & $1.908$ & $1.374$ & $1.243$ & $1.310$ & \best{$1.211$} \\
-& 50  & $1.995$ & $1.561$ & $1.318$ & $1.747$ & \best{$1.233$}
-         & $0.969$ & $0.890$ & $0.819$ & $0.920$ & \best{$0.794$} \\
-& 100 & $3.320$ & $1.843$ & $1.558$ & $1.899$ & \best{$1.458$}
-         & $1.354$ & $1.011$ & $0.915$ & $1.001$ & \best{$0.894$} \\
-\bottomrule
-\end{tabular}
-}%
-\end{table}
-
-
+\clearpage
 In the pooled setting, a single model is trained jointly across organs with slide-level holdout and no
 organ labels. \morph{} again achieves the highest mean PCC on the six-organ set ($0.599$), ahead of
 BLEEP ($0.587$) and Hist2ST ($0.556$) (Table~\ref{tab:pooled6}). Thus, for organs represented during
@@ -665,86 +627,58 @@ STEM~\cite{zhu2025diffusion} (ICLR'25)             & $0.273_{0.00}$ \\
 }
 \end{table}
 
-\begin{keybox}
-\textbf{Key Finding (RQ1):} \morph{} gives the best accuracy across diverse organs both \emph{per
-organ} (intra-cohort PCC@50 $0.496$ vs.\ $0.444$ for BLEEP, winning all six cohorts) and as a
-\emph{single pooled} model ($0.599$ six-organ HEST), so a separate model per tissue is
-unnecessary when the organ is represented in training.
-\end{keybox}
-
 \FloatBarrier
 
 \subsection{RQ2: Cross-organ transfer to an unseen organ}
 \label{sec:transfer}
-Having established strong performance on \emph{seen} organs, we now ask the harder question of whether
-\morph{} transfers to an organ it has \emph{never} seen. To test this, we use leave-one-organ-out
-(LOOO) evaluation: we train on all-but-one organ and test on the held-out one, so the target anatomy is
-entirely absent from training. As expected, accuracy falls relative to the pooled setting of RQ1, yet \morph{} still transfers best:
-on the six-organ subset it wins \emph{every} held-out organ and attains the highest mean PCC
-($0.422$ vs.\ $0.398$ for BLEEP; a significant gain, Wilcoxon $p{=}0.018$, Appendix~\ref{app:significance}).
-The complete per-cohort results for all six organs are reported in Table~\ref{tab:looo_6organ}; on the
-six-organ HEST panel \morph{} reaches $0.422$ versus
-$0.398$ for BLEEP, the strongest baseline on the six-organ panel. Together,
-these results show that \morph{}'s inductive biases carry over to unseen anatomy, which supports RQ2; a
-complementary mouse experiment in Appendix~\ref{app:mouse} shows the same trend.
+Having established strong performance on organs represented during training, we next
+evaluate transfer to an entirely unseen organ using leave-one-organ-out (LOOO)
+evaluation. Each fold withholds one organ from training and tests on that organ,
+ensuring that its anatomy is absent from the training set.
 
-\begin{keybox}
-\textbf{Key Finding (RQ2):} The pooled$\to$LOOO drop, from $0.599$ with the organ seen (RQ1) to
-$0.422$ with the organ held out, isolates unseen-organ transfer as the dominant remaining gap;
-predicting seen organs well does not by itself transfer to a new organ.
-\end{keybox}
+As shown in Table~\ref{tab:looo_6organ}, \morph{} achieves the highest PCC on all six
+held-out organs and obtains the best mean PCC overall ($0.422$), ahead of BLEEP
+($0.398$). This improvement is statistically significant (Wilcoxon
+$p{=}0.018$; Appendix~\ref{app:significance}). Although performance decreases
+relative to the pooled setting ($0.599$), the consistent per-organ gains indicate
+that \morph{} transfers more effectively to unseen anatomy. A complementary mouse
+experiment in Appendix~\ref{app:mouse} shows the same trend.
 
 \begin{table}[H]
 \centering
-\caption{\textbf{Cross-organ LOOO transfer (six-organ subset).} Per-cohort Pearson $\uparrow$; each fold holds out one organ (leakage-safe panels, frozen UNI\,+\,CONCH); mean$_{\text{std}}$ over three seeds; best per row in \best{bold}.}
+\caption{\textbf{Cross-organ LOOO transfer (six-organ subset).} Dataset columns report PCC as mean $\pm$ standard deviation over three seeds; each fold holds out one organ (leakage-safe panels, frozen UNI\,+\,CONCH). The final three columns average PCC, MSE, and MAE equally across the six held-out organs. Best per column in \best{bold}; $\uparrow$ higher is better and $\downarrow$ lower is better.}
 \label{tab:looo_6organ}
 \setlength{\tabcolsep}{3pt}
 \resizebox{\linewidth}{!}{%
-\begin{tabular}{l cc cc c}
+\begin{tabular}{lrrrrrrrrr}
 \toprule
-Cohort & ST-Net~\tiny{NBE'20} & Hist2ST~\tiny{BIB'22} & BLEEP~\tiny{NeurIPS'23} & STEM~\tiny{ICLR'25}$^\dagger$ & \morph{} (Ours) \\
+Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & MSE Avg. $\downarrow$ & MAE Avg. $\downarrow$ \\
 \midrule
-CCRCC~\tiny{Kidney} & $0.074{\pm}0.00$ & $0.064{\pm}0.01$ & $0.058{\pm}0.00$ & $0.024{\pm}0.01$ & \best{$0.098{\pm}0.01$} \\
-IDC~\tiny{Breast} & $0.332{\pm}0.02$ & $0.350{\pm}0.00$ & $0.401{\pm}0.04$ & $0.131{\pm}0.08$ & \best{$0.425{\pm}0.03$} \\
-LUNG~\tiny{Lung} & $0.535{\pm}0.07$ & $0.581{\pm}0.00$ & $0.630{\pm}0.00$ & $0.067{\pm}0.00$ & \best{$0.687{\pm}0.02$} \\
-PAAD~\tiny{Pancreas} & $0.382{\pm}0.00$ & $0.214{\pm}0.17$ & $0.497{\pm}0.03$ & $0.052{\pm}0.00$ & \best{$0.499{\pm}0.03$} \\
-PRAD~\tiny{Prostate} & $0.078{\pm}0.01$ & $0.062{\pm}0.01$ & $0.091{\pm}0.00$ & $0.016{\pm}0.00$ & \best{$0.105{\pm}0.01$} \\
-SKCM~\tiny{Skin} & $0.500{\pm}0.09$ & $0.694{\pm}0.02$ & $0.708{\pm}0.01$ & $0.299{\pm}0.00$ & \best{$0.720{\pm}0.03$} \\
+ST-Net & $0.332{\pm}0.02$ & $0.074{\pm}0.00$ & $0.535{\pm}0.07$ & $0.382{\pm}0.00$ & $0.078{\pm}0.01$ & $0.500{\pm}0.09$ & $0.317$ & $1.912$ & $0.984$ \\
+Hist2ST & $0.350{\pm}0.00$ & $0.064{\pm}0.01$ & $0.581{\pm}0.00$ & $0.214{\pm}0.17$ & $0.062{\pm}0.01$ & $0.694{\pm}0.02$ & $0.328$ & $1.356$ & $0.876$ \\
+BLEEP & $0.401{\pm}0.04$ & $0.058{\pm}0.00$ & $0.630{\pm}0.00$ & $0.497{\pm}0.03$ & $0.091{\pm}0.00$ & $0.708{\pm}0.01$ & $0.398$ & $1.410$ & \best{$0.847$} \\
+STEM$^\dagger$ & $0.131{\pm}0.08$ & $0.024{\pm}0.01$ & $0.067{\pm}0.00$ & $0.052{\pm}0.00$ & $0.016{\pm}0.00$ & $0.299{\pm}0.00$ & $0.098$ & $2.371$ & $1.006$ \\
 \midrule
-\textbf{Average} & $0.317$ & $0.328$ & $0.398$ & $0.098$ & \best{$0.422$} \\
+\morph{} (Ours) & \best{$0.425{\pm}0.03$} & \best{$0.098{\pm}0.01$} & \best{$0.687{\pm}0.02$} & \best{$0.499{\pm}0.03$} & \best{$0.105{\pm}0.01$} & \best{$0.720{\pm}0.03$} & \best{$0.422$} & \best{$1.288$} & $0.849$ \\
 \bottomrule
 \end{tabular}%
 }\\[2pt]
-{\footnotesize $^\dagger$STEM incomplete (1--2 of 3 seeds); values provisional.}
+{\footnotesize $^\dagger$STEM provisional: IDC and CCRCC use two seeds; the remaining organs use one seed, matching the reported PCC values.}
 \end{table}
 
 \FloatBarrier
 
-\subsection{RQ3: What drives accuracy and coordinate invariance?}
+\subsection{RQ3: Which components drive predictive accuracy?}
 \label{sec:design}
-Given \morph{}'s accuracy, we next ask \emph{which} components drive it and whether its coordinate
-invariance holds in practice. To isolate each context stream, we run a factorial study over all eight
+Given \morph{}'s accuracy, we next ask \emph{which} components drive it. To isolate each context stream, we run a factorial study over all eight
 combinations of local (L), global (G), and slide-level (S) context on the six-organ pooled set
 (Table~\ref{tab:ablation}). The full model (L\,+\,G\,+\,S) is best (PCC $0.605$), and local attention is
 the critical stream: adding it (global\,+\,local) reaches $0.596$, whereas dropping local in favor of
 global\,+\,slide (G\,+\,S) falls to $0.570$. Crucially, replacing the spatial $k$NN neighbors with random
 ones lowers the full model from $0.605$ to $0.577$, showing that the benefit comes from \emph{spatial}
 locality rather than added attention alone. This identifies local spatial-neighborhood
-aggregation as the primary contributor, which supports the design rationale in RQ3.
-
-
-
-Beyond accuracy, we also verify the model's coordinate invariance empirically. As
-Table~\ref{tab:invariance} shows, prediction differences under translation and rotation remain below
-$6\times10^{-5}$, attributable to floating-point evaluation, and reflection is exact. This numerically
-confirms the analytic guarantee, completing the answer to RQ3.
-
-\begin{keybox}
-\textbf{Key Finding (RQ3):} Local spatial-neighborhood attention is the primary driver of accuracy
-(the full L\,+\,G\,+\,S model scores $0.605$, local is the critical stream: global\,+\,local reaches
-$0.596$ vs global\,+\,slide $0.570$, and spatial $k$NN neighbors beat random ones, $0.605$ vs $0.577$),
-and the predictor is provably invariant to spot translation, rotation, and reflection.
-\end{keybox}
+aggregation as the primary contributor. Encoder-feature ablations are reported separately in
+Appendix~\ref{app:encoder}.
 
 \begin{table}[H]
 \centering
@@ -766,22 +700,41 @@ Full, random nbr.        & L$_{\text{rand}}$\,+\,G\,+\,S & $0.577{\pm}0.009$ & $
 \end{tabular}}
 \end{table}
 
-\begin{table}[t]
+\subsection{RQ4: Does coordinate invariance hold in practice?}
+\label{sec:coordinate_invariance}
+\begin{table}[H]
 \centering
-\caption{\textbf{Numerical coordinate-invariance check.} Maximum absolute prediction change under coordinate transforms (random-init model, 257-spot synthetic slide).}
+\caption{\textbf{Real-slide coordinate-transform check.} The Table~\ref{tab:panel_strategy} CCRCC and PRAD UNI\,+\,CONCH HVG models (six and two held-out folds) and the Table~\ref{tab:pooled6} six-organ pooled UNI\,+\,CONCH model (five held-out folds; shared 14-gene panel) are evaluated across three trained seeds per setting, with image features fixed. Coordinates are translated by $(37.2,-91.4)$, rotated by $0.731$ radians, reflected across the vertical axis, or randomly permuted. PCC is averaged across folds, then reported as mean $\pm$ standard deviation across seeds. Each $\Delta$PCC is relative to the original coordinates within the same setting; scores across gene panels are not directly comparable.}
 \label{tab:invariance}
 \small
-\begin{tabular}{l r}
+\setlength{\tabcolsep}{4pt}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{l cc @{\hspace{12pt}} cc @{\hspace{12pt}} cc}
 \toprule
-Transformation & Max.\ abs.\ difference \\
+ & \multicolumn{2}{c}{CCRCC (HVG; six folds)} & \multicolumn{2}{c}{PRAD (HVG; two folds)} & \multicolumn{2}{c}{Pooled (14 genes; five folds)} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+Coordinates & PCC $\uparrow$ & $\Delta$PCC & PCC $\uparrow$ & $\Delta$PCC & PCC $\uparrow$ & $\Delta$PCC \\
 \midrule
-Translation & $5.97\times10^{-5}$ \\
-Rotation    & $1.97\times10^{-5}$ \\
-Reflection  & $0$ \\
-Spot permutation & $5.96\times10^{-7}$ \\
+Original         & $0.25158{\pm}0.01041$ & --- & $0.41020{\pm}0.00730$ & --- & $0.59875{\pm}0.00671$ & --- \\
+Translation      & $0.25157{\pm}0.01027$ & $-0.000014$ & $0.41025{\pm}0.00732$ & $+0.000058$ & $0.59871{\pm}0.00668$ & $-0.000036$ \\
+Rotation         & $0.25175{\pm}0.01053$ & $+0.000166$ & $0.41026{\pm}0.00729$ & $+0.000066$ & $0.59876{\pm}0.00670$ & $+0.000010$ \\
+Reflection       & $0.25158{\pm}0.01041$ & $0$ & $0.41020{\pm}0.00730$ & $0$ & $0.59875{\pm}0.00671$ & $0$ \\
+Spot permutation & $0.25154{\pm}0.01029$ & $-0.000035$ & $0.41022{\pm}0.00730$ & $+0.000026$ & $0.59870{\pm}0.00674$ & $-0.000049$ \\
 \bottomrule
-\end{tabular}
+\end{tabular}}
 \end{table}
+
+We test coordinate transformations on held-out CCRCC and PRAD slides from the
+HVG experiments in Table~\ref{tab:panel_strategy}, and on the six-organ pooled slides from
+Table~\ref{tab:pooled6}. The original scores reproduce the reported results: $0.252{\pm}0.01$
+for CCRCC, $0.410{\pm}0.01$ for PRAD, and $0.599$ for the pooled setting. Across six CCRCC,
+two PRAD, and five pooled folds, with three trained seeds per setting, the three-seed mean PCC
+changes by at most $0.000166$ after translation, rotation, reflection, or spot permutation
+(Table~\ref{tab:invariance}); the corresponding mean MSE and MAE change by at most $0.000128$
+and $0.000043$. The pooled model uses its own shared 14-gene panel, not the intra-cohort HVG panel.
+Reflection leaves predictions exactly unchanged in this test. Translation, rotation, and permutation
+can change the $k$NN selection when distances tie or are numerically close: although aggregate
+accuracy is stable, individual predictions are not exactly invariant on these real slides.
 
 \begin{figure*}[t]
 \centering
@@ -801,7 +754,7 @@ is noisy and Hist2ST over-smooths. Predictions use identical frozen UNI+CONCH fe
 
 
 
-\subsection{RQ4: Spatial structure preservation}
+\subsection{RQ5: Spatial structure preservation}
 \label{sec:structure}
 Accurate per-gene prediction does not by itself guarantee that predictions preserve coherent tissue
 regions, so we finally ask whether \morph{} recovers spatial \emph{structure}. To test this, we cluster
@@ -825,13 +778,6 @@ line is $y{=}x$. Points spread widely (large across-slide variance) yet lie most
 so \morph{} improves ARI on $78\%$ and NMI on $90\%$ of slides (Wilcoxon $p<0.001$ for both).}
 \label{fig:spatial_scatter}
 \end{figure}
-
-\begin{keybox}
-\textbf{Key Finding (RQ4):} \morph{} reconstructs spatial domains more faithfully than the strongest
-baseline: paired per slide, it improves both ARI and NMI on $78$--$90\%$ of held-out slides
-($n{=}58$; Wilcoxon $p<0.001$; Figure~\ref{fig:spatial_scatter}), though the absolute domain agreement
-remains modest.
-\end{keybox}
 
 \FloatBarrier
 
@@ -1147,6 +1093,33 @@ models, it does not represent expression uncertainty; its advantage is determini
 inference with explicit geometric structure. Unlike prior evaluations that report within-cohort
 accuracy only, our controlled comparison separates interpolation from anatomical transfer, making the
 difficulty of organ shift directly measurable.
+
+\section{Paired Statistical Tests}
+\label{app:significance}
+This section collects the paired significance results reported in the main text. Tests compare
+\morph{} with the strongest relevant baseline under the same splits and evaluation protocol. The
+table reports the available aggregate statistics; complete per-run or per-slide effect-size vectors
+are not included in the manuscript.
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Summary of paired statistical tests.} All tests are two-sided Wilcoxon signed-rank
+tests unless stated otherwise; $p$-values are reported as available from the matched evaluation.}
+\label{tab:paired_tests}
+\small
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{p{0.23\linewidth}p{0.27\linewidth}p{0.15\linewidth}p{0.25\linewidth}}
+\toprule
+Outcome & Comparison & Sample size & Reported result \\
+\midrule
+PCC@50 & \morph{} vs. BLEEP & $n=18$ paired runs & gain $0.051$; 95\% bootstrap CI $[0.041,0.062]$; $p=7.6\times10^{-6}$ \\
+Per-gene PCC@50 & \morph{} vs. BLEEP & $n=300$ genes & \morph{} wins 87\%; $p<10^{-30}$ \\
+LOOO PCC & \morph{} vs. BLEEP & six held-out organs & $p=0.018$ \\
+Spatial ARI & \morph{} vs. BLEEP & $n=58$ slides & \morph{} wins 78\%; $p<0.001$ \\
+Spatial NMI & \morph{} vs. BLEEP & $n=58$ slides & \morph{} wins 90\%; $p<0.001$ \\
+\bottomrule
+\end{tabular}
+\end{table}
 
 \section{Extended Experimental Setup}
 \label{app:extended_setup}
