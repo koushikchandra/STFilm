@@ -61,25 +61,46 @@ def _grid(ax):
     ax.tick_params(labelsize=9)
 
 
+# shared geometry so bars and group gaps are identical in both panels
+BW = 0.20        # bar width (same in both panels)
+SLOT = 0.21      # bar pitch within a group (tiny gap between bars)
+GAP_G = 0.34     # gap between groups (same in both panels)
+MARGIN = 0.30    # left/right padding inside each panel
+
+
+def _centers(nbars, ngroups):
+    gw = nbars * SLOT                       # width occupied by one group
+    pitch = gw + GAP_G
+    c = np.arange(ngroups) * pitch
+    xlim = (c[0] - gw / 2 - MARGIN, c[-1] + gw / 2 + MARGIN)
+    return c, xlim
+
+
+def _label(ax, bars, vals, hero):
+    for b, v in zip(bars, vals):
+        ax.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
+                fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
+                color=ANNOT if hero else "#666", rotation=90)
+
+
 def main(outdir):
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.2, 3.4),
-                                   gridspec_kw={"width_ratios": [3.0, 1.35]})
+    cL, xlimL = _centers(len(CFGS), len(GROUPS))
+    cR, xlimR = _centers(len(NB_CFGS), len(NB_GROUPS))
+    spanL, spanR = xlimL[1] - xlimL[0], xlimR[1] - xlimR[0]
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.6, 3.5),
+                                   gridspec_kw={"width_ratios": [spanL, spanR], "wspace": 0.22})
 
     # ----- (a) context-stream ablation -----
-    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.202  # SLOT>BW leaves a small gap
     for j, (label, col, ec, hh) in enumerate(CFGS):
         hero = "full" in label
-        xs = x + (j - 1.5) * SLOT
+        xs = cL + (j - (len(CFGS) - 1) / 2) * SLOT
         bars = axL.bar(xs, MEAN[label], BW, yerr=STD[label], color=col, edgecolor="none",
                        linewidth=0, label=label,
                        error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
-        for b, v in zip(bars, MEAN[label]):
-            axL.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
-                     fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
-                     color=ANNOT if hero else "#666", rotation=90)
-    axL.set_xticks(x); axL.set_xticklabels(GROUPS, fontsize=10)
-    axL.set_ylabel("Mean PCC", fontsize=10.5)
-    axL.set_ylim(0.50, 0.76)
+        _label(axL, bars, MEAN[label], hero)
+    axL.set_xticks(cL); axL.set_xticklabels(GROUPS, fontsize=10)
+    axL.set_ylabel("Mean PCC@50", fontsize=10.5)
+    axL.set_ylim(0.50, 0.76); axL.set_xlim(*xlimL)
     axL.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
                loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=4, frameon=False,
                fontsize=8.0, handlelength=1.2, columnspacing=1.0)
@@ -87,28 +108,24 @@ def main(outdir):
     _grid(axL)
 
     # ----- (b) spatial kNN vs random-k -----
-    xr = np.arange(len(NB_GROUPS)); SLOTr = 0.42; BWr = 0.40
     for j, (label, col) in enumerate(NB_CFGS):
         hero = "kNN" in label
-        xs = xr + (j - 0.5) * SLOTr
-        bars = axR.bar(xs, NB_MEAN[label], BWr, yerr=NB_STD[label], color=col, edgecolor="none",
+        xs = cR + (j - (len(NB_CFGS) - 1) / 2) * SLOT
+        bars = axR.bar(xs, NB_MEAN[label], BW, yerr=NB_STD[label], color=col, edgecolor="none",
                        linewidth=0, label=label,
                        error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
-        for b, v in zip(bars, NB_MEAN[label]):
-            axR.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
-                     fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
-                     color=ANNOT if hero else "#666", rotation=90)
-    axR.set_xticks(xr); axR.set_xticklabels(NB_GROUPS, fontsize=10)
-    axR.set_ylim(0.50, 0.76)
+        _label(axR, bars, NB_MEAN[label], hero)
+    axR.set_xticks(cR); axR.set_xticklabels(NB_GROUPS, fontsize=10)
+    axR.set_ylabel("Mean PCC@50", fontsize=10.5)
+    axR.set_ylim(0.50, 0.76); axR.set_xlim(*xlimR)
     axR.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c in NB_CFGS],
                loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=2, frameon=False,
                fontsize=8.0, handlelength=1.2, columnspacing=1.0)
     axR.set_title("(b) Neighborhood (full model)", fontsize=10, pad=22)
     _grid(axR)
 
-    fig.tight_layout()
     out = Path(outdir) / "ablation_bars.png"
-    fig.savefig(out, dpi=300, bbox_inches="tight")
+    fig.savefig(out, dpi=600, bbox_inches="tight")
     plt.close(fig)
     print(f"Saved -> {out}")
 
