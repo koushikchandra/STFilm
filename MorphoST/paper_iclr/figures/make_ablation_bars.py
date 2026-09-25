@@ -48,7 +48,7 @@ CFGS = [("Vanilla (G)",         "#8a9096", "#6f757b", "////"),
 
 
 def main(outdir):
-    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.185  # SLOT>BW leaves a tiny gap between bars
+    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.202  # SLOT>BW leaves a small gap between bars
     fig, ax = plt.subplots(figsize=(7.4, 3.3))
     for j, (label, col, ec, hh) in enumerate(CFGS):
         hero = "full" in label
