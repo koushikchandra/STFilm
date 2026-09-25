@@ -83,7 +83,7 @@
 
 
 \begin{abstract}
-Predicting spatial gene expression from standard H\&E images could extend molecular analysis to tissues without spatial transcriptomic measurements. A key challenge is integrating local morphology with neighboring and tissue-wide context. We introduce \morph{}, a \textbf{M}ult\textbf{I}-context \textbf{S}patial \textbf{T}ransformer that fuses local \(k\)NN attention over spatial neighbors, global self-attention, and an attention-pooled slide summary in every layer to predict gene expression in a single forward pass. Its distance-based coordinate representation ensures invariance to translations, rotations, and reflections when image features are fixed and neighbor-distance ties are resolved consistently. In intra-cohort evaluation across six human organ cohorts from HEST-1k, \morph{} improves mean Pearson correlation over the strongest evaluated baseline by 9.7\%, 11.6\%, and 11.4\% for 10-, 50-, and 100-gene panels, respectively, while achieving the lowest average MSE and MAE. Gains persist across evaluated gene-selection strategies (HVG, DEG, and HMHVG) and image encoders (UNI, CONCH, and UNI+CONCH). In leave-one-organ-out evaluation, \morph{} improves mean Pearson correlation by 6.0\% over the next strongest baseline. It also attains the best expression-derived domain recovery (highest mean ARI and NMI at every clustering resolution, and higher NMI than the closest baseline on 84\% of held-out slides), while reproducing spatial expression patterns of selected cancer-marker genes. These results support multi-context integration as an effective approach to spatial gene expression prediction from histology.
+Predicting spatial gene expression from standard H\&E images could extend molecular analysis to tissues without spatial transcriptomic measurements. A standard Transformer applies global self-attention over spots but ignores where each spot sits in the tissue, whereas a spot's molecular state depends on tissue context at multiple spatial scales. Building on this insight, we introduce \morph{}, a \textbf{M}ult\textbf{I}-context \textbf{S}patial \textbf{T}ransformer that augments the global-attention backbone with two context pathways applied in every layer: a coordinate-invariant \emph{local} pathway that attends over spatial \(k\)-nearest-neighbor spots, and a \emph{slide} pathway that broadcasts a whole-slide summary to every spot; the model predicts all spots in a single forward pass. Because coordinates enter only through pairwise distances, the local pathway is invariant to translations, rotations, and reflections when image features are fixed. In intra-cohort evaluation across six human organ cohorts from HEST-1k, \morph{} improves mean Pearson correlation over the strongest evaluated baseline by 9.7\%, 11.6\%, and 11.4\% for 10-, 50-, and 100-gene panels, respectively, with the lowest average MSE and MAE, and these gains persist across gene-selection strategies (HVG, DEG, and HMHVG) and image encoders (UNI, CONCH, and UNI+CONCH). Ablations confirm the two pathways are the source of the gains: adding local and slide context improves over the vanilla backbone (paired \(p{=}3.4\times10^{-4}\)), and the local pathway relies on spatially defined neighbors rather than added attention (\(p{=}8.4\times10^{-5}\)). \morph{} further improves leave-one-organ-out transfer by 6.0\% over the next strongest baseline, attains the best expression-derived domain recovery (highest mean ARI and NMI at every clustering resolution, and higher NMI than the closest baseline on 84\% of held-out slides), and reproduces spatial expression patterns of selected cancer-marker genes. Together, these results show that adding local and slide context to a global-attention backbone is an effective approach to spatial gene expression prediction from histology.
 \end{abstract}
 
 \etocdepthtag.toc{mainbody}
@@ -97,38 +97,36 @@ morphological signals associated with molecular state, motivating
 prediction of spatial gene expression without matched ST measurements
 \cite{chen2024stimage,jaume2024hest}.
 
-A central challenge is integrating information from individual spots,
-their neighborhoods, and the broader tissue. The methods evaluated
-in this work approach prediction through different mechanisms:
-ST-Net uses patch-level regression~\cite{he2020stnet},
-Hist2ST combines transformer and graph-based modeling
-\cite{zeng2022hist2st}, BLEEP uses cross-modal retrieval
-\cite{xie2023bleep}, and STEM uses conditional diffusion
-\cite{zhu2025diffusion}. These approaches motivate examining how
-different forms of tissue context can be combined within a single
-predictor. We therefore ask:
+A standard Transformer over spots applies global self-attention, letting every
+spot attend to all others, but it treats spots interchangeably and ignores where
+each one sits in the tissue. Existing H\&E-to-ST methods approach prediction
+through different mechanisms---ST-Net uses patch-level
+regression~\cite{he2020stnet}, Hist2ST combines transformer and graph-based
+modeling~\cite{zeng2022hist2st}, BLEEP uses cross-modal
+retrieval~\cite{xie2023bleep}, and STEM uses conditional
+diffusion~\cite{zhu2025diffusion}---but a spot's molecular state depends on
+tissue context at multiple spatial scales: its immediate spatial neighborhood and
+the whole-slide state, neither of which a plain global-attention backbone models
+explicitly. We therefore ask:
 
 \begin{center}
-\textit{\textbf{Can combining local spatial interactions,
-spot-specific global interactions, and a shared slide summary
-within every layer improve spatial gene expression prediction?}}
+\textit{\textbf{Does augmenting a global-attention Transformer with explicit
+local and slide-level tissue context improve spatial gene expression
+prediction?}}
 \end{center}
 
-We introduce \morph{}, a multi-context spatial transformer that combines
-these three messages in parallel within every layer
-(Fig.~\ref{fig:arch}). Starting from frozen UNI and/or CONCH embeddings
-\cite{chen2024uni,lu2024conch}, local $k$NN attention aggregates
-information from spatial neighbors, global self-attention allows each
-spot to draw information from all spots, and attention pooling produces
-a slide summary that is broadcast to every spot. The global and pooled
-pathways serve different roles: global attention provides a
-query-dependent representation for each spot, whereas pooling supplies
-a shared representation of the slide. Their outputs are combined with
-the local message and refined through residual feed-forward updates.
-The resulting model predicts expression for all input spots in a
-single forward pass. Coordinates enter \morph{} only to define the spatial $k$NN graph,
-which is built from pairwise distances and is independent of the coordinate frame
-\cite{satorras2021egnn}.
+We introduce \morph{}, which augments a standard global self-attention backbone
+with two context pathways applied in every layer (Fig.~\ref{fig:arch}). Starting
+from frozen UNI and/or CONCH embeddings~\cite{chen2024uni,lu2024conch}, the
+\emph{local} pathway attends over each spot's spatial $k$-nearest neighbors, and
+the \emph{slide} pathway pools an attention-weighted whole-slide summary that is
+broadcast to every spot. The backbone supplies a query-dependent representation
+for each spot; the local pathway adds nearby tissue context, and the slide
+pathway adds shared slide-level context. The three messages are combined and
+refined through residual feed-forward updates, and the model predicts expression
+for all input spots in a single forward pass. Coordinates enter \morph{} only to
+define the spatial $k$NN graph, which is built from pairwise distances and is
+independent of the coordinate frame~\cite{satorras2021egnn}.
 For fixed image features, deterministic evaluation, and consistently
 resolved $k$NN distance ties, this construction yields invariance
 to translations, rotations, and reflections in exact arithmetic.
@@ -178,15 +176,17 @@ expression-derived spatial domains?
 
 Our contributions are:
 \begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
-    \item We introduce a spatial transformer that integrates local
-    attention, global self-attention, and pooled-slide context
-    in parallel within every layer, and establish its
-    coordinate-frame invariance under stated assumptions.
+    \item We introduce \morph{}, which augments a global self-attention
+    Transformer backbone with two context pathways applied in every layer---a
+    coordinate-invariant local spatial-$k$NN pathway and a slide-pooling
+    pathway---and establish the coordinate-frame invariance of the local pathway
+    under stated assumptions.
 
     \item We evaluate predictive performance across organs,
     gene panels, and image encoders under matched comparisons,
-    including held-out-organ transfer and ablations of context
-    pathways and spatial neighborhoods.
+    including held-out-organ transfer, and show through paired-significance
+    ablations that these two added pathways, not the backbone, drive the gains,
+    with the local pathway relying on spatially defined neighborhoods.
 
     \item We assess expression-derived domain recovery and
     selected cancer-marker expression patterns to examine
