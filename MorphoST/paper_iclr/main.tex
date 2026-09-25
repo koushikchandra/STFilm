@@ -511,36 +511,40 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 }
 \end{table}
 
-\subsection{RQ3: Which components drive predictive accuracy?}
+\subsection{RQ3: Local and slide context are the levers of performance}
 \label{sec:design}
 
-We ask which context streams drive accuracy, treating global
-self-attention as the standard Transformer backbone and measuring
-what our two added pathways contribute on top of it: a
-coordinate-invariant local spatial-$k$NN pathway (\mbox{+Local}) and
-a slide-pooling pathway (\mbox{+Slide}). Figure~\ref{fig:ablation}
-reports mean PCC for the backbone alone (Vanilla, G), each added
-lever, and the full model (\mbox{+Local+Slide}) on the six-organ
-pooled setting and the SKCM and LUNG intra-cohort settings.
-The \emph{local} pathway is the dominant lever: adding it to the
-backbone raises PCC from $0.641$ to $0.693$ on SKCM and from
-$0.590$ to $0.596$ on pooled, and the full model is best in every
-setting ($0.605$ pooled, $0.696$ SKCM, $0.589$ LUNG). Slide context
-alone adds little and can even lower PCC without the local pathway
-(pooled $0.590\!\to\!0.570$), but it yields a small complementary
-gain once local context is present. Replacing the spatial $k$NN
-neighborhood with random neighbors reduces pooled PCC from $0.605$
-to $0.577$, confirming that the benefit comes from \emph{spatially}
-defined neighborhoods rather than from added attention alone. These
-results indicate that global attention is a strong backbone but not
-the source of our gains; the local pathway is, with slide pooling as
-a complement. Encoder-feature ablations are reported in
-Appendix~\ref{app:encoder}.
+Global self-attention is the standard Transformer backbone, so it is not what
+sets \morph{} apart; the levers are the two pathways we add on top of it, a
+coordinate-invariant local spatial-$k$NN pathway (\mbox{+Local}) and a
+slide-pooling pathway (\mbox{+Slide}). Figure~\ref{fig:ablation} reports mean PCC
+for the backbone alone (Vanilla, G), each added pathway, and the full model
+(\mbox{+Local+Slide}) on the six-organ pooled setting (UNI+CONCH) and the SKCM
+and LUNG intra-cohort settings (UNI, the settings with a complete factorial). To
+test each gap we pair runs by (setting, seed, fold) and apply a two-sided
+Wilcoxon signed-rank test over the resulting $n{=}27$ matched observations.
+
+Adding the two pathways lifts performance significantly over the vanilla
+backbone: the full model improves mean PCC by $+0.024$
+($p{=}3.4\times10^{-4}$), gaining on $78\%$ of matched runs, and is best in every
+setting ($0.605$ pooled, $0.696$ SKCM, $0.589$ LUNG). This gain is driven by the
+\emph{local} pathway, which on its own raises PCC by $+0.016$ ($p{=}0.02$;
+e.g., $0.641\!\to\!0.693$ on SKCM). The \emph{slide} pathway acts as a
+complementary lever rather than a standalone one: added to the backbone by
+itself it does not help ($\Delta{=}-0.010$, $p{=}0.59$; it even lowers pooled PCC
+$0.590\!\to\!0.570$), but layered on top of the local pathway it yields a small,
+consistently positive gain (positive in all three settings, $+0.007$ on
+average). Replacing the spatial $k$NN neighborhood with random neighbors reduces
+pooled PCC from $0.605$ to $0.577$, confirming that the local lever draws on
+\emph{spatially} defined neighborhoods rather than added attention alone. In
+short, global attention is a strong backbone but not the source of our gains: the
+local and slide pathways are, with local as the dominant lever and slide as its
+complement. Encoder-feature ablations are reported in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=0.82\linewidth]{figures/ablation_bars.png}
-\caption{\textbf{Context-stream ablation: global self-attention is the vanilla-Transformer backbone; \emph{local} and \emph{slide} are the added levers.} Mean PCC (mean$\pm$std over three seeds) for the backbone alone (Vanilla, G) and the backbone augmented with a local spatial-$k$NN pathway (\mbox{+Local}), a slide-pooling pathway (\mbox{+Slide}), and both (\mbox{+Local+Slide}, the full \morph{} model). POOLED is the six-organ pooled setting (UNI+CONCH, same 14-gene panel as Table~\ref{tab:pooled6}; separate ablation runs, so the full model reads $0.605$ vs.\ $0.599$ there); SKCM and LUNG are intra-cohort (UNI features, the settings with a complete factorial). The local pathway is the dominant lever, slide context adds a smaller complementary gain, and the full model is best in every setting.}
+\caption{\textbf{Context-stream ablation: global self-attention is the vanilla-Transformer backbone; \emph{local} and \emph{slide} are the added levers.}}
 \label{fig:ablation}
 \end{figure*}
 
