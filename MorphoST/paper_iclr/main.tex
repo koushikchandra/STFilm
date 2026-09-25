@@ -511,39 +511,24 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 }
 \end{table}
 
-\subsection{RQ3: Local and slide context are the levers of performance}
+\subsection{RQ3: Which components drive predictive accuracy?}
 \label{sec:design}
 
-Global self-attention is the standard Transformer backbone, so it is not what
-sets \morph{} apart; the levers are the two pathways we add on top of it, a
-coordinate-invariant local spatial-$k$NN pathway (\mbox{+Local}) and a
-slide-pooling pathway (\mbox{+Slide}). Figure~\ref{fig:ablation}a reports mean PCC
-for the backbone alone (Vanilla, G), each added pathway, and the full model
-(\mbox{+Local+Slide}) on the six-organ pooled setting (UNI+CONCH) and the SKCM
-and LUNG intra-cohort settings (UNI, the settings with a complete factorial). To
-test each gap we pair runs by (setting, seed, fold) and apply a two-sided
-Wilcoxon signed-rank test over the resulting $n{=}27$ matched observations.
+Global self-attention is the Transformer backbone; we ablate the two pathways we
+add on top of it, a coordinate-invariant local spatial-$k$NN pathway
+(\mbox{+Local}) and a slide-pooling pathway (\mbox{+Slide}), on the six-organ
+pooled setting (UNI+CONCH) and the SKCM and LUNG intra-cohort settings (UNI)
+(Figure~\ref{fig:ablation}). We pair runs by (setting, seed, fold) and test each
+gap with a two-sided Wilcoxon signed-rank test.
 
-Adding the two pathways lifts performance significantly over the vanilla
-backbone: the full model improves mean PCC by $+0.024$
-($p{=}3.4\times10^{-4}$), gaining on $78\%$ of matched runs, and is best in every
-setting ($0.605$ pooled, $0.696$ SKCM, $0.589$ LUNG). This gain is driven by the
-\emph{local} pathway, which on its own raises PCC by $+0.016$ ($p{=}0.02$;
-e.g., $0.641\!\to\!0.693$ on SKCM). The \emph{slide} pathway acts as a
-complementary lever rather than a standalone one: added to the backbone by
-itself it does not help ($\Delta{=}-0.010$, $p{=}0.59$; it even lowers pooled PCC
-$0.590\!\to\!0.570$), but layered on top of the local pathway it yields a small,
-consistently positive gain (positive in all three settings, $+0.007$ on
-average). Finally, the local lever relies on \emph{spatially} defined
-neighborhoods, not merely added attention: replacing the spatial $k$NN
-neighborhood with random neighbors of the same size significantly degrades the
-full model (Figure~\ref{fig:ablation}b; $0.605\!\to\!0.577$ pooled,
-$0.709\!\to\!0.671$ SKCM; paired $\Delta{=}+0.031$, $p{=}8.4\times10^{-5}$,
-spatial better on $90\%$ of $n{=}21$ matched runs), and random neighbors on the
-backbone alone add nothing ($0.584$ vs.\ Vanilla $0.590$ pooled). In short,
-global attention is a strong backbone but not the source of our gains: the local
-and slide pathways are, with local as the dominant lever and slide as its
-complement. Encoder-feature ablations are reported in Appendix~\ref{app:encoder}.
+The full model is best in every setting ($0.605$ pooled, $0.696$ SKCM, $0.589$
+LUNG) and beats the backbone by $+0.024$ ($p{=}3.4\times10^{-4}$, $n{=}27$). The
+gain comes from the local pathway ($+0.016$, $p{=}0.02$); slide context alone
+does not help ($-0.010$, $p{=}0.59$) but adds a small complement on top of local
+($+0.007$). The local pathway needs \emph{spatially} defined neighborhoods:
+replacing $k$NN with random neighbors of the same size costs $0.031$ PCC
+(Figure~\ref{fig:ablation}b; $p{=}8.4\times10^{-5}$, $n{=}21$). Encoder-feature
+ablations are in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
 \centering
