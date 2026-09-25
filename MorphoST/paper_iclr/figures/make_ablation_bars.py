@@ -48,13 +48,13 @@ CFGS = [("Vanilla (G)",         "#8a9096", "#6f757b", "////"),
 
 
 def main(outdir):
-    x = np.arange(len(GROUPS)); BW = 0.20
+    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.185  # SLOT>BW leaves a tiny gap between bars
     fig, ax = plt.subplots(figsize=(7.4, 3.3))
     for j, (label, col, ec, hh) in enumerate(CFGS):
         hero = "full" in label
-        xs = x + (j - 1.5) * BW
-        bars = ax.bar(xs, MEAN[label], BW, yerr=STD[label], color=col, edgecolor=ec,
-                      linewidth=0.8, hatch=hh, label=label,
+        xs = x + (j - 1.5) * SLOT
+        bars = ax.bar(xs, MEAN[label], BW, yerr=STD[label], color=col, edgecolor="none",
+                      linewidth=0, label=label,
                       error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
         for b, v in zip(bars, MEAN[label]):
             ax.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
@@ -63,7 +63,7 @@ def main(outdir):
     ax.set_xticks(x); ax.set_xticklabels(GROUPS, fontsize=10)
     ax.set_ylabel("Mean PCC", fontsize=10.5)
     ax.set_ylim(0.50, 0.76)
-    ax.legend(handles=[Patch(facecolor=c, edgecolor=e, hatch=h, label=k) for k, c, e, h in CFGS],
+    ax.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
               loc="upper center", bbox_to_anchor=(0.5, 1.14), ncol=4, frameon=False,
               fontsize=8.2, handlelength=1.2, columnspacing=1.1)
     ax.grid(axis="y", ls=":", lw=0.6, color="#D5D5D5", zorder=0); ax.set_axisbelow(True)
