@@ -87,7 +87,7 @@ def main(outdir):
     cL, xlimL = _centers(len(CFGS), len(GROUPS))
     cR, xlimR = _centers(len(NB_CFGS), len(NB_GROUPS))
     spanL, spanR = xlimL[1] - xlimL[0], xlimR[1] - xlimR[0]
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.6, 3.5),
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.6, 3.9),
                                    gridspec_kw={"width_ratios": [spanL, spanR], "wspace": 0.22})
 
     # ----- (a) context-stream ablation -----
@@ -102,9 +102,9 @@ def main(outdir):
     axL.set_ylabel("Mean PCC@50", fontsize=10.5)
     axL.set_ylim(0.50, 0.76); axL.set_xlim(*xlimL)
     axL.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
-               loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=4, frameon=False,
+               loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=4, frameon=False,
                fontsize=8.0, handlelength=1.2, columnspacing=1.0)
-    axL.set_title("(a) Context streams", fontsize=10, pad=22)
+    axL.set_title("(a) Context streams", fontsize=10, pad=30)
     _grid(axL)
 
     # ----- (b) spatial kNN vs random-k -----
@@ -119,9 +119,9 @@ def main(outdir):
     axR.set_ylabel("Mean PCC@50", fontsize=10.5)
     axR.set_ylim(0.50, 0.76); axR.set_xlim(*xlimR)
     axR.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c in NB_CFGS],
-               loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=2, frameon=False,
+               loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False,
                fontsize=8.0, handlelength=1.2, columnspacing=1.0)
-    axR.set_title("(b) Neighborhood (full model)", fontsize=10, pad=22)
+    axR.set_title("(b) Neighborhood (full model)", fontsize=10, pad=30)
     _grid(axR)
 
     out = Path(outdir) / "ablation_bars.png"
