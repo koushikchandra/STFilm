@@ -517,7 +517,7 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 Global self-attention is the standard Transformer backbone, so it is not what
 sets \morph{} apart; the levers are the two pathways we add on top of it, a
 coordinate-invariant local spatial-$k$NN pathway (\mbox{+Local}) and a
-slide-pooling pathway (\mbox{+Slide}). Figure~\ref{fig:ablation} reports mean PCC
+slide-pooling pathway (\mbox{+Slide}). Figure~\ref{fig:ablation}a reports mean PCC
 for the backbone alone (Vanilla, G), each added pathway, and the full model
 (\mbox{+Local+Slide}) on the six-organ pooled setting (UNI+CONCH) and the SKCM
 and LUNG intra-cohort settings (UNI, the settings with a complete factorial). To
@@ -534,17 +534,21 @@ complementary lever rather than a standalone one: added to the backbone by
 itself it does not help ($\Delta{=}-0.010$, $p{=}0.59$; it even lowers pooled PCC
 $0.590\!\to\!0.570$), but layered on top of the local pathway it yields a small,
 consistently positive gain (positive in all three settings, $+0.007$ on
-average). Replacing the spatial $k$NN neighborhood with random neighbors reduces
-pooled PCC from $0.605$ to $0.577$, confirming that the local lever draws on
-\emph{spatially} defined neighborhoods rather than added attention alone. In
-short, global attention is a strong backbone but not the source of our gains: the
-local and slide pathways are, with local as the dominant lever and slide as its
+average). Finally, the local lever relies on \emph{spatially} defined
+neighborhoods, not merely added attention: replacing the spatial $k$NN
+neighborhood with random neighbors of the same size significantly degrades the
+full model (Figure~\ref{fig:ablation}b; $0.605\!\to\!0.577$ pooled,
+$0.709\!\to\!0.671$ SKCM; paired $\Delta{=}+0.031$, $p{=}8.4\times10^{-5}$,
+spatial better on $90\%$ of $n{=}21$ matched runs), and random neighbors on the
+backbone alone add nothing ($0.584$ vs.\ Vanilla $0.590$ pooled). In short,
+global attention is a strong backbone but not the source of our gains: the local
+and slide pathways are, with local as the dominant lever and slide as its
 complement. Encoder-feature ablations are reported in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.82\linewidth]{figures/ablation_bars.png}
-\caption{\textbf{Context-stream ablation: global self-attention is the vanilla-Transformer backbone; \emph{local} and \emph{slide} are the added levers.}}
+\includegraphics[width=\linewidth]{figures/ablation_bars.png}
+\caption{\textbf{Context-stream ablation: global self-attention is the vanilla-Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Backbone (Vanilla, G) plus the local and/or slide pathways, across POOLED (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI). \textbf{(b)} Full model with spatial $k$NN vs.\ random-$k$ neighbors (UNI+CONCH); spatially defined neighborhoods are significantly better. Bars are mean$\pm$std over three seeds.}
 \label{fig:ablation}
 \end{figure*}
 

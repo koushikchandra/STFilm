@@ -47,29 +47,65 @@ CFGS = [("Vanilla (G)",         "#8a9096", "#6f757b", "////"),
         ("+Local+Slide (full)", CORAL,     CORAL_E,   "")]
 
 
-def main(outdir):
-    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.202  # SLOT>BW leaves a small gap between bars
-    fig, ax = plt.subplots(figsize=(7.4, 3.3))
-    for j, (label, col, ec, hh) in enumerate(CFGS):
-        hero = "full" in label
-        xs = x + (j - 1.5) * SLOT
-        bars = ax.bar(xs, MEAN[label], BW, yerr=STD[label], color=col, edgecolor="none",
-                      linewidth=0, label=label,
-                      error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
-        for b, v in zip(bars, MEAN[label]):
-            ax.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
-                    fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
-                    color=ANNOT if hero else "#666", rotation=90)
-    ax.set_xticks(x); ax.set_xticklabels(GROUPS, fontsize=10)
-    ax.set_ylabel("Mean PCC", fontsize=10.5)
-    ax.set_ylim(0.50, 0.76)
-    ax.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
-              loc="upper center", bbox_to_anchor=(0.5, 1.14), ncol=4, frameon=False,
-              fontsize=8.2, handlelength=1.2, columnspacing=1.1)
+# ---- right panel: spatial kNN vs random-k neighbors (full model, UNI+CONCH) ----
+NB_GROUPS = ["POOLED\n(UNI+CONCH)", "SKCM\n(UNI+CONCH)"]
+NB_MEAN = {"Random-$k$":  [0.577, 0.671], "Spatial $k$NN": [0.605, 0.709]}
+NB_STD  = {"Random-$k$":  [0.009, 0.004], "Spatial $k$NN": [0.006, 0.002]}
+NB_CFGS = [("Random-$k$", "#aeb3b8"), ("Spatial $k$NN", CORAL)]  # kNN = hero (coral)
+
+
+def _grid(ax):
     ax.grid(axis="y", ls=":", lw=0.6, color="#D5D5D5", zorder=0); ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
     ax.tick_params(labelsize=9)
+
+
+def main(outdir):
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(10.2, 3.4),
+                                   gridspec_kw={"width_ratios": [3.0, 1.35]})
+
+    # ----- (a) context-stream ablation -----
+    x = np.arange(len(GROUPS)); SLOT = 0.21; BW = 0.202  # SLOT>BW leaves a small gap
+    for j, (label, col, ec, hh) in enumerate(CFGS):
+        hero = "full" in label
+        xs = x + (j - 1.5) * SLOT
+        bars = axL.bar(xs, MEAN[label], BW, yerr=STD[label], color=col, edgecolor="none",
+                       linewidth=0, label=label,
+                       error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
+        for b, v in zip(bars, MEAN[label]):
+            axL.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
+                     fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
+                     color=ANNOT if hero else "#666", rotation=90)
+    axL.set_xticks(x); axL.set_xticklabels(GROUPS, fontsize=10)
+    axL.set_ylabel("Mean PCC", fontsize=10.5)
+    axL.set_ylim(0.50, 0.76)
+    axL.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
+               loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=4, frameon=False,
+               fontsize=8.0, handlelength=1.2, columnspacing=1.0)
+    axL.set_title("(a) Context streams", fontsize=10, pad=22)
+    _grid(axL)
+
+    # ----- (b) spatial kNN vs random-k -----
+    xr = np.arange(len(NB_GROUPS)); SLOTr = 0.42; BWr = 0.40
+    for j, (label, col) in enumerate(NB_CFGS):
+        hero = "kNN" in label
+        xs = xr + (j - 0.5) * SLOTr
+        bars = axR.bar(xs, NB_MEAN[label], BWr, yerr=NB_STD[label], color=col, edgecolor="none",
+                       linewidth=0, label=label,
+                       error_kw=dict(elinewidth=0.8, capsize=2, ecolor="#666"))
+        for b, v in zip(bars, NB_MEAN[label]):
+            axR.text(b.get_x() + b.get_width() / 2, v + 0.012, f"{v:.3f}", ha="center", va="bottom",
+                     fontsize=7.4 if hero else 6.6, fontweight="bold" if hero else "normal",
+                     color=ANNOT if hero else "#666", rotation=90)
+    axR.set_xticks(xr); axR.set_xticklabels(NB_GROUPS, fontsize=10)
+    axR.set_ylim(0.50, 0.76)
+    axR.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c in NB_CFGS],
+               loc="upper center", bbox_to_anchor=(0.5, 1.15), ncol=2, frameon=False,
+               fontsize=8.0, handlelength=1.2, columnspacing=1.0)
+    axR.set_title("(b) Neighborhood (full model)", fontsize=10, pad=22)
+    _grid(axR)
+
     fig.tight_layout()
     out = Path(outdir) / "ablation_bars.png"
     fig.savefig(out, dpi=300, bbox_inches="tight")
