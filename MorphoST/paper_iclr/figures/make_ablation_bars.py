@@ -17,7 +17,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Patch
 
 plt.rcParams.update({
-    "font.family": "DejaVu Sans", "font.size": 9,
+    "font.family": "DejaVu Sans", "font.size": 10,
     "axes.edgecolor": "black", "axes.linewidth": 0.9,
     "xtick.color": "black", "ytick.color": "black",
     "axes.labelcolor": "black", "text.color": "black",
@@ -59,14 +59,14 @@ def _grid(ax):
     ax.grid(axis="y", ls=":", lw=0.6, color="#D5D5D5", zorder=0); ax.set_axisbelow(True)
     for s in ("top", "right"):
         ax.spines[s].set_visible(False)
-    ax.tick_params(labelsize=9)
+    ax.tick_params(labelsize=10)
 
 
 # shared geometry so bars and group gaps are identical in both panels
-BW = 0.20        # bar width (same in both panels)
-SLOT = 0.21      # bar pitch within a group (tiny gap between bars)
-GAP_G = 0.34     # gap between groups (same in both panels)
-MARGIN = 0.30    # left/right padding inside each panel
+BW = 0.24        # bar width (same in both panels)
+SLOT = 0.26      # bar pitch within a group (small gap between bars)
+GAP_G = 0.42     # gap between groups (same in both panels)
+MARGIN = 0.24    # left/right padding inside each panel
 
 
 def _centers(nbars, ngroups):
@@ -79,9 +79,9 @@ def _centers(nbars, ngroups):
 
 def _label(ax, bars, vals, stds, hero):
     for b, v, s in zip(bars, vals, stds):
-        ax.text(b.get_x() + b.get_width() / 2, v + s + 0.010,
+        ax.text(b.get_x() + b.get_width() / 2, v + s + 0.008,
                 f"{v:.3f}", ha="center", va="bottom",
-                fontsize=9, fontweight="bold" if hero else "normal",
+                fontsize=10, fontweight="bold" if hero else "normal",
                 color="black", rotation=90)
 
 
@@ -89,8 +89,8 @@ def main(outdir):
     cL, xlimL = _centers(len(CFGS), len(GROUPS))
     cR, xlimR = _centers(len(NB_CFGS), len(NB_GROUPS))
     spanL, spanR = xlimL[1] - xlimL[0], xlimR[1] - xlimR[0]
-    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.6, 3.9),
-                                   gridspec_kw={"width_ratios": [spanL, spanR], "wspace": 0.22})
+    fig, (axL, axR) = plt.subplots(1, 2, figsize=(11.6, 3.1),
+                                   gridspec_kw={"width_ratios": [spanL, spanR], "wspace": 0.18})
 
     # ----- (a) context-stream ablation -----
     for j, (label, col, ec, hh) in enumerate(CFGS):
@@ -100,13 +100,13 @@ def main(outdir):
                        linewidth=0, label=label,
                        error_kw=dict(elinewidth=0.9, capsize=2, ecolor=ERRC))
         _label(axL, bars, MEAN[label], STD[label], hero)
-    axL.set_xticks(cL); axL.set_xticklabels(GROUPS, fontsize=9)
-    axL.set_ylabel("Mean PCC@50", fontsize=9)
-    axL.set_ylim(0.50, 0.78); axL.set_xlim(*xlimL)
+    axL.set_xticks(cL); axL.set_xticklabels(GROUPS, fontsize=10)
+    axL.set_ylabel("Mean PCC@50", fontsize=10)
+    axL.set_ylim(0.50, 0.80); axL.set_xlim(*xlimL)
     axL.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
-               loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=4, frameon=False,
-               fontsize=10, handlelength=1.2, columnspacing=1.0)
-    axL.set_title("(a) Context streams", fontsize=10, pad=26)
+               loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=4, frameon=False,
+               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4)
+    axL.set_title("(a) Context streams", fontsize=10, pad=24)
     _grid(axL)
 
     # ----- (b) spatial kNN vs random-k -----
@@ -117,13 +117,13 @@ def main(outdir):
                        linewidth=0, label=label,
                        error_kw=dict(elinewidth=0.9, capsize=2, ecolor=ERRC))
         _label(axR, bars, NB_MEAN[label], NB_STD[label], hero)
-    axR.set_xticks(cR); axR.set_xticklabels(NB_GROUPS, fontsize=9)
-    axR.set_ylabel("Mean PCC@50", fontsize=9)
-    axR.set_ylim(0.50, 0.78); axR.set_xlim(*xlimR)
+    axR.set_xticks(cR); axR.set_xticklabels(NB_GROUPS, fontsize=10)
+    axR.set_ylabel("Mean PCC@50", fontsize=10)
+    axR.set_ylim(0.50, 0.80); axR.set_xlim(*xlimR)
     axR.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c in NB_CFGS],
-               loc="lower center", bbox_to_anchor=(0.5, 1.02), ncol=2, frameon=False,
-               fontsize=10, handlelength=1.2, columnspacing=1.0)
-    axR.set_title("(b) Neighborhood, full model (UNI+CONCH)", fontsize=10, pad=26)
+               loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2, frameon=False,
+               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4)
+    axR.set_title("(b) Neighborhood (UNI+CONCH)", fontsize=10, pad=24)
     _grid(axR)
 
     out = Path(outdir) / "ablation_bars.png"
