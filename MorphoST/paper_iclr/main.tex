@@ -483,7 +483,7 @@ Encoder-feature ablations are in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=\linewidth]{figures/ablation_bars.png}
+\includegraphics[width=0.80\linewidth]{figures/ablation_bars.png}
 \caption{\textbf{Context-stream ablation: self-attention is the vanilla Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Context Streams. \textbf{(b)} Neighborhood.}
 \label{fig:ablation}
 \end{figure*}
@@ -529,8 +529,7 @@ So far, we have shown that \morph{} predicts gene expression accurately. We next
 \centering
 \includegraphics[width=0.72\linewidth]{figures/spatial_recovery.png}
 \caption{\textbf{Spatial-domain recovery across all methods.} Mean ARI (left) and NMI (right)
-(KMeans, $k{=}6$; predicted vs.\ measured domains) over $n{=}58$ held-out six-organ slides, averaged
-across three seeds. \morph{} is highest on both; robustness to $k$ is in Appendix~\ref{app:krobust}.}
+(KMeans, $k{=}6$; predicted vs.\ measured domains); robustness to $k$ is in Appendix~\ref{app:krobust}.}
 \label{fig:spatial_scatter}
 \end{figure}
 
@@ -562,24 +561,20 @@ Together, these results show that \morph{} can recover both the expression and s
 
 \begin{figure}[!ht]
 \centering
-\includegraphics[width=1.00\linewidth]{figures/casestudy_markers.png}
+\includegraphics[width=0.80\linewidth]{figures/casestudy_markers.png}
 \caption{\textbf{Spatial recovery of cancer markers.} Measured vs.\ \morph{}-predicted expression on
 held-out melanoma (top) and breast (bottom) slides (dark = low, bright = high; per-panel $r$ shown).}
 \label{fig:casestudy}
 \end{figure}
 
 
-
-
-
-
-\textbf{Limitations.} Headline results predict the 50-gene panel (we also report 10/100/200-gene
-panels) from frozen encoders, so they may not extend to transcriptome scale or end-to-end encoding.
-Transfer is shown across the six evaluated HEST-1k cohorts and a fixed panel; we do not claim
-generalization to arbitrary tissues or to platform/institution shift, and small cohorts (LUNG, PAAD,
-SKCM: 2--3 slides) carry higher per-cohort uncertainty. Coordinate invariance holds only for the
-spatial pathway with fixed features (rotating the image changes its embedding); domain-recovery
-agreement is modest; and pooled folds are slide- but not verifiably patient-disjoint.
+% \textbf{Limitations.} Headline results predict the 50-gene panel (we also report 10/100/200-gene
+% panels) from frozen encoders, so they may not extend to transcriptome scale or end-to-end encoding.
+% Transfer is shown across the six evaluated HEST-1k cohorts and a fixed panel; we do not claim
+% generalization to arbitrary tissues or to platform/institution shift, and small cohorts (LUNG, PAAD,
+% SKCM: 2--3 slides) carry higher per-cohort uncertainty. Coordinate invariance holds only for the
+% spatial pathway with fixed features (rotating the image changes its embedding); domain-recovery
+% agreement is modest; and pooled folds are slide- but not verifiably patient-disjoint.
 
 \section{Related Work}
 \noindent\textbf{H\&E-to-ST prediction.}\quad Existing methods include patch-level regression
