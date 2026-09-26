@@ -570,6 +570,14 @@ across three seeds. \morph{} is highest on both; robustness to $k$ is in Appendi
 \label{fig:spatial_scatter}
 \end{figure*}
 
+\begin{figure*}[t]
+\centering
+\includegraphics[width=1.00\linewidth]{figures/qualitative_skcm.png}
+\caption{\textbf{Qualitative spatial expression maps} for SKCM slide TENX117 (two marker genes,
+rows); per-gene PCC shown, \morph{} in orange. Identical frozen UNI+CONCH features for all methods.}
+\label{fig:qualitative}
+\end{figure*}
+
 \subsection{Case Study: Recovering Cancer-Marker Genes}
 \label{sec:casestudy}
 
@@ -586,6 +594,14 @@ Together, these results show that \morph{} can recover both the expression and s
 \caption{\textbf{Case study: per-gene recovery of canonical cancer markers.} Per-gene Pearson
 (200-gene panel, mean over folds and three seeds); darker is higher.}
 \label{tab:casestudy}
+\end{figure}
+
+\begin{figure}[!ht]
+\centering
+\includegraphics[width=1.00\linewidth]{figures/casestudy_markers.png}
+\caption{\textbf{Spatial recovery of cancer markers.} Measured vs.\ \morph{}-predicted expression on
+held-out melanoma (top) and breast (bottom) slides (dark = low, bright = high; per-panel $r$ shown).}
+\label{fig:casestudy}
 \end{figure}
 
 
@@ -971,22 +987,6 @@ on the 200-gene panel (melanoma/SKCM, breast/IDC, kidney/CCRCC, prostate/PRAD), 
 three seeds; darker is higher. STEM values for CCRCC and PRAD are computed from the folds available at
 submission time.}
 \label{fig:markers_supp}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.00\linewidth]{figures/casestudy_markers.png}
-\caption{\textbf{Spatial recovery of cancer markers.} Measured vs.\ \morph{}-predicted expression on
-held-out melanoma (top) and breast (bottom) slides (dark = low, bright = high; per-panel $r$ shown).}
-\label{fig:casestudy}
-\end{figure}
-
-\begin{figure}[H]
-\centering
-\includegraphics[width=1.00\linewidth]{figures/qualitative_skcm.png}
-\caption{\textbf{Qualitative spatial expression maps} for SKCM slide TENX117 (two marker genes,
-rows); per-gene PCC shown, \morph{} in orange. Identical frozen UNI+CONCH features for all methods.}
-\label{fig:qualitative}
 \end{figure}
 
 \section{Domain-Recovery Robustness to Cluster Count}
