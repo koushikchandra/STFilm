@@ -541,13 +541,7 @@ Spot permutation & $0.25154{\pm}0.01029$ & $-0.000035$ & $0.41022{\pm}0.00730$ &
 \end{tabular}}
 \end{table}
 
-With image features fixed, we translate spot coordinates by $(37.2,-91.4)$, rotate them by
-$0.731$ radians, reflect them across the vertical axis, or permute spot order. We test the CCRCC
-(six folds) and PRAD (two folds) HVG models and the six-organ pooled model (five folds), each over
-three seeds (Table~\ref{tab:invariance}). Mean PCC changes by at most $0.000166$; mean MSE and MAE
-change by at most $0.000128$ and $0.000043$, respectively. Reflection leaves predictions exactly
-unchanged. Translation, rotation, and permutation can alter $k$NN selection when distances tie or
-are nearly equal, so individual predictions may change despite stable aggregate accuracy.
+In the earlier section, we showed that the added local and slide pathways improve prediction; we next test whether the model is stable to changes in the coordinate frame. With image features fixed, we translate spot coordinates by $(37.2,-91.4)$, rotate them by $0.731$ radians, reflect them across the vertical axis, and permute spot order. Across CCRCC, PRAD, and the pooled six-organ setting, these transformations cause only negligible changes in PCC(Table~\ref{tab:invariance}). Reflection leaves predictions unchanged, while the tiny differences under translation, rotation, and permutation arise from numerical effects in $k$NN selection when distances are tied or nearly tied.
 
 
 
