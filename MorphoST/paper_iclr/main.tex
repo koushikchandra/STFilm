@@ -169,8 +169,9 @@ Our contributions are:
 \section{Method}
 
 MIST maps frozen spot-level histology features and measured spot coordinates to a spatial gene
-expression map. Its method has three stages: coordinate-invariant neighborhood construction, a shared
-multi-context layer, and supervised prediction with a correlation-aware objective.
+expression map. It has three stages: coordinate-invariant neighborhood construction, a layer that
+augments a global self-attention backbone with local and slide context, and supervised prediction
+with a correlation-aware objective.
 
 \subsection{Problem Setup}
 For a slide with $N$ spots, let
@@ -198,21 +199,29 @@ features. The formal guarantee is given in Proposition~\ref{prop:coordinate_inva
 from invariance to physically rotating or flipping the H\&E image, which would change the frozen
 encoder's embeddings $\mathbf{F}$ and is outside this guarantee.
 
-\subsection{Multi-Context MIST Layer}
-\insightbox{Core Idea.}{At every layer, each spot receives three messages in parallel: one from its
-nearby spots, one from all spots, and one from a pooled summary of the slide. The model adds these
-messages to the current spot representation and refines the result with a feed-forward network.
-Only the nearby-spot message uses coordinates, and only to select the local neighborhood.}
+\subsection{MIST Layer: Global-Attention Backbone with Local and Slide Context}
+\insightbox{Core Idea.}{Every layer starts from a global self-attention backbone over all spots and
+adds two context pathways: one from each spot's nearby spots and one from a pooled summary of the
+slide. The model sums these messages into the spot representation and refines the result with a
+feed-forward network. Only the nearby-spot pathway uses coordinates, and only to select the local
+neighborhood.}
 
 The input features are projected to hidden width $d$,
 $\mathbf{X}^{(0)}=\mathbf{F}W_{\mathrm{in}}+\mathbf{b}_{\mathrm{in}}$. The same spatial neighbor graph
 is reused in all $L$ transformer layers. At layer $\ell$, a pre-normalized
-representation $\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)})$ is passed through three context
+representation $\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)})$ is passed through the
+global-attention backbone and the two added pathways.
+
+\subsubsection{Global self-attention (backbone)}
+Standard multi-head self-attention \cite{vaswani2017attention} lets every spot attend to all $N$
+spots. This backbone captures long-range dependencies but treats spots interchangeably: it introduces
+no direct coordinate-dependent bias and is permutation-equivariant with respect to spot order. In
+later layers, its inputs may nevertheless carry spatial information propagated by the two added
 pathways.
 
-\subsubsection{Local spatial-neighborhood attention}
-Each spot attends to its $k$ neighbors using content-based attention. For head $h$, the attention
-weights are
+\subsubsection{Local spatial-neighborhood attention (added)}
+The first added pathway lets each spot attend to its $k$ neighbors using content-based attention. For
+head $h$, the attention weights are
 \begin{equation}
 \alpha_{ij}^{h}=\operatorname{softmax}_{j\in\mathcal{N}(i)}\!\left(
 \frac{(\mathbf{q}_i^{h})^\top\mathbf{k}_j^{h}}{\sqrt{d_h}}\right),
@@ -221,16 +230,8 @@ where $d_h=d/H$ for $H$ heads. The local output is the concatenation of the weig
 followed by a learned output projection. Thus, coordinates determine the local neighborhood, while
 the attention weights depend on the spot representations.
 
-\subsubsection{Global self-attention}
-In parallel, standard multi-head self-attention
-\cite{vaswani2017attention} allows every spot to attend to all $N$ spots. This pathway captures
-long-range dependencies that may not be connected in the local spatial graph. It introduces no
-direct coordinate-dependent bias and is permutation-equivariant with respect to spot order; in later
-layers, its inputs may nevertheless carry spatial information propagated by the local and
-slide-context pathways.
-
-\subsubsection{Attention-pooled slide context}
-A learned scalar scoring function produces
+\subsubsection{Attention-pooled slide context (added)}
+The second added pathway summarizes the slide. A learned scalar scoring function produces
 $a_i=\operatorname{softmax}_{i}(s(\mathbf{h}_i))$. The slide representation is
 \begin{equation}
 \mathbf{g}=W_g\left(\sum_{i=1}^{N}a_i\mathbf{h}_i\right)+\mathbf{b}_g,
@@ -238,10 +239,10 @@ $a_i=\operatorname{softmax}_{i}(s(\mathbf{h}_i))$. The slide representation is
 and is broadcast to every spot. Unlike a learned class token, this representation is computed
 directly from the slide's current spot representations and summarizes the slide-level context.
 
-For the complete model, the local ($\mathbf{L}$), global ($\mathbf{G}$), and broadcast slide
-($\mathbf{S}$) representations are summed and added to the residual stream. A second
-pre-normalization residual update applies a two-layer feed-forward network with expansion factor four
-and GELU activation:
+For the complete model, the backbone ($\mathbf{G}$) and the two added pathways, local
+($\mathbf{L}$) and broadcast slide ($\mathbf{S}$), are summed and added to the residual stream. A
+second pre-normalization residual update applies a two-layer feed-forward network with expansion
+factor four and GELU activation:
 \begin{align}
 \widetilde{\mathbf{X}}^{(\ell)}
   &=\mathbf{X}^{(\ell)}+\mathbf{L}^{(\ell)}+\mathbf{G}^{(\ell)}+\mathbf{S}^{(\ell)},\\
@@ -287,9 +288,10 @@ spots, $\mathcal{V}$ is the set of genes with nonzero target variance on that sl
 $\lambda=0.5$. MSE constrains the scale of the predictions, while the correlation term encourages
 the model to reproduce spot-to-spot expression patterns.
 
-The complete model uses all three context pathways. Their individual contributions are evaluated in
-the factorial ablation study reported in Section~\ref{sec:design}, which compares local (L), global
-(G), and slide-level (S) context configurations.
+The complete model uses the global backbone together with the local and slide pathways. The
+contribution of each added pathway is evaluated in the factorial ablation study reported in
+Section~\ref{sec:design}, which compares the global (G) backbone with the local (L) and slide-level
+(S) pathways added on top.
 
 \section{Experimental Setup}
 \label{sec:setup}
