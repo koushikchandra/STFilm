@@ -78,11 +78,11 @@ prediction of spatial gene expression without matched ST measurements
 A standard Transformer over spots applies global self-attention, letting every
 spot attend to all others, but it treats spots interchangeably and ignores where
 each one sits in the tissue. Existing H\&E-to-ST methods approach prediction
-through different mechanisms---ST-Net uses patch-level
+through different mechanisms. ST-Net uses patch-level
 regression~\cite{he2020stnet}, Hist2ST combines transformer and graph-based
 modeling~\cite{zeng2022hist2st}, BLEEP uses cross-modal
 retrieval~\cite{xie2023bleep}, and STEM uses conditional
-diffusion~\cite{zhu2025diffusion}---but a spot's molecular state depends on
+diffusion~\cite{zhu2025diffusion}. Yet a spot's molecular state depends on
 tissue context at multiple spatial scales: its immediate spatial neighborhood and
 the whole-slide state, neither of which a plain global-attention backbone models
 explicitly. We therefore ask:
@@ -155,15 +155,15 @@ expression-derived spatial domains?
 Our contributions are:
 \begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
     \item We introduce \morph{}, which augments a global self-attention
-    Transformer backbone with two context pathways applied in every layer---a
-    coordinate-invariant local spatial-$k$NN pathway and a slide-pooling
-    pathway---and establish the coordinate-frame invariance of the local pathway
+    Transformer backbone with two context pathways applied in every layer: a
+    coordinate-invariant local spatial-$k$NN pathway and a slide-pooling pathway.
+    We establish the coordinate-frame invariance of the local pathway
     under stated assumptions.
 
     \item We evaluate predictive performance across organs,
     gene panels, and image encoders under matched comparisons,
-    including held-out-organ transfer, and show through paired-significance
-    ablations that these two added pathways, not the backbone, drive the gains,
+    including held-out-organ transfer, and show through paired significance
+    tests that these two added pathways, not the backbone, drive the gains,
     with the local pathway relying on spatially defined neighborhoods.
 
     \item We assess expression-derived domain recovery and
