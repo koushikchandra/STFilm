@@ -604,14 +604,16 @@ interactions from relative quantities~\cite{satorras2021egnn}. \morph{} uses pai
 distances, which are invariant to these frame changes for fixed histology features.
 
 \section{Conclusion and Future Work}
-\morph{} is a coordinate-invariant spatial transformer that predicts gene expression from histology
-by combining local $k$NN attention, self-attention, and slide-level pooling in a single pass,
-using pairwise distances so the spatial pathway is invariant to rigid coordinate transforms. Under
-matched HEST-1k evaluation it gives the best mean intra-cohort correlation and shows modest but
-consistent gains on unseen organs, though the pooled-to-LOOO gap shows anatomical transfer is still
-the main open challenge for all methods. Natural next steps are conditioning on slide-level metadata
-(e.g., organ or platform via FiLM) to close this gap, scaling toward transcriptome-wide targets,
-end-to-end image encoding, and adding calibrated generative uncertainty.
+
+We introduced \morph{}, which augments a self-attention backbone with
+local spatial-neighborhood attention and slide-level context for gene
+expression prediction from histology. Across six HEST-1k organ cohorts,
+\morph{} improves predictive performance, while ablations show that the gains
+come from the added local and slide pathways and from using spatially defined
+neighbors. The model also improves held-out-organ transfer and better preserves
+expression-derived spatial structure. Generalization to unseen organs remains challenging. Future work will explore
+slide-level metadata, transcriptome-wide prediction, end-to-end image encoding,
+and predictive uncertainty to improve robustness and generalization.
 
 \subsection*{Reproducibility statement}
 All experiments use the public HEST-1k dataset~\cite{jaume2024hest}. Preprocessing, gene-panel
