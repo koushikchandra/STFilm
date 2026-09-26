@@ -365,7 +365,7 @@ details are provided in Appendix~\ref{app:extended_setup}.
 
 We first ask whether \morph{} consistently predicts gene expression across diverse organs. For a fair comparison, all methods use frozen UNI+CONCH features with matched gene panels and data splits.
 
-We begin with \emph{within-organ evaluation}, where each model is trained and tested within the same organ. Across the 50-gene HVG, DEG, and HMHVG panels, \morph{} achieves mean PCCs of $0.496$, $0.615$, and $0.650$, respectively, compared with BLEEP's $0.444$, $0.559$, and $0.587$ (Table~\ref{tab:panel_strategy}). Across HVG panel sizes, \morph{} reaches PCC@10/50/100 of $0.600/0.496/0.559$, leading all six cohorts at PCC@50 with an $11.6\%$ cohort-averaged gain over BLEEP (Table~\ref{tab:main}). It also achieves the lowest average MSE and MAE across all evaluated panel strategies and sizes.
+We begin with \emph{within-organ evaluation}, where each model is trained and tested within the same organ. Across the 50-gene HVG, DEG, and HMHVG panels, \morph{} achieves mean PCCs of $0.496$, $0.615$, and $0.650$, respectively, compared with BLEEP's $0.444$, $0.559$, and $0.587$ (Table~\ref{tab:panel_strategy}). Across HVG panel sizes, \morph{} reaches PCC@10/50/100 of $0.600/0.496/0.559$, leading all six cohorts at PCC@50 with an $11.6\%$ cohort-averaged gain over BLEEP; the 10- and 100-gene panel results are in Appendix~\ref{app:panelsize} (Table~\ref{tab:main}). It also achieves the lowest average MSE and MAE across all evaluated panel strategies and sizes.
 
 The improvement is consistent across runs. Treating each cohort--seed run as the statistical unit ($n{=}18$), \morph{} improves PCC@50 over BLEEP by $0.051$ (95\% bootstrap CI $[0.041,0.062]$; Wilcoxon $p=7.6\times10^{-6}$). At the gene level, \morph{} also achieves higher PCC than BLEEP for $87\%$ of the 300 evaluated genes; we report this descriptively because genes within a slide are correlated. Statistical details are provided in Appendix~\ref{app:significance}.
 
@@ -410,36 +410,7 @@ Panel & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & 
 }
 \end{table*}
 
-\begin{table*}[t]
-\centering
 \setcounter{table}{1}
-\caption{\textbf{Performance across HVG panel sizes (10 and 100 genes).} Dataset PCC is mean $\pm$ SD over three seeds; final columns are six-cohort mean PCC, MSE, and MAE. The 50-gene HVG results are in Table~\ref{tab:panel_strategy}.}
-\label{tab:main}
-\label{tab:main_g10}
-\label{tab:main_g100}
-\setlength{\tabcolsep}{3pt}
-\renewcommand{\arraystretch}{1.0}
-\resizebox{1.00\linewidth}{!}{%
-\begin{tabular}{llrrrrrrrrr}
-\toprule
-Panel size & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & MSE Avg. $\downarrow$ & MAE Avg. $\downarrow$ \\
-\midrule
-\multirow{5}{*}{\textbf{PCC@10}} & ST-Net & $0.666{\pm}0.01$ & $0.231{\pm}0.01$ & $0.702{\pm}0.01$ & $0.511{\pm}0.04$ & $0.442{\pm}0.03$ & $0.728{\pm}0.00$ & $0.547$ & $6.087$ & $1.908$ \\
- & Hist2ST & $0.636{\pm}0.01$ & $0.273{\pm}0.02$ & $0.519{\pm}0.02$ & $0.377{\pm}0.07$ & $0.459{\pm}0.02$ & $0.471{\pm}0.04$ & $0.456$ & $3.297$ & $1.374$ \\
- & BLEEP & $0.635{\pm}0.02$ & $0.231{\pm}0.02$ & $0.735{\pm}0.00$ & \best{$0.536{\pm}0.03$} & $0.434{\pm}0.03$ & $0.697{\pm}0.01$ & $0.545$ & $2.859$ & $1.243$ \\
- & STEM & $0.591{\pm}0.02$ & $0.170{\pm}0.00$ & $0.616{\pm}0.01$ & $0.393{\pm}0.04$ & $0.325{\pm}0.03$ & $0.598{\pm}0.01$ & $0.449$ & $3.181$ & $1.310$ \\
- & \morph{} (ours) & \best{$0.708{\pm}0.00$} & \best{$0.322{\pm}0.01$} & \best{$0.759{\pm}0.00$} & $0.519{\pm}0.05$ & \best{$0.524{\pm}0.02$} & \best{$0.769{\pm}0.01$} & \best{$0.600$} & \best{$2.620$} & \best{$1.211$} \\
-\midrule
-\multirow{5}{*}{\textbf{PCC@100}} & ST-Net & $0.611{\pm}0.01$ & $0.221{\pm}0.01$ & $0.595{\pm}0.00$ & $0.355{\pm}0.04$ & $0.327{\pm}0.01$ & $0.696{\pm}0.01$ & $0.468$ & $3.320$ & $1.354$ \\
- & Hist2ST & $0.473{\pm}0.07$ & $0.274{\pm}0.03$ & $0.434{\pm}0.03$ & $0.222{\pm}0.04$ & $0.341{\pm}0.03$ & $0.446{\pm}0.12$ & $0.365$ & $1.843$ & $1.011$ \\
- & BLEEP & $0.632{\pm}0.01$ & $0.247{\pm}0.02$ & $0.659{\pm}0.01$ & $0.399{\pm}0.04$ & $0.377{\pm}0.02$ & $0.696{\pm}0.01$ & $0.502$ & $1.558$ & $0.915$ \\
- & STEM & $0.565{\pm}0.01$ & $0.192{\pm}0.00$$^\dag$ & $0.498{\pm}0.03$ & $0.236{\pm}0.02$ & $0.240{\pm}0.03$ & $0.602{\pm}0.02$ & $0.389$ & $1.899$ & $1.001$ \\
- & \morph{} (ours) & \best{$0.682{\pm}0.01$} & \best{$0.328{\pm}0.02$} & \best{$0.688{\pm}0.00$} & \best{$0.435{\pm}0.03$} & \best{$0.450{\pm}0.00$} & \best{$0.771{\pm}0.01$} & \best{$0.559$} & \best{$1.458$} & \best{$0.894$} \\
-\bottomrule
-\end{tabular}%
-}
-\end{table*}
-\setcounter{table}{2}
 
 \FloatBarrier
 
@@ -908,6 +879,41 @@ Spatial ARI & \morph{} vs. BLEEP & $n=58$ slides & \morph{} wins 60\%; $p=0.03$ 
 Spatial NMI & \morph{} vs. BLEEP & $n=58$ slides & \morph{} wins 84\%; $p=1.5\times10^{-8}$ \\
 \bottomrule
 \end{tabular}
+\end{table}
+
+\section{Panel-Size Results (10 and 100 genes)}
+\label{app:panelsize}
+Table~\ref{tab:main} reports intra-cohort performance on the 10- and 100-gene HVG panels,
+complementing the 50-gene results in Table~\ref{tab:panel_strategy}. \morph{} attains the highest
+six-cohort mean PCC at both sizes (PCC@10 $0.600$, PCC@100 $0.559$) with the lowest average MSE and MAE.
+
+\begin{table}[H]
+\centering
+\caption{\textbf{Performance across HVG panel sizes (10 and 100 genes).} Dataset PCC is mean $\pm$ SD over three seeds; final columns are six-cohort mean PCC, MSE, and MAE. The 50-gene HVG results are in Table~\ref{tab:panel_strategy}.}
+\label{tab:main}
+\label{tab:main_g10}
+\label{tab:main_g100}
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.0}
+\resizebox{1.00\linewidth}{!}{%
+\begin{tabular}{llrrrrrrrrr}
+\toprule
+Panel size & Model & IDC & CCRCC & LUNG & PAAD & PRAD & SKCM & PCC Avg. $\uparrow$ & MSE Avg. $\downarrow$ & MAE Avg. $\downarrow$ \\
+\midrule
+\multirow{5}{*}{\textbf{PCC@10}} & ST-Net & $0.666{\pm}0.01$ & $0.231{\pm}0.01$ & $0.702{\pm}0.01$ & $0.511{\pm}0.04$ & $0.442{\pm}0.03$ & $0.728{\pm}0.00$ & $0.547$ & $6.087$ & $1.908$ \\
+ & Hist2ST & $0.636{\pm}0.01$ & $0.273{\pm}0.02$ & $0.519{\pm}0.02$ & $0.377{\pm}0.07$ & $0.459{\pm}0.02$ & $0.471{\pm}0.04$ & $0.456$ & $3.297$ & $1.374$ \\
+ & BLEEP & $0.635{\pm}0.02$ & $0.231{\pm}0.02$ & $0.735{\pm}0.00$ & \best{$0.536{\pm}0.03$} & $0.434{\pm}0.03$ & $0.697{\pm}0.01$ & $0.545$ & $2.859$ & $1.243$ \\
+ & STEM & $0.591{\pm}0.02$ & $0.170{\pm}0.00$ & $0.616{\pm}0.01$ & $0.393{\pm}0.04$ & $0.325{\pm}0.03$ & $0.598{\pm}0.01$ & $0.449$ & $3.181$ & $1.310$ \\
+ & \morph{} (ours) & \best{$0.708{\pm}0.00$} & \best{$0.322{\pm}0.01$} & \best{$0.759{\pm}0.00$} & $0.519{\pm}0.05$ & \best{$0.524{\pm}0.02$} & \best{$0.769{\pm}0.01$} & \best{$0.600$} & \best{$2.620$} & \best{$1.211$} \\
+\midrule
+\multirow{5}{*}{\textbf{PCC@100}} & ST-Net & $0.611{\pm}0.01$ & $0.221{\pm}0.01$ & $0.595{\pm}0.00$ & $0.355{\pm}0.04$ & $0.327{\pm}0.01$ & $0.696{\pm}0.01$ & $0.468$ & $3.320$ & $1.354$ \\
+ & Hist2ST & $0.473{\pm}0.07$ & $0.274{\pm}0.03$ & $0.434{\pm}0.03$ & $0.222{\pm}0.04$ & $0.341{\pm}0.03$ & $0.446{\pm}0.12$ & $0.365$ & $1.843$ & $1.011$ \\
+ & BLEEP & $0.632{\pm}0.01$ & $0.247{\pm}0.02$ & $0.659{\pm}0.01$ & $0.399{\pm}0.04$ & $0.377{\pm}0.02$ & $0.696{\pm}0.01$ & $0.502$ & $1.558$ & $0.915$ \\
+ & STEM & $0.565{\pm}0.01$ & $0.192{\pm}0.00$$^\dag$ & $0.498{\pm}0.03$ & $0.236{\pm}0.02$ & $0.240{\pm}0.03$ & $0.602{\pm}0.02$ & $0.389$ & $1.899$ & $1.001$ \\
+ & \morph{} (ours) & \best{$0.682{\pm}0.01$} & \best{$0.328{\pm}0.02$} & \best{$0.688{\pm}0.00$} & \best{$0.435{\pm}0.03$} & \best{$0.450{\pm}0.00$} & \best{$0.771{\pm}0.01$} & \best{$0.559$} & \best{$1.458$} & \best{$0.894$} \\
+\bottomrule
+\end{tabular}%
+}
 \end{table}
 
 \section{Encoder Ablation}
