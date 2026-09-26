@@ -495,28 +495,19 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 \subsection{RQ3: How local, slide, and spatial-neighbor context affect performance}
 \label{sec:design}
 
-A plain self-attention Transformer treats all spots interchangeably and
-ignores where each spot sits in the tissue. Our premise is that a spot's
-expression depends on tissue context at two scales this backbone does not model:
-its immediate spatial neighborhood and the whole-slide state. We therefore add
-two pathways on top of the vanilla backbone, a coordinate-invariant local
-spatial-$k$NN pathway (\mbox{+Local}) and a slide-pooling pathway
-(\mbox{+Slide}), and measure how much each contributes. We ablate on the pooled
-(UNI+CONCH) and SKCM/LUNG intra-cohort (UNI) settings (Figure~\ref{fig:ablation}),
+Since self-attention treats all spots interchangeably, we add two pathways on top
+of this backbone, a coordinate-invariant local spatial-$k$NN pathway
+(\mbox{+Local}) and a slide-pooling pathway (\mbox{+Slide}), and measure each
+contribution on the pooled (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI) settings,
 pairing runs by (setting, seed, fold) and testing each gap with a two-sided
-Wilcoxon signed-rank test.
-
-Adding local context improves over the vanilla backbone ($+0.016$, $p{=}0.02$),
-and adding both pathways improves further and is best in every setting ($0.605$
-pooled, $0.696$ SKCM, $0.589$ LUNG; $+0.024$ over the backbone,
-$p{=}3.4\times10^{-4}$, $n{=}27$). The two pathways are complementary rather than
-redundant: slide context does not help on its own ($-0.010$, $p{=}0.59$) but
-adds a further $+0.007$ once layered on local context, and performance is
-strongest when both are added. The local pathway draws on \emph{spatially}
-defined neighbors, not merely extra attention: replacing $k$NN with random
-neighbors of the same size costs $0.031$ PCC (Figure~\ref{fig:ablation}b;
-$p{=}8.4\times10^{-5}$, $n{=}21$). Thus self-attention is a capable backbone,
-but the gains come from adding local and slide context on top of it.
+Wilcoxon signed-rank test (Figure~\ref{fig:ablation}). Local context alone
+improves over the backbone ($+0.016$, $p{=}0.02$), and adding both pathways is
+best in every setting ($0.605$ pooled, $0.696$ SKCM, $0.589$ LUNG; $+0.024$,
+$p{=}3.4\times10^{-4}$, $n{=}27$); the two are complementary, as slide context
+does not help alone ($-0.010$, $p{=}0.59$) but adds $+0.007$ on top of local
+context. The local pathway relies on \emph{spatially} defined neighbors, not
+merely extra attention: replacing $k$NN with random neighbors of the same size
+costs $0.031$ PCC (Figure~\ref{fig:ablation}b; $p{=}8.4\times10^{-5}$, $n{=}21$).
 Encoder-feature ablations are in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
