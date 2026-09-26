@@ -545,7 +545,7 @@ rows); per-gene PCC shown, \morph{} in orange. }
 \subsection{Case Study: Recovering Cancer-Marker Genes}
 \label{sec:casestudy}
 
-To further test its biological relevance, we ask whether \morph{} can recover canonical cancer-marker genes. We focus on established markers for melanoma (SKCM) and breast cancer (IDC). Because several markers are outside the default panel, we evaluate them using the 200-gene panel and measure the Pearson correlation between predicted and measured expression for each gene (Figure~\ref{tab:casestudy}).
+To further test its biological relevance, we ask whether \morph{} can recover canonical cancer-marker genes. We focus on established markers for melanoma (SKCM)~\cite{ohsie2008melanoma} and breast cancer (IDC), the latter including the clinically used HER2, ER, and PR receptor markers~\cite{wolff2018her2,allison2020erpr}. Because several markers are outside the default panel, we evaluate them using the 200-gene panel and measure the Pearson correlation between predicted and measured expression for each gene (Figure~\ref{tab:casestudy}).
 
 \morph{} achieves high correlation for melanoma markers (mean $0.895$; MLANA $0.949$) and good correlation for breast-cancer markers (mean $0.717$; HER2 $0.829$). It obtains the highest average correlation for both cancers, with the top score for all melanoma markers and five of seven breast-cancer markers. Moreover, its predicted maps closely match the measured tumor layout (Figure~\ref{fig:casestudy}, $r\ge0.91$).
 
@@ -585,13 +585,17 @@ agreement is modest; and pooled folds are slide- but not verifiably patient-disj
 \noindent\textbf{H\&E-to-ST prediction.}\quad Existing methods include patch-level regression
 (ST-Net~\cite{he2020stnet}), spatial graph models (HisToGene~\cite{pang2021histogene};
 Hist2ST~\cite{zeng2022hist2st}), and cross-modal retrieval (BLEEP~\cite{xie2023bleep}). STEM~\cite{zhu2025diffusion} instead models expression
-conditionally with diffusion. Because published results use different features, panels, and splits,
-we compare these model families under a matched protocol; \morph{} remains a deterministic point
+conditionally with diffusion. More recent methods add exemplar guidance (EGN~\cite{yang2023egn}),
+multi-resolution features (TRIPLEX~\cite{chung2024triplex}), many-to-one regression
+(M2OST~\cite{wang2025m2ost}), hyperbolic hierarchies (HyperST~\cite{zhang2026hyperst}),
+multi-level discrimination (Gene-DML~\cite{song2026genedml}), and expressive attention over spots
+(FEAST~\cite{jeong2026feast}). Because published results use different features, panels, and splits,
+we compare representative model families under a matched protocol; \morph{} remains a deterministic point
 predictor rather than a distributional model.
 
 \noindent\textbf{Context modeling.}\quad Spatial predictors differ in how they aggregate context:
 some use only local patches, whereas others add neighboring-spot graphs, nonlocal image information,
-or multi-resolution features. \morph{} combines content-based attention over spatial-$k$NN neighbors,
+or multi-resolution features~\cite{chung2024triplex}. \morph{} combines content-based attention over spatial-$k$NN neighbors,
 standard self-attention over all spots, and an attention-pooled tissue summary in every layer.
 
 \noindent\textbf{Pathology foundation models.}\quad Recent pathology encoders provide transferable
