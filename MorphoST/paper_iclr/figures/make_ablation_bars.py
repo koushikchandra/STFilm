@@ -107,7 +107,7 @@ def main(outdir):
                loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=4, frameon=False,
                fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4,
                labelcolor="black")
-    axL.set_title("(a) Context streams", fontsize=10, pad=24)
+    axL.set_title("(a) Context streams", fontsize=10, pad=34)
     _grid(axL)
 
     # ----- (b) spatial kNN vs random-k -----
@@ -125,7 +125,7 @@ def main(outdir):
                loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2, frameon=False,
                fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4,
                labelcolor="black")
-    axR.set_title("(b) Neighborhood (UNI+CONCH)", fontsize=10, pad=24)
+    axR.set_title("(b) Neighborhood (UNI+CONCH)", fontsize=10, pad=34)
     _grid(axR)
 
     out = Path(outdir) / "ablation_bars.png"
