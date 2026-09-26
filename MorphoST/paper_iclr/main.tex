@@ -256,7 +256,7 @@ factor four and GELU activation:
   &=\widetilde{\mathbf{X}}^{(\ell)}+
     \operatorname{FFN}\!\left(\operatorname{LN}(\widetilde{\mathbf{X}}^{(\ell)})\right).
 \end{align}
-After $L$ layers, layer normalization followed by a linear head maps each spot representation to its $G$ predicted gene values. Thus, \morph{} produces the complete slide-level gene-expression prediction in a single forward pass.
+After $L$ layers, layer normalization followed by a linear head maps each spot representation to its $G$ predicted gene values. Thus, \morph{} produces the complete slide-level gene expression prediction in a single forward pass.
 
 
 \par\noindent\refstepcounter{proposition}\textbf{Proposition \theproposition\ (Coordinate frame invariance):}\label{prop:coordinate_invariance}\par
@@ -499,9 +499,9 @@ A plain global-attention Transformer treats all spots interchangeably and
 ignores where each spot sits in the tissue. Our premise is that a spot's
 expression depends on tissue context at two scales this backbone does not model:
 its immediate spatial neighborhood and the whole-slide state. We therefore add
-two pathways on top of the vanilla backbone---a coordinate-invariant local
+two pathways on top of the vanilla backbone, a coordinate-invariant local
 spatial-$k$NN pathway (\mbox{+Local}) and a slide-pooling pathway
-(\mbox{+Slide})---and measure how much each contributes. We ablate on the pooled
+(\mbox{+Slide}), and measure how much each contributes. We ablate on the pooled
 (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI) settings (Figure~\ref{fig:ablation}),
 pairing runs by (setting, seed, fold) and testing each gap with a two-sided
 Wilcoxon signed-rank test.
@@ -522,7 +522,7 @@ Encoder-feature ablations are in Appendix~\ref{app:encoder}.
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/ablation_bars.png}
-\caption{\textbf{Context-stream ablation: global self-attention is the vanilla-Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Backbone (Vanilla, G) plus the local and/or slide pathways, across POOLED (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI). \textbf{(b)} Full model with spatial $k$NN vs.\ random-$k$ neighbors (UNI+CONCH); spatially defined neighborhoods are significantly better. Bars are mean$\pm$std over three seeds.}
+\caption{\textbf{Context-stream ablation: global self-attention is the vanilla Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Backbone (Vanilla, G) plus the local and/or slide pathways, across POOLED (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI). \textbf{(b)} Full model with spatial $k$NN vs.\ random-$k$ neighbors (UNI+CONCH); spatially defined neighborhoods are significantly better. Bars are mean$\pm$std over three seeds.}
 \label{fig:ablation}
 \end{figure*}
 
@@ -565,7 +565,7 @@ are nearly equal, so individual predictions may change despite stable aggregate 
 
 So far, we have shown that \morph{} predicts gene expression accurately. We next ask whether it also preserves spatial tissue structure. We cluster spots into $k{=}6$ domains using KMeans, separately from predicted and measured expression, and compare the resulting partitions using ARI and NMI on held-out slides (Figure~\ref{fig:spatial_scatter}).
 
-\morph{} achieves the highest mean ARI ($0.091$) and NMI ($0.110$), outperforming BLEEP ($0.081$/$0.092$). This ordering remains unchanged for $k\in{4,6,8,10}$ (Appendix~\ref{app:krobust}). Although agreement is modest, \morph{} achieves higher NMI on $84\%$ of slides and higher ARI on $60\%$ of slides against BLEEP ($n{=}58$; $p{=}1.5\times10^{-8}$ and $0.03$, respectively). These results indicate that \morph{} better preserves spatial gene-expression structure, particularly according to NMI.
+\morph{} achieves the highest mean ARI ($0.091$) and NMI ($0.110$), outperforming BLEEP ($0.081$/$0.092$). This ordering remains unchanged for $k\in{4,6,8,10}$ (Appendix~\ref{app:krobust}). Although agreement is modest, \morph{} achieves higher NMI on $84\%$ of slides and higher ARI on $60\%$ of slides against BLEEP ($n{=}58$; $p{=}1.5\times10^{-8}$ and $0.03$, respectively). These results indicate that \morph{} better preserves spatial gene expression structure, particularly according to NMI.
 
 
 
@@ -782,7 +782,7 @@ is the set of genes with nonzero target variance on the slide.
 \label{app:extended_setup}
 
 \paragraph{Dataset and cohort selection.}
-We use \textbf{HEST-1k}~\cite{jaume2024hest}, a collection of spatial-transcriptomics
+We use \textbf{HEST-1k}~\cite{jaume2024hest}, a collection of spatial transcriptomics
 measurements paired with matched H\&E whole-slide images, available from the
 \href{https://huggingface.co/datasets/MahmoodLab/hest}{HEST-1k Hugging Face repository}. HEST-1k has
 supported subsequent histology-to-transcriptomics studies, including STEM and STPath
@@ -795,7 +795,7 @@ We use frozen UNI (ViT-L/16, 1,024-dimensional image embeddings;
 \href{https://huggingface.co/MahmoodLab/UNI}{Hugging Face model card})~\cite{chen2024uni} and
 CONCH (ViT-B/16, 512-dimensional image embeddings;
 \href{https://huggingface.co/MahmoodLab/CONCH}{Hugging Face model card})~\cite{lu2024conch}.
-Both encoders were evaluated for gene-expression prediction in the HEST-1k benchmark
+Both encoders were evaluated for gene expression prediction in the HEST-1k benchmark
 \cite{jaume2024hest}. We test UNI and CONCH separately and concatenate their features to obtain
 1,536-dimensional spot embeddings. Concatenation gives the highest mean PCC in our encoder
 comparison: 0.496, compared with 0.484 for UNI and 0.463 for CONCH alone (Table~\ref{tab:main};
@@ -837,7 +837,7 @@ CUDA-13 build and were excluded. Cluster nodes use Intel Xeon Gold~6140 CPUs.
 \label{app:cohort_stats}
 
 To evaluate \morph{}, we use six cohorts from the HEST-1k dataset~\cite{jaume2024hest}, a curated
-collection of 10x Genomics Visium spatial-transcriptomics samples paired with matched H\&E whole-slide
+collection of 10x Genomics Visium spatial transcriptomics samples paired with matched H\&E whole-slide
 images (WSIs) and standardized metadata. Each cohort covers a distinct organ:
 (1)~\textbf{CCRCC} (kidney) provides 24 WSIs and 74{,}220 spots;
 (2)~\textbf{IDC} (breast) provides 4 WSIs and 44{,}974 spots;
