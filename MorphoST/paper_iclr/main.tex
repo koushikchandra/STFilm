@@ -56,12 +56,12 @@
 \maketitle
 
 % \begin{abstract}
-% Spatial transcriptomics reveals how gene expression is organized across a tissue; however, it is expensive and time-consuming. This motivates predicting gene expression from standard H\&E images. A spot's morphology, its spatial neighborhood, and the broader tissue context provide complementary information for predicting gene expression from H\&E images. A key modeling challenge is how to integrate these cues effectively. We introduce \morph{}, a coordinate-invariant spatial transformer that predicts spatial gene expression from frozen histology features and spot coordinates. MIST fuses three context scales in every layer: local \(k\)NN attention, global self-attention, and attention-pooled slide context. Because coordinates enter only through pairwise distances, the spatial pathway is invariant to translations, rotations, and reflections when image features are fixed. On six human organ cohorts from HEST-1k, evaluated under intra-cohort, pooled multi-organ, and leave-one-organ-out settings, \morph{} attains the highest mean Pearson correlation (PCC) on every cohort, improving over the strongest baseline by $9.7\%$, $11.6\%$ and $11.4\%$ for the 10-, 50-, and 100-gene panels, respectively, with the lowest MSE and MAE. Moreover, the gains are consistent across seeds and persist across the evaluated gene-selection strategies (HVG, DEG, and HMHVG) and encoder features (UNI, CONCH, and UNI+CONCH). It generalizes to held-out organs ($+6.0\%$ over the closest baseline BLEEP). \morph{} also better preserves tissue spatial structure: when we group spots into regions (spatial domains) from the predicted expression, these regions match those obtained from the measured expression more closely than for BLEEP, on 78\% of the 58 held-out slides by the Adjusted Rand Index (ARI) and 90\% by Normalized Mutual Information (NMI), two standard measures of agreement between clusterings. It also reproduces spatial expression patterns of selected melanoma-associated genes (mean PCC $0.90$) and breast cancer receptor genes associated with HER2, ER, and PR, supporting its ability to capture biologically relevant molecular patterns from H\&E images.
+% Spatial transcriptomics reveals how gene expression is organized across a tissue; however, it is expensive and time-consuming. This motivates predicting gene expression from standard H\&E images. A spot's morphology, its spatial neighborhood, and the broader tissue context provide complementary information for predicting gene expression from H\&E images. A key modeling challenge is how to integrate these cues effectively. We introduce \morph{}, a coordinate-invariant spatial transformer that predicts spatial gene expression from frozen histology features and spot coordinates. MIST fuses three context scales in every layer: local \(k\)NN attention, self-attention, and attention-pooled slide context. Because coordinates enter only through pairwise distances, the spatial pathway is invariant to translations, rotations, and reflections when image features are fixed. On six human organ cohorts from HEST-1k, evaluated under intra-cohort, pooled multi-organ, and leave-one-organ-out settings, \morph{} attains the highest mean Pearson correlation (PCC) on every cohort, improving over the strongest baseline by $9.7\%$, $11.6\%$ and $11.4\%$ for the 10-, 50-, and 100-gene panels, respectively, with the lowest MSE and MAE. Moreover, the gains are consistent across seeds and persist across the evaluated gene-selection strategies (HVG, DEG, and HMHVG) and encoder features (UNI, CONCH, and UNI+CONCH). It generalizes to held-out organs ($+6.0\%$ over the closest baseline BLEEP). \morph{} also better preserves tissue spatial structure: when we group spots into regions (spatial domains) from the predicted expression, these regions match those obtained from the measured expression more closely than for BLEEP, on 78\% of the 58 held-out slides by the Adjusted Rand Index (ARI) and 90\% by Normalized Mutual Information (NMI), two standard measures of agreement between clusterings. It also reproduces spatial expression patterns of selected melanoma-associated genes (mean PCC $0.90$) and breast cancer receptor genes associated with HER2, ER, and PR, supporting its ability to capture biologically relevant molecular patterns from H\&E images.
 % \end{abstract}
 
 
 \begin{abstract}
-Predicting spatial gene expression from standard H\&E images could extend molecular analysis to tissues without spatial transcriptomic measurements. A standard Transformer applies global self-attention over spots but ignores where each spot sits in the tissue, whereas a spot's molecular state depends on tissue context at multiple spatial scales. Building on this insight, we introduce \morph{}, a \textbf{M}ult\textbf{I}-context \textbf{S}patial \textbf{T}ransformer that augments the global-attention backbone with two context pathways applied in every layer: a coordinate-invariant \emph{local} pathway that attends over spatial \(k\)-nearest-neighbor spots, and a \emph{slide} pathway that broadcasts a whole-slide summary to every spot; the model predicts all spots in a single forward pass. Because coordinates enter only through pairwise distances, the local pathway is invariant to translations, rotations, and reflections when image features are fixed. In intra-cohort evaluation across six human organ cohorts from HEST-1k, \morph{} improves mean Pearson correlation over the strongest evaluated baseline by 9.7\%, 11.6\%, and 11.4\% for 10-, 50-, and 100-gene panels, respectively, with the lowest average MSE and MAE. Ablations confirm the two pathways are the source of the gains: adding local and slide context improves over the vanilla backbone (paired \(p{=}3.4\times10^{-4}\)), and the local pathway relies on spatially defined neighbors rather than added attention (\(p{=}8.4\times10^{-5}\)). \morph{} further improves leave-one-organ-out transfer by 6.0\% over the next strongest baseline, attains the best expression-derived domain recovery (highest mean ARI and NMI at every clustering resolution, and higher NMI than the closest baseline on 84\% of held-out slides), and reproduces spatial expression patterns of selected cancer-marker genes. Together, these results show that adding local and slide context to a vanilla Transformer backbone is an effective approach to spatial gene expression prediction from histology. Our code is available at \url{https://anonymous.4open.science/r/MIST-F660/}.
+Predicting spatial gene expression from standard H\&E images could extend molecular analysis to tissues without spatial transcriptomic measurements. A standard Transformer applies self-attention over spots but ignores where each spot sits in the tissue, whereas a spot's molecular state depends on tissue context at multiple spatial scales. Building on this insight, we introduce \morph{}, a \textbf{M}ult\textbf{I}-context \textbf{S}patial \textbf{T}ransformer that augments the self-attention backbone with two context pathways applied in every layer: a coordinate-invariant \emph{local} pathway that attends over spatial \(k\)-nearest-neighbor spots, and a \emph{slide} pathway that broadcasts a whole-slide summary to every spot; the model predicts all spots in a single forward pass. Because coordinates enter only through pairwise distances, the local pathway is invariant to translations, rotations, and reflections when image features are fixed. In intra-cohort evaluation across six human organ cohorts from HEST-1k, \morph{} improves mean Pearson correlation over the strongest evaluated baseline by 9.7\%, 11.6\%, and 11.4\% for 10-, 50-, and 100-gene panels, respectively, with the lowest average MSE and MAE. Ablations confirm the two pathways are the source of the gains: adding local and slide context improves over the vanilla backbone (paired \(p{=}3.4\times10^{-4}\)), and the local pathway relies on spatially defined neighbors rather than added attention (\(p{=}8.4\times10^{-5}\)). \morph{} further improves leave-one-organ-out transfer by 6.0\% over the next strongest baseline, attains the best expression-derived domain recovery (highest mean ARI and NMI at every clustering resolution, and higher NMI than the closest baseline on 84\% of held-out slides), and reproduces spatial expression patterns of selected cancer-marker genes. Together, these results show that adding local and slide context to a vanilla Transformer backbone is an effective approach to spatial gene expression prediction from histology. Our code is available at \url{https://anonymous.4open.science/r/MIST-F660/}.
 \end{abstract}
 
 \etocdepthtag.toc{mainbody}
@@ -75,29 +75,29 @@ morphological signals associated with molecular state, motivating the
 prediction of spatial gene expression without matched ST measurements
 \cite{chen2024stimage,jaume2024hest}.
 
-A standard Transformer over tissue spots uses global self-attention, allowing
+A standard Transformer over tissue spots uses self-attention, allowing
 each spot to attend to all others, but does not explicitly encode where spots
 lie in the tissue. Existing H\&E-to-ST methods use patch-level regression
 \cite{he2020stnet}, graph and transformer modeling
 \cite{zeng2022hist2st}, cross-modal retrieval
 \cite{xie2023bleep}, or conditional diffusion
 \cite{zhu2025diffusion}. Yet a spot's molecular state may depend on context
-beyond global interactions, particularly its immediate spatial neighborhood
+beyond self-attention alone, particularly its immediate spatial neighborhood
 and the overall tissue state. Neither is explicitly modeled by a plain
-global-attention Transformer. We therefore ask:
+self-attention Transformer. We therefore ask:
 
 \begin{center}
-\textit{\textbf{Does augmenting global self-attention with local spatial
+\textit{\textbf{Does augmenting self-attention with local spatial
 and whole-slide context improve gene expression prediction from histology?}}
 \end{center}
 
-We introduce \morph{}, which augments a standard global self-attention
+We introduce \morph{}, which augments a standard self-attention
 Transformer with two pathways applied in every layer
 (Fig.~\ref{fig:arch}). Starting from frozen UNI and/or CONCH embeddings
 \cite{chen2024uni,lu2024conch}, the \emph{local} pathway attends over each
 spot's spatial $k$-nearest neighbors, while the \emph{slide} pathway forms
 an attention-weighted whole-slide summary that is broadcast to every spot.
-Their outputs are added to the global-attention backbone and refined through
+Their outputs are added to the self-attention backbone and refined through
 residual feed-forward updates. The model predicts expression for all spots
 in a single forward pass.
 
@@ -115,7 +115,7 @@ handling of $k$NN distance ties~\cite{satorras2021egnn}.
         \textbf{(a)} Frozen UNI and/or CONCH embeddings represent
         spot-centered H\&E patches, while spot coordinates define
         spatial $k$NN neighborhoods.
-        \textbf{(b)} Each Transformer layer augments the global
+        \textbf{(b)} Each Transformer layer augments the
         self-attention backbone with two pathways: local
         spatial-neighbor attention and an attention-pooled
         slide summary broadcast to all spots. The final spot
@@ -150,14 +150,14 @@ expression-derived spatial organization?
 Our contributions are:
 \begin{enumerate}[leftmargin=1.5em,itemsep=1pt,topsep=2pt]
 
-    \item We introduce \morph{}, which augments a global self-attention
+    \item We introduce \morph{}, which augments a self-attention
     Transformer with two pathways applied in every layer: local
     spatial-$k$NN attention and attention-pooled slide context. We establish
     coordinate-frame invariance of the local pathway under stated assumptions.
 
     \item Through matched experiments across organs, gene panels, and image
     encoders, including held-out-organ transfer, we show that the added
-    local and slide pathways improve prediction over the global-attention
+    local and slide pathways improve prediction over the self-attention
     backbone, with paired tests showing that the local pathway benefits from
     spatially defined neighborhoods.
 
@@ -170,7 +170,7 @@ Our contributions are:
 
 MIST maps frozen spot-level histology features and measured spot coordinates to a spatial gene
 expression map. It has three stages: coordinate-invariant neighborhood construction, a layer that
-augments a global self-attention backbone with local and slide context, and supervised prediction
+augments a self-attention backbone with local and slide context, and supervised prediction
 with a correlation-aware objective.
 
 \subsection{Problem Setup}
@@ -199,9 +199,9 @@ features. The formal guarantee is given in Proposition~\ref{prop:coordinate_inva
 from invariance to physically rotating or flipping the H\&E image, which would change the frozen
 encoder's embeddings $\mathbf{F}$ and is outside this guarantee.
 
-\subsection{MIST Layer: Global-Attention Backbone with Local and Slide Context}
+\subsection{MIST Layer: Self-Attention Backbone with Local and Slide Context}
 
-\insightbox{Core Idea.}{Each layer contains a global self-attention backbone
+\insightbox{Core Idea.}{Each layer contains a self-attention backbone
 over all spots and two added pathways: one that aggregates information from
 each spot's spatial neighbors and one that summarizes the whole slide.
 All three outputs are computed from the same normalized spot representations
@@ -215,10 +215,10 @@ At layer $\ell$, we first compute
 \[
 \mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)}),
 \]
-which is passed in parallel through the global-attention backbone and the
+which is passed in parallel through the self-attention backbone and the
 two added pathways.
 
-\subsubsection{Global self-attention (backbone)}
+\subsubsection{Self-attention (backbone)}
 Standard multi-head self-attention \cite{vaswani2017attention} lets every spot attend to all $N$
 spots. This backbone captures long-range dependencies but treats spots interchangeably: it introduces
 no direct coordinate-dependent bias and is permutation-equivariant with respect to spot order. In
@@ -294,9 +294,9 @@ spots, $\mathcal{V}$ is the set of genes with nonzero target variance on that sl
 $\lambda=0.5$. MSE constrains the scale of the predictions, while the correlation term encourages
 the model to reproduce spot-to-spot expression patterns.
 
-The complete model uses the global backbone together with the local and slide pathways. The
+The complete model uses the self-attention backbone together with the local and slide pathways. The
 contribution of each added pathway is evaluated in the factorial ablation study reported in
-Section~\ref{sec:design}, which compares the global (G) backbone with the local (L) and slide-level
+Section~\ref{sec:design}, which compares the self-attention (G) backbone with the local (L) and slide-level
 (S) pathways added on top.
 
 \section{Experimental Setup}
@@ -495,7 +495,7 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 \subsection{RQ3: Which components drive predictive accuracy?}
 \label{sec:design}
 
-A plain global-attention Transformer treats all spots interchangeably and
+A plain self-attention Transformer treats all spots interchangeably and
 ignores where each spot sits in the tissue. Our premise is that a spot's
 expression depends on tissue context at two scales this backbone does not model:
 its immediate spatial neighborhood and the whole-slide state. We therefore add
@@ -515,14 +515,14 @@ adds a further $+0.007$ once layered on local context, and performance is
 strongest when both are added. The local pathway draws on \emph{spatially}
 defined neighbors, not merely extra attention: replacing $k$NN with random
 neighbors of the same size costs $0.031$ PCC (Figure~\ref{fig:ablation}b;
-$p{=}8.4\times10^{-5}$, $n{=}21$). Thus global attention is a capable backbone,
+$p{=}8.4\times10^{-5}$, $n{=}21$). Thus self-attention is a capable backbone,
 but the gains come from adding local and slide context on top of it.
 Encoder-feature ablations are in Appendix~\ref{app:encoder}.
 
 \begin{figure*}[t]
 \centering
 \includegraphics[width=\linewidth]{figures/ablation_bars.png}
-\caption{\textbf{Context-stream ablation: global self-attention is the vanilla Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Backbone (Vanilla, G) plus the local and/or slide pathways, across POOLED (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI). \textbf{(b)} Full model with spatial $k$NN vs.\ random-$k$ neighbors (UNI+CONCH); spatially defined neighborhoods are significantly better. Bars are mean$\pm$std over three seeds.}
+\caption{\textbf{Context-stream ablation: self-attention is the vanilla Transformer backbone; \emph{local} and \emph{slide} are the added levers.} \textbf{(a)} Backbone (Vanilla, G) plus the local and/or slide pathways, across POOLED (UNI+CONCH) and SKCM/LUNG intra-cohort (UNI). \textbf{(b)} Full model with spatial $k$NN vs.\ random-$k$ neighbors (UNI+CONCH); spatially defined neighborhoods are significantly better. Bars are mean$\pm$std over three seeds.}
 \label{fig:ablation}
 \end{figure*}
 
@@ -635,7 +635,7 @@ distances, which are invariant to these frame changes for fixed histology featur
 
 \section{Conclusion and Future Work}
 \morph{} is a coordinate-invariant spatial transformer that predicts gene expression from histology
-by combining local $k$NN attention, global self-attention, and slide-level pooling in a single pass,
+by combining local $k$NN attention, self-attention, and slide-level pooling in a single pass,
 using pairwise distances so the spatial pathway is invariant to rigid coordinate transforms. Under
 matched HEST-1k evaluation it gives the best mean intra-cohort correlation and shows modest but
 consistent gains on unseen organs, though the pooled-to-LOOO gap shows anatomical transfer is still
@@ -716,7 +716,7 @@ For any two spots,
 Thus, the full distance matrix and the distance-based $k$NN ordering are unchanged, assuming
 consistent tie handling. Any optional median-distance normalization is also unchanged because its
 input distances are unchanged. The local attention receives the same neighbor indices, while the
-global attention, slide pooling, residual blocks, and prediction head receive the same histology
+self-attention, slide pooling, residual blocks, and prediction head receive the same histology
 features and intermediate representations. Induction over the transformer layers gives identical
 outputs. The result does not assert invariance of the frozen image encoder to transformations of the
 H\&E image itself. $\square$
@@ -733,7 +733,7 @@ f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P}).
 \textit{Proof.}
 Permuting the rows of $\mathbf{P}$ permutes the rows and columns of its pairwise distance matrix.
 With equivariant tie handling, the neighbor list and corresponding distances are permuted in the
-same way. Hence each local attention computation is permuted with its associated spot. The global
+same way. Hence each local attention computation is permuted with its associated spot. The
 self-attention operation is permutation-equivariant because queries, keys, and values are permuted
 together. Attention pooling produces the same pooled vector, since it is a weighted sum over the
 spots, while broadcasting that vector preserves the row permutation. The input projection, residual
@@ -745,7 +745,7 @@ $f_\theta(Q\mathbf{F},Q\mathbf{P})=Qf_\theta(\mathbf{F},\mathbf{P})$. $\square$
 \label{app:algorithm}
 Algorithm~\ref{alg:mist} gives the full forward pass corresponding to the Method:
 coordinate-based $k$NN construction, $L$ multi-context layers that fuse local
-$k$NN attention, global self-attention, and an attention-pooled slide token, and a linear gene head.
+$k$NN attention, self-attention, and an attention-pooled slide token, and a linear gene head.
 Coordinates enter only through the neighbor graph, which is computed once and reused in every layer;
 local attention weights are content-based (no distance features or positional biases).
 
@@ -762,7 +762,7 @@ local attention weights are content-based (no distance features or positional bi
 \For{$\ell=1$ \textbf{to} $L$}
   \State $\mathbf{H}\gets \operatorname{LN}(\mathbf{X})$
   \State $\mathbf{L}\gets \textsc{LocalKNNAttn}(\mathbf{H},\mathcal{N})$ \Comment{content-based attention over $k$ neighbors}
-  \State $\mathbf{G}\gets \textsc{GlobalSelfAttn}(\mathbf{H})$ \Comment{full self-attention over all $N$ spots}
+  \State $\mathbf{G}\gets \textsc{SelfAttn}(\mathbf{H})$ \Comment{full self-attention over all $N$ spots}
   \State $a_i\gets \operatorname{softmax}_i(s(\mathbf{h}_i))$;\quad
          $\mathbf{g}\gets \mathbf{W}_g\!\sum_i a_i\mathbf{h}_i+\mathbf{b}_g$ \Comment{attention-pooled slide token}
   \State $\mathbf{X}\gets \mathbf{X}+\mathbf{L}+\mathbf{G}+\mathbf{1}\mathbf{g}^\top$ \Comment{parallel fusion + residual}
