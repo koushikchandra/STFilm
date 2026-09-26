@@ -47,28 +47,6 @@
     \parbox{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{%
       \textbf{\textcolor{blue!55!black}{#1}}\quad #2}}%
   \endgroup\par}
-\renewcommand{\arraystretch}{1.0}
-\setlength{\textfloatsep}{2pt plus 1pt minus 1pt}
-\setlength{\floatsep}{4pt plus 1pt minus 1pt}
-\makeatletter
-\setlength{\@fptop}{0pt}
-\setlength{\@fpbot}{0pt}
-\makeatother
-
-% ---- compact layout to keep the main body within 9 pages (spacing only; no text removed) ----
-\usepackage{titlesec}
-\titlespacing*{\section}{0pt}{5pt plus 1pt minus 1pt}{3pt}
-\titlespacing*{\subsection}{0pt}{4pt plus 1pt minus 1pt}{2pt}
-\titlespacing*{\subsubsection}{0pt}{3pt plus 1pt minus 1pt}{1pt}
-\setlength{\abovecaptionskip}{2pt}
-\setlength{\belowcaptionskip}{0pt}
-\setlength{\floatsep}{2pt plus 1pt minus 1pt}
-\setlength{\intextsep}{3pt plus 1pt minus 1pt}
-\setlist{topsep=1pt,itemsep=1pt,parsep=0pt}
-\setlength{\abovedisplayskip}{3pt plus 1pt minus 1pt}
-\setlength{\belowdisplayskip}{3pt plus 1pt minus 1pt}
-\setlength{\abovedisplayshortskip}{1pt}
-\setlength{\belowdisplayshortskip}{2pt}
 
 \begin{document}
 
@@ -590,14 +568,6 @@ So far, we have shown that \morph{} predicts gene expression accurately. We next
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=1.00\linewidth]{figures/qualitative_skcm.png}
-\caption{\textbf{Qualitative spatial expression maps} for SKCM slide TENX117 (two marker genes,
-rows); per-gene PCC shown, \morph{} in orange. Identical frozen UNI+CONCH features for all methods.}
-\label{fig:qualitative}  
-\end{figure*}
-
-\begin{figure*}[t]
-\centering
 \includegraphics[width=0.49\linewidth]{figures/spatial_ari.png}\hfill
 \includegraphics[width=0.49\linewidth]{figures/spatial_nmi.png}
 \caption{\textbf{Spatial-domain recovery across all methods.} Mean ARI (left) and NMI (right)
@@ -624,13 +594,6 @@ Together, these results show that \morph{} can recover both the expression and s
 \label{tab:casestudy}
 \end{figure}
 
-\begin{figure}[!ht]
-\centering
-\includegraphics[width=1.00\linewidth]{figures/casestudy_markers.png}
-\caption{\textbf{Spatial recovery of cancer markers.} Measured vs.\ \morph{}-predicted expression on
-held-out melanoma (top) and breast (bottom) slides (dark = low, bright = high; per-panel $r$ shown).}
-\label{fig:casestudy}
-\end{figure}
 
 
 
@@ -1014,6 +977,22 @@ on the 200-gene panel (melanoma/SKCM, breast/IDC, kidney/CCRCC, prostate/PRAD), 
 three seeds; darker is higher. STEM values for CCRCC and PRAD are computed from the folds available at
 submission time.}
 \label{fig:markers_supp}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.00\linewidth]{figures/casestudy_markers.png}
+\caption{\textbf{Spatial recovery of cancer markers.} Measured vs.\ \morph{}-predicted expression on
+held-out melanoma (top) and breast (bottom) slides (dark = low, bright = high; per-panel $r$ shown).}
+\label{fig:casestudy}
+\end{figure}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=1.00\linewidth]{figures/qualitative_skcm.png}
+\caption{\textbf{Qualitative spatial expression maps} for SKCM slide TENX117 (two marker genes,
+rows); per-gene PCC shown, \morph{} in orange. Identical frozen UNI+CONCH features for all methods.}
+\label{fig:qualitative}
 \end{figure}
 
 \section{Domain-Recovery Robustness to Cluster Count}
