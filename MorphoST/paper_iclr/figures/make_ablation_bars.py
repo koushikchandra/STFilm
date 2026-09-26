@@ -105,7 +105,8 @@ def main(outdir):
     axL.set_ylim(0.50, 0.80); axL.set_xlim(*xlimL)
     axL.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c, e, h in CFGS],
                loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=4, frameon=False,
-               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4)
+               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4,
+               labelcolor="black")
     axL.set_title("(a) Context streams", fontsize=10, pad=24)
     _grid(axL)
 
@@ -122,7 +123,8 @@ def main(outdir):
     axR.set_ylim(0.50, 0.80); axR.set_xlim(*xlimR)
     axR.legend(handles=[Patch(facecolor=c, edgecolor="none", label=k) for k, c in NB_CFGS],
                loc="lower center", bbox_to_anchor=(0.5, 1.01), ncol=2, frameon=False,
-               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4)
+               fontsize=10, handlelength=1.1, columnspacing=0.9, handletextpad=0.4,
+               labelcolor="black")
     axR.set_title("(b) Neighborhood (UNI+CONCH)", fontsize=10, pad=24)
     _grid(axR)
 
