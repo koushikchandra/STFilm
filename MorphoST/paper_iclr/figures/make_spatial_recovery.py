@@ -17,7 +17,7 @@ plt.rcParams.update({
     "axes.labelcolor": "black", "text.color": "black",
 })
 
-BLUE, CORAL, ANNOT = "#aeb3b8", "#aeb3b8", "#E07B5D"
+BLUE, CORAL, ANNOT = "#aeb3b8", "#aeb3b8", "#444444"
 MODELS = ["ST-Net", "Hist2ST", "BLEEP", "STEM", "MIST"]
 ARI = [0.065, 0.073, 0.081, 0.031, 0.091]
 NMI = [0.091, 0.087, 0.092, 0.028, 0.110]
@@ -31,7 +31,7 @@ def _panel(ax, vals, ylabel, ymax):
         hero = b is bars[-1]
         ax.text(b.get_x() + b.get_width() / 2, v + ymax * 0.015, f"{v:.3f}",
                 ha="center", va="bottom", fontsize=7.5,
-                fontweight="bold" if hero else "normal", color=ANNOT)
+                fontweight="bold" if hero else "normal", color=ANNOT if hero else "#444")
     ax.set_xticks(x); ax.set_xticklabels(MODELS, rotation=30, ha="right", fontsize=8)
     ax.set_ylabel(ylabel, fontsize=9)
     ax.set_ylim(0, ymax)
