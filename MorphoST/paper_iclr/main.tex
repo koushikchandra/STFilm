@@ -200,17 +200,23 @@ from invariance to physically rotating or flipping the H\&E image, which would c
 encoder's embeddings $\mathbf{F}$ and is outside this guarantee.
 
 \subsection{MIST Layer: Global-Attention Backbone with Local and Slide Context}
-\insightbox{Core Idea.}{Every layer starts from a global self-attention backbone over all spots and
-adds two context pathways: one from each spot's nearby spots and one from a pooled summary of the
-slide. The model sums these messages into the spot representation and refines the result with a
-feed-forward network. Only the nearby-spot pathway uses coordinates, and only to select the local
-neighborhood.}
+
+\insightbox{Core Idea.}{Each layer contains a global self-attention backbone
+over all spots and two added pathways: one that aggregates information from
+each spot's spatial neighbors and one that summarizes the whole slide.
+All three outputs are computed from the same normalized spot representations
+and combined through a residual update. Only the local pathway uses
+coordinates, and only to construct the spatial neighborhood.}
 
 The input features are projected to hidden width $d$,
-$\mathbf{X}^{(0)}=\mathbf{F}W_{\mathrm{in}}+\mathbf{b}_{\mathrm{in}}$. The same spatial neighbor graph
-is reused in all $L$ transformer layers. At layer $\ell$, a pre-normalized
-representation $\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)})$ is passed through the
-global-attention backbone and the two added pathways.
+$\mathbf{X}^{(0)}=\mathbf{F}W_{\mathrm{in}}+\mathbf{b}_{\mathrm{in}}$.
+The same spatial neighbor graph is reused in all $L$ Transformer layers.
+At layer $\ell$, we first compute
+\[
+\mathbf{H}=\operatorname{LN}(\mathbf{X}^{(\ell)}),
+\]
+which is passed in parallel through the global-attention backbone and the
+two added pathways.
 
 \subsubsection{Global self-attention (backbone)}
 Standard multi-head self-attention \cite{vaswani2017attention} lets every spot attend to all $N$
