@@ -140,8 +140,8 @@ Our experiments address five research questions:
 \textbf{RQ1 (Performance):} How accurately does \morph{} predict
 gene expression within and across represented organs?
 \textbf{RQ2 (Transfer):} How well does it generalize to an unseen organ?
-\textbf{RQ3 (Ablation):} How do local context, slide context, and spatial
-neighbors affect performance?
+\textbf{RQ3 (Ablation):} How local, slide, and spatial-neighbor context
+affect performance?
 \textbf{RQ4 (Coordinate invariance):} How stable are predictions under
 coordinate-frame transformations with image features fixed?
 \textbf{RQ5 (Structure):} How well do predictions recover
@@ -492,7 +492,7 @@ STEM & $0.353{\pm}0.00$ & $0.055{\pm}0.02$ & $0.543{\pm}0.02$ & $0.393{\pm}0.02$
 }
 \end{table}
 
-\subsection{RQ3: Which added components improve performance?}
+\subsection{RQ3: How local, slide, and spatial-neighbor context affect performance}
 \label{sec:design}
 
 A plain self-attention Transformer treats all spots interchangeably and
