@@ -65,8 +65,8 @@ def _grid(ax):
 # shared geometry so bars and group gaps are identical in both panels
 BW = 0.24        # bar width (same in both panels)
 SLOT = 0.26      # bar pitch within a group (small gap between bars)
-GAP_G = 0.42     # gap between groups (same in both panels)
-MARGIN = 0.24    # left/right padding inside each panel
+GAP_G = 0.28     # gap between groups (same in both panels)
+MARGIN = 0.12    # left/right padding inside each panel
 
 
 def _centers(nbars, ngroups):
