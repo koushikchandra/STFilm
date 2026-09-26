@@ -17,7 +17,7 @@ plt.rcParams.update({
     "axes.labelcolor": "black", "text.color": "black",
 })
 
-BLUE, CORAL, ANNOT = "#6b9bc3", "#E07B5D", "#C0552F"
+BLUE, CORAL, ANNOT = "#aeb3b8", "#aeb3b8", "#444444"
 MODELS = ["ST-Net", "Hist2ST", "BLEEP", "STEM", "MIST"]
 ARI = [0.065, 0.073, 0.081, 0.031, 0.091]
 NMI = [0.091, 0.087, 0.092, 0.028, 0.110]
