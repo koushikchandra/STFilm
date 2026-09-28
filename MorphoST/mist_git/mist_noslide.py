@@ -1,14 +1,14 @@
 """ABLATION: MIST WITHOUT slide-level context (spatial local kNN + global attention only).
 
-Identical to MIST (morphost.py) -- spatial kNN neighbours, same RBF distance bias, same config --
+Identical to MIST (mist.py) -- spatial kNN neighbours, same RBF distance bias, same config --
 EXCEPT the slide-level stream (AttentionPool -> slide token) is removed from every block. Isolates
 how much the slide token contributes to MIST. Reuses knn_graph, RBF, LocalKNNAttention,
-GlobalAttention, morphost_loss from morphost.py (does not modify the paper model).
+GlobalAttention, mist_loss from mist.py (does not modify the paper model).
 """
 import torch
 import torch.nn as nn
 
-from morphost import knn_graph, RBF, LocalKNNAttention, GlobalAttention, morphost_loss
+from mist import knn_graph, RBF, LocalKNNAttention, GlobalAttention, mist_loss
 
 
 class NoSlideMISTBlock(nn.Module):

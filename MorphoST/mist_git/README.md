@@ -98,7 +98,7 @@ averaged over seeds 1, 2, 3.
 
 ## 4. Ablations
 
-`morphost_context.py` exposes the full **L/G/S factorial** and the neighborhood control,
+`mist_context.py` exposes the full **L/G/S factorial** and the neighborhood control,
 driven by `--config` in the context trainers (`train_context.py`,
 `train_context_pooled.py`):
 
@@ -145,10 +145,10 @@ Each run writes, under `<save_root>/<TAG>/`:
 
 | File | Role |
 |------|------|
-| `morphost.py` | MIST model (local kNN + global + slide-pool layer, kNN graph, loss) |
-| `morphost_context.py` | L/G/S factorial + random-neighbor variants (`CONFIGS`) |
-| `morphost_random.py` | random-k neighbor graph (ablation control) |
-| `morphost_count.py`, `morphost_noslide.py` | count-head / no-slide variants |
+| `mist.py` | MIST model (local kNN + global + slide-pool layer, kNN graph, loss) |
+| `mist_context.py` | L/G/S factorial + random-neighbor variants (`CONFIGS`) |
+| `mist_random.py` | random-k neighbor graph (ablation control) |
+| `mist_count.py`, `mist_noslide.py` | count-head / no-slide variants |
 | `train_hest.py` | intra-cohort trainer |
 | `train.py` | cross-organ (POOLED / LOOO) trainer |
 | `train_context.py`, `train_context_pooled.py` | ablation trainers |

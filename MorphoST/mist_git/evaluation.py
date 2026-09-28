@@ -1,4 +1,4 @@
-"""Evaluation and split utilities for defensible MorphoST experiments."""
+"""Evaluation and split utilities for defensible MIST experiments."""
 from __future__ import annotations
 
 import json

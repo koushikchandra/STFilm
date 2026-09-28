@@ -1,4 +1,4 @@
-"""Count-likelihood head for MorphoST: Negative Binomial (NB) and Zero-Inflated NB (ZINB).
+"""Count-likelihood head for MIST: Negative Binomial (NB) and Zero-Inflated NB (ZINB).
 
 Motivation: the default model predicts log1p expression under a Gaussian (MSE) loss. Spatial
 transcriptomics is over-dispersed count data with heavy dropout, so a count likelihood may model
@@ -9,26 +9,26 @@ H&E->ST prediction the counts are the target and are NOT observed at test time, 
 observed library size. We therefore use a log-link NB GLM: mu = exp(rate) directly (rate from the
 backbone), with a per-gene dispersion theta. ZINB adds a per-gene-per-spot dropout logit.
 
-CountMorphoST(feats, coords)                 -> predicted expression in log1p space (for metrics)
-CountMorphoST(feats, coords, return_params=True) -> (mu, theta, pi_logits or None) for the loss
+CountMIST(feats, coords)                 -> predicted expression in log1p space (for metrics)
+CountMIST(feats, coords, return_params=True) -> (mu, theta, pi_logits or None) for the loss
 count_loss(params, counts, kind)             -> mean NB / ZINB negative log-likelihood
 """
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from morphost import MorphoST
+from mist import MIST
 
 _EPS = 1e-8
 
 
-class CountMorphoST(nn.Module):
+class CountMIST(nn.Module):
     def __init__(self, feat_dim, dim, n_genes, zinb=False, **kw):
         super().__init__()
         self.zinb = zinb
         self.n_genes = n_genes
-        # reuse the full MorphoST backbone; its own head is unused (return_hidden=True)
-        self.backbone = MorphoST(feat_dim=feat_dim, dim=dim, n_genes=n_genes, **kw)
+        # reuse the full MIST backbone; its own head is unused (return_hidden=True)
+        self.backbone = MIST(feat_dim=feat_dim, dim=dim, n_genes=n_genes, **kw)
         self.norm = nn.LayerNorm(dim)
         self.rate_head = nn.Linear(dim, n_genes)                 # log-mean per gene per spot
         self.theta = nn.Parameter(torch.zeros(n_genes))          # log-dispersion per gene (global)

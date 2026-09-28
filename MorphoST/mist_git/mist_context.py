@@ -3,7 +3,7 @@
 MIST's block sums three streams: LOCAL (spatial kNN attention), GLOBAL (full self-attention), and
 SLIDE (AttentionPool -> slide token). This variant turns each stream on/off independently, and lets
 the local stream use spatial-nearest OR random-k neighbours. Reuses the original MIST components
-from morphost.py (and random_knn from morphost_random.py); does not modify the paper model.
+from mist.py (and random_knn from mist_random.py); does not modify the paper model.
 
 Configs requested:
   1. global              -> use_local=F, use_global=T, use_slide=F
@@ -15,8 +15,8 @@ Configs requested:
 import torch
 import torch.nn as nn
 
-from morphost import knn_graph, RBF, LocalKNNAttention, GlobalAttention, AttentionPool, morphost_loss
-from morphost_random import random_knn
+from mist import knn_graph, RBF, LocalKNNAttention, GlobalAttention, AttentionPool, mist_loss
+from mist_random import random_knn
 
 
 class ContextBlock(nn.Module):

@@ -1,13 +1,13 @@
-"""Train/evaluate MorphoST on the leakage-safe cross-organ splits (HEST or STImage).
+"""Train/evaluate MIST on the leakage-safe cross-organ splits (HEST or STImage).
 
 Mirrors train_cross_organ.py's fold structure, metric (nan-safe per-gene Pearson), and result
 JSON layout so the existing aggregators/significance scripts work unchanged -- but the model is
-MorphoST (no STFlow). One-seed HEST LOOO is the go/no-go test the plan calls for.
+MIST (no STFlow). One-seed HEST LOOO is the go/no-go test the plan calls for.
 
 Example (V5, HEST LOOO, seed 1):
   PYTHONPATH=../STFlow python train.py --regime LOOO --version V5 --seed 1 \
       --splits_root ../cross_organ_splits8 --source_dataroot ../dataset \
-      --embed_dataroot ../embed_dataroot --save_root results_morphost
+      --embed_dataroot ../embed_dataroot --save_root results_mist
 """
 import os, json, argparse, random
 import numpy as np
@@ -15,7 +15,7 @@ import pandas as pd
 import torch
 from scipy.stats import pearsonr
 
-from morphost import MorphoST, morphost_loss
+from mist import MIST, mist_loss
 from data import load_sample, load_gene_list
 from evaluation import expression_metrics, save_predictions, train_val_split
 
@@ -72,7 +72,7 @@ def evaluate(model, test_rows, args, gene_list, prediction_path=None):
 def train_fold(args, train_df, val_df, test_df, gene_list, fold_dir):
     feat_dim = {"uni_v1_official": 1024, "gigapath": 1536, "ciga": 512,
                 "resnet50_trunc": 1024, "uni_conch": 1536}.get(args.feature_encoder, 1024)
-    model = MorphoST(feat_dim=feat_dim, dim=args.dim, n_genes=len(gene_list), n_layers=args.n_layers,
+    model = MIST(feat_dim=feat_dim, dim=args.dim, n_genes=len(gene_list), n_layers=args.n_layers,
                      n_heads=args.n_heads, k=args.k, dropout=args.dropout,
                      num_rbf=args.num_rbf,
                      attn_dropout=args.dropout, version=args.version,
@@ -94,7 +94,7 @@ def train_fold(args, train_df, val_df, test_df, gene_list, fold_dir):
                                               args.normalize_method, args.device)
             feats, coords, expr = subsample(feats, coords, expr, args.max_spots)
             pred = model(feats, coords)
-            loss = morphost_loss(pred, expr, args.corr_weight)
+            loss = mist_loss(pred, expr, args.corr_weight)
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); tot += loss.item()
@@ -177,7 +177,7 @@ def main():
     p.add_argument("--source_dataroot", default="../dataset")
     p.add_argument("--embed_dataroot", default="../embed_dataroot")
     p.add_argument("--feature_encoder", default="uni_v1_official")
-    p.add_argument("--save_root", default="results_morphost")
+    p.add_argument("--save_root", default="results_mist")
     p.add_argument("--exp_code", default=None)
     p.add_argument("--normalize_method", default="log1p")
     p.add_argument("--device", default="cuda")

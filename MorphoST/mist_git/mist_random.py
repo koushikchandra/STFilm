@@ -1,4 +1,4 @@
-"""ABLATION: random-k neighbourhood control for MIST (the spatial model, morphost.py).
+"""ABLATION: random-k neighbourhood control for MIST (the spatial model, mist.py).
 
 MIST defines each spot's local neighbourhood by SPATIAL kNN (the k nearest spots by coordinates).
 RandomKMIST is identical in every other respect -- same MorphoBlock (local + global + slide),
@@ -10,12 +10,12 @@ Comparison: MIST (spatial top-k)  vs  RandomKMIST (random-k)
   * MIST >> Random  -> spatial neighbour selection carries real signal.
   * MIST  ~ Random  -> which spots are "local" is irrelevant; global + slide streams carry it.
 
-Reuses RBF, MorphoBlock, morphost_loss from morphost.py (does not modify the paper model).
+Reuses RBF, MorphoBlock, mist_loss from mist.py (does not modify the paper model).
 """
 import torch
 import torch.nn as nn
 
-from morphost import RBF, MorphoBlock, morphost_loss  # reuse identical components
+from mist import RBF, MorphoBlock, mist_loss  # reuse identical components
 
 
 def random_knn(coords: torch.Tensor, k: int):

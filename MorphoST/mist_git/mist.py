@@ -20,7 +20,7 @@ Architecture (one MorphoBlock repeated n_layers times):
                    x = x + FFN(LayerNorm(x))
 Output head: LayerNorm → Linear(dim → n_genes)
 
-Loss: MSE + 0.5 * (1 - mean_gene_PCC)   [morphost_loss]
+Loss: MSE + 0.5 * (1 - mean_gene_PCC)   [mist_loss]
 """
 import math
 import torch
@@ -153,7 +153,7 @@ class MorphoBlock(nn.Module):
 # Full model
 # ---------------------------------------------------------------------------
 
-class MorphoST(nn.Module):
+class MIST(nn.Module):
     """LoGST V3: coordinate-invariant local-global spatial transformer."""
     def __init__(
         self,
@@ -209,7 +209,7 @@ class MorphoST(nn.Module):
 # Loss
 # ---------------------------------------------------------------------------
 
-def morphost_loss(pred: torch.Tensor, target: torch.Tensor,
+def mist_loss(pred: torch.Tensor, target: torch.Tensor,
                   corr_weight: float = 0.5, eps: float = 1e-6) -> torch.Tensor:
     """MSE + corr_weight * (1 - mean per-gene Pearson) over spots in one slide."""
     mse = F.mse_loss(pred, target)

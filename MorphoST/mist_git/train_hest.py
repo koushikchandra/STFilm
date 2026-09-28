@@ -1,4 +1,4 @@
-"""Evaluate MorphoST V3 under STFlow's PER-COHORT protocol (HEST-1k), to build a Table-1-style
+"""Evaluate MIST V3 under STFlow's PER-COHORT protocol (HEST-1k), to build a Table-1-style
 comparison directly against STFlow's reported numbers.
 
 This is the *within-organ* setup from the STFlow paper (NOT our cross-organ LOOO/POOLED, which lives
@@ -8,7 +8,7 @@ untouched in train.py):
   - Pearson on top-50 genes after log1p; best-on-test-fold early stopping (patience 20), 3 seeds
   - report per-cohort mean over its folds; aggregate mean/std over seeds is done by the aggregator.
 
-MorphoST V3 config is kept identical to the cross-organ V3 runs (version V3, dim 256, 4 layers,
+MIST V3 config is kept identical to the cross-organ V3 runs (version V3, dim 256, 4 layers,
 4 heads, k 8) so the two experiments describe the *same* model on two protocols.
 
 Example:
@@ -20,8 +20,8 @@ import numpy as np
 import pandas as pd
 import torch
 
-from morphost import MorphoST, morphost_loss
-from morphost_count import CountMorphoST, count_loss
+from mist import MIST, mist_loss
+from mist_count import CountMIST, count_loss
 from data import load_sample
 from train import set_seed, metric_func, subsample  # reuse cross-organ helpers unchanged
 from evaluation import expression_metrics, save_predictions, train_val_split
@@ -63,9 +63,9 @@ def train_fold(args, train_df, val_df, test_df, gene_list, cohort, fold_dir):
                   normalize_dist=args.normalize_dist,
                   uniform_local=args.uniform_local)
     if args.loss in ("nb", "zinb"):
-        model = CountMorphoST(zinb=(args.loss == "zinb"), **common).to(args.device)
+        model = CountMIST(zinb=(args.loss == "zinb"), **common).to(args.device)
     else:
-        model = MorphoST(**common).to(args.device)
+        model = MIST(**common).to(args.device)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr, weight_decay=args.weight_decay)
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, T_max=args.epochs)
     train_rows = list(train_df.iterrows())
@@ -83,7 +83,7 @@ def train_fold(args, train_df, val_df, test_df, gene_list, cohort, fold_dir):
                 loss = count_loss(params, expr, args.loss)   # expr = raw counts
             else:
                 pred = model(feats, coords)
-                loss = morphost_loss(pred, expr, args.corr_weight)
+                loss = mist_loss(pred, expr, args.corr_weight)
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); tot += loss.item()
