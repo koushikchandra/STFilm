@@ -1,0 +1,39 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Virtual environments
+.venv/
+venv/
+env/
+.conda/
+
+# Results / outputs / checkpoints
+results*/
+*.pt
+*.pth
+*.npz
+*.ckpt
+
+# Data (do not commit datasets or extracted features)
+dataset/
+embed_dataroot/
+*.h5
+*.h5ad
+
+# Logs & scheduler
+*.log
+slurm-*.out
+*.sbatch
+
+# Editor / OS
+.idea/
+.vscode/
+.ipynb_checkpoints/
+.DS_Store

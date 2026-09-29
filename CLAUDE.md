@@ -71,6 +71,34 @@ The denoiser backbone is a **custom geometric `SpatialTransformer`** (`model/tra
 - adaLN is zero-initialized so every block starts as identity (conditioning dormant at step 0, training-stable).
 - The model side already accepts a `meta` dict; wiring metadata through the dataset loader and training loop is the outstanding work.
 
+## Auto-update rule: results → LaTeX tables
+
+**Whenever new results are available, proactively update the corresponding table in `MorphoST/paper/main.tex` without waiting to be asked.**
+
+The result directories and their corresponding tables are:
+
+| Result directory | Table label | Columns to fill |
+|---|---|---|
+| `results_mouse_baselines/LOOO_<model>_seed*/` | `tab:mouse` | `\textsc{looo} PCC` column |
+| `results_mouse_baselines/POOLED_<model>_seed*/` | `tab:mouse` | `\textsc{pooled} PCC` column |
+| `results_mouse_intra_baselines/INTRA_<organ>_<model>_seed*/` | `tab:mouse_intra` | per-organ row, baseline column |
+| `results_mouse_morphost/LOOO_C111_seed*/` | `tab:mouse` | `\textsc{looo} PCC` row for \morph{} |
+| `results_mouse_morphost/POOLED_C111_seed*/` | `tab:mouse` | `\textsc{pooled} PCC` row for \morph{} |
+| `results_mouse_morphost/INTRA_<organ>_C111_seed*/` | `tab:mouse_intra` | per-organ row, \morph{} column |
+
+**Aggregation rule** — always average across all 3 seeds; report as `$\mu_{\sigma}$` (mean subscript std, 3 decimal places). For cross-organ tables (LOOO/POOLED) aggregate fold means first, then seed means. For INTRA use `results_kfold.json → pearson_mean`. Mark incomplete results (< 3 seeds or < 7 organs) with `$^\dag$` and a minipage footnote.
+
+**Steps after filling numbers:**
+1. Replace `\running` placeholders with the computed values.
+2. Update `\best{}` bold on the highest value per row/column.
+3. Recompile: `/lustre/hdd/LAS/weile-lab/howlader/miniconda3/bin/tectonic MorphoST/paper/main.tex` (run from the `MorphoST/paper/` directory). Fix any new `Overfull \hbox` > 5 pt.
+4. Commit both `main.tex` and `main.pdf` with a descriptive message and push to `morphost`.
+
+**Baseline model names** (same five in every mouse table, matching Table 1):
+- ST-Net → `stnet`, Gene-DML → `genedml`, HyperST → `hyperst`, HisToGene → `histogene`, Hist2ST → `hist2st`
+
+**Known floor effect:** mouse LOOO values are near zero for all methods due to cross-organ gene-panel mismatch. This is expected and should be noted in a table footnote, not treated as an error.
+
 ## Known upstream STFlow bugs (worked around, not upstream-fixed)
 
 - `GeneUpdate.__init__` originally didn't accept the `non_negative` kwarg that `TransformerBlock` passes it — would `TypeError` on instantiation. Locally accepted as a no-op kwarg.

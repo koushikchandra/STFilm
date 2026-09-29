@@ -1,5 +1,5 @@
 #!/bin/bash
-# Mirror paper/ -> the Overleaf project's git remote and push (Overleaf Git bridge).
+# Mirror MorphoST/paper_iclr/ -> the Overleaf project's git remote and push (Overleaf Git bridge).
 # Credential: .overleaf/token holds an Overleaf "Git authentication token" (gitignored, never
 # committed). Project id in .overleaf/project_id. Usage: ./sync_overleaf.sh ["commit msg"]
 set -euo pipefail
@@ -21,18 +21,19 @@ else
   git -C "$MIRROR" pull --no-rebase --no-edit || true
 fi
 
-# Non-destructive sync: add/update our sources in the mirror but NEVER delete Overleaf-side files
-# (e.g. wacv.cls / ieeenat_fullname.bst uploaded there to compile). Only the local article-class
-# build/ copy is explicitly removed. Trade-off: files deleted/renamed in paper/ won't auto-remove
-# from Overleaf; delete those by hand if needed.
+# Non-destructive sync: add/update our sources in the mirror but NEVER delete Overleaf-side files.
+# Trade-off: files deleted/renamed in paper_iclr/ won't auto-remove from Overleaf; delete by hand.
 rm -rf "$MIRROR/build"
 rsync -a \
   --exclude='build/' \
+  --exclude='.overleaf/' --exclude='.git/' --exclude='.ipynb_checkpoints/' \
+  --exclude='*.aux' --exclude='*.bbl' --exclude='*.blg' --exclude='*.brf' \
+  --exclude='*.out' --exclude='*.fls' --exclude='*.log' --exclude='tectonic' \
   --include='*/' \
   --include='*.tex' --include='*.bib' --include='*.cls' --include='*.sty' --include='*.bst' \
-  --include='figs/***' \
+  --include='figures/***' --include='slide_images/***' \
   --exclude='*' \
-  paper/ "$MIRROR"/
+  MorphoST/paper_iclr/ "$MIRROR"/
 
 cd "$MIRROR"
 git add -A
